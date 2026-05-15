@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>盛世裕丰老师投资体系与音频文稿全集</title>
+  <meta name="description" content="盛世裕丰老师投资体系落地页，整理 317 份音频文字稿，支持全文搜索、文稿阅读和体系学习。" />
+  <meta property="og:title" content="盛世裕丰老师投资体系与音频文稿全集" />
+  <meta property="og:description" content="从 317 份音频文稿中整理投资体系：三低一高、分红攒股、低估轮动、长期现金流。" />
+  <meta property="og:type" content="website" />
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f1e8;
+      --bg-2: #eee4d6;
+      --paper: #fffaf2;
+      --paper-2: #fbf3e7;
+      --ink: #261f19;
+      --ink-soft: #463c33;
+      --muted: #7a6e63;
+      --clay: #c96442;
+      --clay-dark: #8f432f;
+      --clay-soft: #efd1bf;
+      --olive: #6f7353;
+      --line: rgba(58, 42, 31, .14);
+      --line-strong: rgba(58, 42, 31, .24);
+      --shadow: 0 24px 70px rgba(62, 43, 25, .13);
+      --shadow-soft: 0 14px 36px rgba(62, 43, 25, .08);
+      --radius-xl: 34px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 7% -4%, rgba(201, 100, 66, .26), transparent 26rem),
+        radial-gradient(circle at 92% 6%, rgba(111, 115, 83, .18), transparent 25rem),
+        linear-gradient(180deg, #f8f2e9 0%, var(--bg) 38%, #f2eadf 100%);
+      line-height: 1.78;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      pointer-events: none;
+      opacity: .34;
+      background-image: linear-gradient(rgba(38,31,25,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(38,31,25,.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, #000 0, transparent 70%);
+    }
+    a { color: var(--clay-dark); text-decoration: none; }
+    a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(246, 241, 232, .78);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 820; letter-spacing: -.02em; }
+    .logo-mark { width: 30px; height: 30px; border-radius: 10px; background: linear-gradient(135deg, var(--clay), #e0a06f); box-shadow: 0 8px 22px rgba(201,100,66,.22); }
+    .nav-links { display: flex; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+    .nav-links a { color: var(--ink-soft); padding: 8px 12px; border-radius: 999px; }
+    .nav-links a:hover { background: rgba(255,250,242,.72); text-decoration: none; color: var(--clay-dark); }
+    .hero { padding: 86px 0 50px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr); gap: 34px; align-items: stretch; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--clay-dark); font-weight: 760; letter-spacing: .14em; font-size: 12px; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--clay); box-shadow: 0 0 0 6px rgba(201,100,66,.12); }
+    h1 { max-width: 870px; font-size: clamp(42px, 6.4vw, 82px); line-height: .98; margin: 18px 0 20px; letter-spacing: -.06em; }
+    .lead { max-width: 720px; font-size: clamp(17px, 2vw, 23px); color: var(--ink-soft); margin: 0 0 28px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; border-radius: 999px; padding: 12px 18px; font-weight: 760; border: 1px solid var(--line-strong); background: rgba(255,250,242,.74); color: var(--ink); box-shadow: var(--shadow-soft); }
+    .btn.primary { color: #fffaf2; background: linear-gradient(135deg, var(--clay-dark), var(--clay)); border: 0; box-shadow: 0 16px 38px rgba(201,100,66,.24); }
+    .card, .panel { background: rgba(255, 250, 242, .82); border: 1px solid var(--line); box-shadow: var(--shadow); backdrop-filter: blur(10px); }
+    .hero-card { border-radius: var(--radius-xl); padding: 28px; position: relative; overflow: hidden; }
+    .hero-card::after { content: ""; position: absolute; width: 210px; height: 210px; right: -80px; top: -88px; border-radius: 50%; background: rgba(201,100,66,.13); }
+    .quote { position: relative; font-size: clamp(24px, 3vw, 36px); line-height: 1.2; font-weight: 820; letter-spacing: -.04em; color: var(--ink); margin: 0 0 18px; }
+    .quote strong { color: var(--clay-dark); }
+    .muted { color: var(--muted); }
+    .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
+    .stat { padding: 16px; border-radius: 20px; background: rgba(255,255,255,.54); border: 1px solid var(--line); }
+    .stat strong { display: block; font-size: 30px; color: var(--clay-dark); line-height: 1.05; letter-spacing: -.04em; }
+    .stat span { color: var(--muted); font-size: 13px; }
+    section { padding: 40px 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+    h2 { font-size: clamp(28px, 3vw, 44px); line-height: 1.08; margin: 0; letter-spacing: -.05em; }
+    .principles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .principle { padding: 18px; min-height: 126px; border-radius: var(--radius-lg); background: rgba(255,250,242,.86); border: 1px solid var(--line); box-shadow: var(--shadow-soft); }
+    .principle span { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: #fffaf2; background: var(--ink); font-size: 13px; font-weight: 820; margin-bottom: 12px; }
+    .system { padding: clamp(20px, 3vw, 34px); border-radius: var(--radius-xl); overflow: hidden; }
+    .system h2, .system h3 { scroll-margin-top: 90px; }
+    .system h2 { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); font-size: clamp(26px, 3vw, 34px); }
+    .system h2:first-child { margin-top: 0; border-top: 0; }
+    .system h3 { margin-top: 26px; color: var(--clay-dark); }
+    .system table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; border-radius: 16px; }
+    .system th, .system td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; }
+    .system th { background: rgba(201,100,66,.10); }
+    .system blockquote { margin: 18px 0; padding: 16px 18px; border-left: 4px solid var(--clay); background: rgba(201,100,66,.10); border-radius: 16px; }
+    .system pre { white-space: pre-wrap; background: #282019; color: #fff2dc; padding: 18px; border-radius: 18px; overflow-x: auto; }
+    .library { display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 18px; align-items: start; }
+    .panel { border-radius: var(--radius-lg); }
+    .tools { padding: 16px; position: sticky; top: 86px; }
+    input, select { width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 13px 14px; font: inherit; background: rgba(255,255,255,.76); color: var(--ink); outline-color: var(--clay); }
+    .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .track-list { max-height: 72vh; overflow: auto; margin-top: 12px; padding-right: 4px; }
+    .track-item { width: 100%; text-align: left; border: 1px solid transparent; background: transparent; padding: 13px; border-radius: 18px; cursor: pointer; color: inherit; }
+    .track-item:hover, .track-item.active { background: rgba(255,255,255,.78); border-color: var(--line); box-shadow: 0 8px 22px rgba(62,43,25,.06); }
+    .track-item strong { display: block; line-height: 1.35; }
+    .track-meta { font-size: 12px; color: var(--muted); margin-top: 5px; }
+    .reader { padding: clamp(18px, 3vw, 28px); min-height: 620px; }
+    .reader h3 { font-size: clamp(24px, 3vw, 32px); line-height: 1.22; margin: 12px 0 10px; color: var(--ink); letter-spacing: -.03em; }
+    .reader .content { white-space: pre-wrap; font-size: 16px; }
+    .empty { padding: 40px; text-align: center; color: var(--muted); }
+    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 5px 11px; background: rgba(201,100,66,.12); color: var(--clay-dark); font-weight: 760; font-size: 12px; }
+    .footer { padding: 42px 0 60px; color: var(--muted); font-size: 14px; }
+    @media (max-width: 980px) { .hero-grid, .library { grid-template-columns: 1fr; } .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tools { position: static; } .track-list { max-height: 420px; } }
+    @media (max-width: 620px) { .wrap { width: min(100% - 24px, 1180px); } .nav-inner { min-height: auto; align-items: flex-start; flex-direction: column; padding: 12px 0; } .nav-links { width: 100%; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; } .hero { padding: 44px 0 28px; } h1 { font-size: clamp(38px, 12vw, 54px); } .stats, .principles, .filters { grid-template-columns: 1fr; } .hero-card, .system, .reader { border-radius: 24px; } .section-head { align-items: flex-start; flex-direction: column; } .track-list { max-height: 360px; } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <div class="logo"><span class="logo-mark"></span><span>盛世裕丰 · 投资体系</span></div>
+      <div class="nav-links">
+        <a href="#system-map">体系地图</a>
+        <a href="#system">投资体系</a>
+        <a href="#library">文稿全集</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Investment system archive</div>
+        <h1>盛世裕丰老师投资体系与音频文稿全集</h1>
+        <p class="lead">以 Claude 风格暖色设计重新整理：三低一高、分红攒股、低估轮动、核心股权、长期现金流，一页进入完整文稿库。</p>
+        <div class="actions">
+          <a class="btn primary" href="#system">阅读投资体系</a>
+          <a class="btn" href="#library">搜索全部文稿</a>
+        </div>
+      </div>
+      <div class="card hero-card">
+        <p class="quote">做股东，<strong>吃分红</strong>，攒股权，等馈赠。</p>
+        <p class="muted">从 317 份可用音频文字稿中整理出一套可检索、可阅读、可分享的投资体系知识库。</p>
+        <div class="stats" id="stats"></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="system-map">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>体系地图</h2>
+            <div class="muted">先看十条核心原则，再进入完整体系与全文文稿。</div>
+          </div>
+        </div>
+        <div class="principles" id="principles"></div>
+      </div>
+    </section>
+
+    <section id="system">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>投资体系落地页</h2>
+            <div class="muted">按底层信念、选股、估值、买入、持有、轮动、风控和心法整理。</div>
+          </div>
+        </div>
+        <article class="card system" id="systemContent"></article>
+      </div>
+    </section>
+
+    <section id="library">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>全部音频文稿库</h2>
+            <div class="muted">支持标题与全文搜索。点击左侧条目阅读单篇文稿。</div>
+          </div>
+          <span class="badge" id="resultCount"></span>
+        </div>
+        <div class="library">
+          <aside class="panel tools">
+            <input id="search" placeholder="搜索：三低一高、分红、银行、轮动..." />
+            <div class="filters">
+              <select id="statusFilter">
+                <option value="all">全部音频</option>
+                <option value="ok">有文稿</option>
+                <option value="missing">无 AI 文稿</option>
+              </select>
+              <select id="sortBy">
+                <option value="asc">按序号升序</option>
+                <option value="desc">按序号降序</option>
+                <option value="chars">按文稿字数</option>
+              </select>
+            </div>
+            <div class="track-list" id="trackList"></div>
+          </aside>
+          <article class="panel reader" id="reader"></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="wrap"><p>说明：本页为文字稿整理和学习索引，不构成投资建议。ASR 文稿可能存在识别错误，请结合原音频理解。</p></div></footer>
+
+  <script src="data.js"></script>
+  <script>
+    const data = window.SHENGSHI_DATA;
+    const stats = document.getElementById('stats');
+    const fmt = new Intl.NumberFormat('zh-CN');
+    stats.innerHTML = `
+      <div class="stat"><strong>${fmt.format(data.meta.trackCount)}</strong><span>音频总数</span></div>
+      <div class="stat"><strong>${fmt.format(data.meta.okCount)}</strong><span>可读文稿</span></div>
+      <div class="stat"><strong>${fmt.format(data.meta.charTotal)}</strong><span>文稿字数</span></div>
+      <div class="stat"><strong>${fmt.format(data.meta.missingCount)}</strong><span>无 AI 文稿</span></div>
+    `;
+    document.getElementById('principles').innerHTML = data.principles.map((p, i) => `
+      <div class="principle"><span>${i + 1}</span><div>${escapeHtml(p)}</div></div>
+    `).join('');
+    document.getElementById('systemContent').innerHTML = data.systemHtml;
+
+    const search = document.getElementById('search');
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+    const trackList = document.getElementById('trackList');
+    const reader = document.getElementById('reader');
+    const resultCount = document.getElementById('resultCount');
+    let activeId = null;
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
+    }
+    function duration(seconds) {
+      const s = Number(seconds || 0);
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+    function normalize(value) {
+      return String(value || '').toLowerCase().replace(/\s+/g, '');
+    }
+    function getFiltered() {
+      const q = normalize(search.value);
+      let list = data.tracks.filter(t => {
+        if (statusFilter.value === 'ok' && t.status !== 'ok') return false;
+        if (statusFilter.value === 'missing' && t.status === 'ok') return false;
+        if (!q) return true;
+        return normalize(t.title).includes(q) || normalize(t.content).includes(q) || String(t.trackId).includes(q);
+      });
+      if (sortBy.value === 'desc') list.sort((a, b) => b.index - a.index);
+      else if (sortBy.value === 'chars') list.sort((a, b) => b.charCount - a.charCount);
+      else list.sort((a, b) => a.index - b.index);
+      return list;
+    }
+    function renderList() {
+      const list = getFiltered();
+      resultCount.textContent = `${list.length} 条结果`;
+      trackList.innerHTML = list.map(t => `
+        <button class="track-item ${String(t.trackId) === String(activeId) ? 'active' : ''}" data-id="${t.trackId}">
+          <strong>${String(t.index).padStart(3, '0')} · ${escapeHtml(t.title)}</strong>
+          <div class="track-meta">${t.status === 'ok' ? `${fmt.format(t.charCount)} 字 · ${duration(t.duration)}` : '无 AI 文稿'} · ID ${t.trackId}</div>
+        </button>
+      `).join('') || '<div class="empty">没有匹配结果</div>';
+      trackList.querySelectorAll('.track-item').forEach(btn => {
+        btn.addEventListener('click', () => selectTrack(btn.dataset.id));
+      });
+      if (!activeId && list.length) selectTrack(list.find(t => t.status === 'ok')?.trackId || list[0].trackId, false);
+    }
+    function selectTrack(id, updateHash = true) {
+      const track = data.tracks.find(t => String(t.trackId) === String(id));
+      if (!track) return;
+      activeId = track.trackId;
+      if (updateHash) history.replaceState(null, '', `#track-${track.index}`);
+      reader.innerHTML = `
+        <div class="badge">${track.status === 'ok' ? '已生成文稿' : '无 AI 文稿'}</div>
+        <h3>${String(track.index).padStart(3, '0')} · ${escapeHtml(track.title)}</h3>
+        <p class="muted">音频 ID：${track.trackId} · 时长：${duration(track.duration)} · <a href="${track.url}" target="_blank" rel="noopener">原音频链接</a></p>
+        ${track.status === 'ok'
+          ? `<div class="content">${escapeHtml(track.content)}</div>`
+          : `<div class="empty">这条音频未返回可用 aiDocUrl，因此没有生成文字稿。<br>${escapeHtml(track.error || '')}</div>`}
+      `;
+      renderList();
+      reader.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+    [search, statusFilter, sortBy].forEach(el => el.addEventListener('input', renderList));
+    const hashMatch = location.hash.match(/track-(\d+)/);
+    if (hashMatch) {
+      const idx = Number(hashMatch[1]);
+      const t = data.tracks.find(item => item.index === idx);
+      if (t) activeId = t.trackId;
+    }
+    renderList();
+    if (activeId) selectTrack(activeId, false);
+  </script>
+</body>
+</html>

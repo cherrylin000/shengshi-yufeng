@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>文稿阅读 · 盛世裕丰</title>
+  <meta name="description" content="单篇音频文字稿阅读页。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=Noto+Serif+SC:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --canvas: #f5f4ed;
+      --surface: #efeee5;
+      --ink: #1f1d18;
+      --muted: #6b665b;
+      --accent: #1B365D;
+      --hairline: #d4d1c5;
+      --serif: "Source Serif 4", "Noto Serif SC", "Songti SC", Georgia, serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --read-width: 42rem;
+      --aside-width: 15.5rem;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--serif);
+      color: var(--ink);
+      background: var(--canvas);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      width: 0;
+      background: var(--accent);
+      z-index: 50;
+      transition: width 0.08s linear;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid var(--hairline);
+      background: #f5f4ede6;
+      backdrop-filter: blur(12px);
+    }
+    .topbar-inner {
+      max-width: calc(var(--read-width) + var(--aside-width) + 8rem);
+      margin: 0 auto;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .back {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .back:hover { color: var(--accent); text-decoration: none; }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0 10px;
+      border: 1px solid var(--hairline);
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--surface); }
+    .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .shell {
+      max-width: calc(var(--read-width) + var(--aside-width) + 8rem);
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      display: grid;
+      grid-template-columns: var(--aside-width) minmax(0, 1fr);
+      column-gap: 48px;
+      row-gap: 0;
+      align-items: start;
+    }
+    .shell--no-aside {
+      max-width: calc(var(--read-width) + 4rem);
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .article-intro,
+    .article-body {
+      grid-column: 2;
+      min-width: 0;
+      max-width: var(--read-width);
+    }
+    .shell--no-aside .article-intro,
+    .shell--no-aside .article-body {
+      grid-column: 1;
+    }
+    .article-intro { padding-top: 40px; }
+    .outline-aside {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      position: sticky;
+      top: 72px;
+      padding-top: 40px;
+      align-self: start;
+    }
+    .outline-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 12px;
+    }
+    .toc {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 1px solid var(--hairline);
+    }
+    .toc li { border-bottom: 1px solid var(--hairline); }
+    .toc li:last-child { border-bottom: 0; }
+    .toc a {
+      display: block;
+      padding: 9px 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .toc a:hover { background: var(--surface); text-decoration: none; }
+    .toc a.active { background: var(--surface); color: var(--accent); }
+    .toc time {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .meta-card {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0;
+      margin: 0 0 20px;
+      border: 1px solid var(--hairline);
+      background: var(--hairline);
+      font-size: 13px;
+      line-height: 1.55;
+      color: #3a382f;
+    }
+    .meta-card > div {
+      padding: 12px 14px;
+      background: var(--surface);
+    }
+    .meta-card .meta-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 4px;
+    }
+    .meta-card .meta-value {
+      display: block;
+      margin: 0;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .folio {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      background: var(--surface);
+      color: var(--accent);
+    }
+    h1 {
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      font-weight: 500;
+      margin: 12px 0 16px;
+    }
+    .lede {
+      font-size: 18px;
+      line-height: 1.55;
+      color: #3a382f;
+      margin: 0 0 28px;
+      padding-left: 16px;
+      border-left: 3px solid var(--accent);
+    }
+    .byline {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0 0 14px;
+    }
+    .byline--end {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .lede--end {
+      margin-bottom: 16px;
+    }
+    .byline a { font-family: var(--mono); font-size: 12px; }
+
+    .section {
+      margin-top: 40px;
+      scroll-margin-top: 88px;
+    }
+    .section-title {
+      margin: 0 0 16px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .toc .toc-entry {
+      display: block;
+      padding: 9px 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+    .toc .toc-entry time {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .transcript {
+      font-size: 17px;
+      line-height: 1.72;
+      color: var(--ink);
+    }
+    .transcript p {
+      margin: 0 0 1.15em;
+      text-indent: 2em;
+    }
+    .transcript p:first-child { text-indent: 0; }
+    .transcript .notice {
+      text-indent: 0;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .pager {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--hairline);
+    }
+    .pager a {
+      flex: 1;
+      max-width: 48%;
+      padding: 14px 16px;
+      border: 1px solid var(--hairline);
+      background: var(--canvas);
+      text-decoration: none;
+      color: inherit;
+    }
+    .pager a:hover { background: var(--surface); text-decoration: none; }
+    .pager .dir {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .pager .title {
+      display: block;
+      font-size: 14px;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    .pager .next { text-align: right; margin-left: auto; }
+
+    .colophon {
+      margin-top: 36px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .state {
+      padding: 80px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .state h2 {
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--ink);
+      margin: 0 0 12px;
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: 1fr;
+        max-width: none;
+        row-gap: 0;
+      }
+      .article-intro,
+      .article-body,
+      .outline-aside {
+        grid-column: 1;
+        grid-row: auto;
+        max-width: none;
+      }
+      .outline-aside {
+        position: static;
+        margin: 0 0 8px;
+        padding-top: 0;
+        border-top: none;
+      }
+    }
+    @media (max-width: 520px) {
+      .shell, .topbar-inner { padding-left: 16px; padding-right: 16px; }
+      .transcript { font-size: 16px; }
+      .pager { flex-direction: column; }
+      .pager a { max-width: none; }
+      .meta-card { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back" href="index.html#library">← 返回文稿库</a>
+      <div class="topbar-actions">
+        <button type="button" class="icon-btn" id="prevBtn" title="上一篇">←</button>
+        <button type="button" class="icon-btn" id="nextBtn" title="下一篇">→</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app">
+    <p class="state">正在加载文稿…</p>
+  </main>
+
+  <script src="data.js"></script>
+  <script>
+    const data = window.SHENGSHI_DATA;
+    const app = document.getElementById('app');
+    const progress = document.getElementById('progress');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    const fmt = new Intl.NumberFormat('zh-CN');
+    let currentTrack = null;
+    let tocObserver = null;
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
+    }
+
+    function duration(seconds) {
+      const s = Number(seconds || 0);
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function splitParagraphs(text) {
+      const raw = String(text || '').trim();
+      if (!raw) return [];
+      const chunks = raw.includes('\n\n')
+        ? raw.split(/\n{2,}/)
+        : raw.split(/\n/);
+      return chunks.map(p => p.replace(/\n/g, '').trim()).filter(Boolean);
+    }
+
+    function resolveTrack() {
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id');
+      const index = params.get('index');
+      const hash = location.hash.replace(/^#/, '');
+      if (id) return data.tracks.find(t => String(t.trackId) === String(id));
+      if (index) return data.tracks.find(t => t.index === Number(index));
+      if (hash) {
+        if (/^\d+$/.test(hash)) {
+          const n = Number(hash);
+          return data.tracks.find(t => t.index === n) || data.tracks.find(t => String(t.trackId) === hash);
+        }
+        return data.tracks.find(t => String(t.trackId) === hash);
+      }
+      return data.tracks.find(t => t.status === 'ok') || data.tracks[0];
+    }
+
+    function neighborTracks(track) {
+      const readable = data.tracks.filter(t => t.status === 'ok');
+      const i = readable.findIndex(t => t.trackId === track.trackId);
+      return {
+        prev: i > 0 ? readable[i - 1] : null,
+        next: i >= 0 && i < readable.length - 1 ? readable[i + 1] : null
+      };
+    }
+
+    function pageUrl(track) {
+      return `article.html?index=${track.index}`;
+    }
+
+    function renderMetaCard(track) {
+      return `
+        <div class="meta-card" role="group" aria-label="本篇元信息">
+          <div><span class="meta-label">序号</span><span class="meta-value">${String(track.index).padStart(3, '0')} / ${data.meta.trackCount}</span></div>
+          <div><span class="meta-label">字数</span><span class="meta-value">${track.status === 'ok' ? fmt.format(track.charCount) + ' 字' : '—'}</span></div>
+          <div><span class="meta-label">时长</span><span class="meta-value">${duration(track.duration)}</span></div>
+          <div><span class="meta-label">音频 ID</span><span class="meta-value">${track.trackId}</span></div>
+        </div>
+      `;
+    }
+
+    function renderTranscript(track) {
+      if (track.status !== 'ok' || !track.content) {
+        const hint = (track.outline || []).length
+          ? '本篇暂无可用全文 ASR 文稿；上方章节速览来自喜马拉雅 Show Notes 预览，仅供检索与粗对齐。'
+          : (track.error || '本篇暂无可用全文文字稿，请收听原音频。');
+        return `<div class="transcript"><p class="notice">${escapeHtml(hint)}</p></div>`;
+      }
+      const paras = splitParagraphs(track.content);
+      return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;
+    }
+
+    function renderOutline(track) {
+      const items = track.outline || [];
+      if (!items.length) return '';
+      return items.map(c => `
+        <li><span class="toc-entry"><time>${escapeHtml(c.time)}</time>${escapeHtml(c.title)}</span></li>
+      `).join('');
+    }
+
+    function renderPager(track) {
+      const { prev, next } = neighborTracks(track);
+      prevBtn.disabled = !prev;
+      nextBtn.disabled = !next;
+      prevBtn.onclick = () => prev && navigate(prev);
+      nextBtn.onclick = () => next && navigate(next);
+      if (!prev && !next) return '';
+      return `
+        <nav class="pager" aria-label="上下篇">
+          ${prev ? `<a href="${pageUrl(prev)}"><span class="dir">上一篇</span><span class="title">${String(prev.index).padStart(3, '0')} · ${escapeHtml(prev.title)}</span></a>` : '<span></span>'}
+          ${next ? `<a class="next" href="${pageUrl(next)}"><span class="dir">下一篇</span><span class="title">${String(next.index).padStart(3, '0')} · ${escapeHtml(next.title)}</span></a>` : ''}
+        </nav>
+      `;
+    }
+
+    function bindToc() {
+      if (tocObserver) tocObserver.disconnect();
+      const link = document.querySelector('.toc a[href="#transcript"]');
+      const target = document.getElementById('transcript');
+      if (!link || !target) return;
+      tocObserver = new IntersectionObserver(entries => {
+        link.classList.toggle('active', entries.some(e => e.isIntersecting));
+      }, { rootMargin: '-20% 0px -55% 0px', threshold: 0 });
+      tocObserver.observe(target);
+    }
+
+    function bindProgress() {
+      function update() {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        progress.style.width = max > 0 ? `${(doc.scrollTop / max) * 100}%` : '0%';
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    }
+
+    function navigate(track) {
+      history.pushState(null, '', pageUrl(track));
+      render(track);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function render(track) {
+      if (!track) {
+        app.innerHTML = `
+          <div class="state">
+            <h2>未找到文稿</h2>
+            <p>请检查链接中的 index 或 id 参数，或<a href="index.html#library">返回文稿库</a>选择一篇。</p>
+          </div>
+        `;
+        return;
+      }
+      currentTrack = track;
+      document.title = `${track.title} · 盛世裕丰文稿`;
+
+      const outlineToc = renderOutline(track);
+      const intro = track.intro
+        ? `<p class="lede lede--end">${escapeHtml(track.intro)}</p>`
+        : '';
+      const bylineEnd = intro ? '' : ' byline--end';
+      const transcriptNav = track.status === 'ok' && track.content
+        ? '<li><a href="#transcript">全文文字稿</a></li>'
+        : '';
+      const outlineHtml = outlineToc
+        ? `<nav class="outline-aside" aria-label="章节速览">
+            <p class="outline-label">章节速览</p>
+            <ul class="toc">${outlineToc}${transcriptNav}</ul>
+          </nav>`
+        : '';
+
+      app.innerHTML = `
+        <article class="shell${outlineToc ? '' : ' shell--no-aside'}">
+          <header class="article-intro">
+            <p class="folio">盛世裕丰 · 音频文稿 · ${escapeHtml(data.meta.albumTitle || '')}</p>
+            <span class="badge">${track.status === 'ok' ? '已生成文稿' : '预览 / 无全文'}</span>
+            <h1>${escapeHtml(track.title)}</h1>
+            ${renderMetaCard(track)}
+            <p class="byline${bylineEnd}">
+              ${escapeHtml(data.meta.author || '盛世裕丰')} ·
+              <a href="${track.url}" target="_blank" rel="noopener">喜马拉雅原音频 ↗</a>
+            </p>
+            ${intro}
+          </header>
+
+          ${outlineHtml}
+
+          <div class="article-body">
+            <section class="section" id="transcript-section">
+              <h2 class="section-title">全文文字稿（ASR）</h2>
+              ${renderTranscript(track)}
+            </section>
+
+            ${renderPager(track)}
+
+            <p class="colophon">说明：文字稿来自公开页面 AI/ASR，可能存在错字与断句问题；本页为学习整理，不构成投资建议。</p>
+          </div>
+        </article>
+      `;
+
+      bindToc();
+      bindProgress();
+    }
+
+    window.addEventListener('popstate', () => render(resolveTrack()));
+    render(resolveTrack());
+  </script>
+</body>
+</html>

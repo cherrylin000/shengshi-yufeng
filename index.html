@@ -1000,7 +1000,7 @@
     let activePreviewIndex = null;
 
     function articleUrl(track) {
-      return `article.html?index=${track.index}`;
+      return `content/article.html?index=${track.index}`;
     }
 
     const SYSTEM_FLOW_OVERVIEW = [
@@ -1243,9 +1243,9 @@
         if (!m) return;
         const track = byId.get(m[1]);
         if (!track) {
-          a.href = `article.html?id=${m[1]}`;
+          a.href = `content/article.html?id=${m[1]}`;
         } else {
-          a.href = `article.html?index=${track.index}`;
+          a.href = `content/article.html?index=${track.index}`;
           const label = a.textContent.trim();
           if (!/^\d{3}\s*·\s*/.test(label)) {
             a.textContent = `${String(track.index).padStart(3, '0')} · ${label}`;
@@ -1254,7 +1254,7 @@
         a.removeAttribute('target');
         a.removeAttribute('rel');
       });
-      root.querySelectorAll('a[href*="article.html?index="]').forEach(a => {
+      root.querySelectorAll('a[href*="content/article.html?index="]').forEach(a => {
         const m = a.getAttribute('href')?.match(/index=(\d+)/);
         if (!m) return;
         const label = a.textContent.trim();
@@ -1465,7 +1465,7 @@
     [search, statusFilter, sortBy].forEach(el => el.addEventListener('input', renderList));
     const hashMatch = location.hash.match(/track-(\d+)/);
     if (hashMatch) {
-      location.replace(`article.html?index=${hashMatch[1]}`);
+      location.replace(`content/article.html?index=${hashMatch[1]}`);
     }
     try {
       renderList();

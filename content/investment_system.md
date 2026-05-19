@@ -28,10 +28,10 @@
 
 代表文稿：
 
-- [086 · 20221125普通人正确的投资方法，低估分散轮动](article.html?index=86)
-- [256 · 20241115做股东，吃分红，攒股权，等馈赠](article.html?index=256)
-- [319 · 20250622投资框架（值得多听几遍）](article.html?index=319)
-- [352 · 20260124换芯做股东，攒股投资也是修行和取经的过程](article.html?index=352)
+- [086 · 20221125普通人正确的投资方法，低估分散轮动](content/article.html?index=86)
+- [256 · 20241115做股东，吃分红，攒股权，等馈赠](content/article.html?index=256)
+- [319 · 20250622投资框架（值得多听几遍）](content/article.html?index=319)
+- [352 · 20260124换芯做股东，攒股投资也是修行和取经的过程](content/article.html?index=352)
 
 ### 2. 股权是真财富，现金会被时间稀释
 
@@ -41,10 +41,10 @@
 
 代表文稿：
 
-- [089 · 20221201投资需要不断思考，不断践行](article.html?index=89)
-- [090 · 20221203寻找变态低估和高股息的投资标的](article.html?index=90)
-- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](article.html?index=363)
-- [370 · 20260501.mp3](article.html?index=370)
+- [089 · 20221201投资需要不断思考，不断践行](content/article.html?index=89)
+- [090 · 20221203寻找变态低估和高股息的投资标的](content/article.html?index=90)
+- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](content/article.html?index=363)
+- [370 · 20260501.mp3](content/article.html?index=370)
 
 ### 3. 投资系统比单个标的更重要
 
@@ -62,11 +62,11 @@
 
 代表文稿：
 
-- [009 · 信愿行闻思大师的投资系统和仓位配置](article.html?index=9)
-- [012 · 9月4日解读投资系统](article.html?index=12)
-- [014 · 盛世2020.9.10浅谈投资系统](article.html?index=14)
-- [280 · 20241223构建三低一高的投资系统](article.html?index=280)
-- [372 · 20260509.mp3](article.html?index=372)
+- [009 · 信愿行闻思大师的投资系统和仓位配置](content/article.html?index=9)
+- [012 · 9月4日解读投资系统](content/article.html?index=12)
+- [014 · 盛世2020.9.10浅谈投资系统](content/article.html?index=14)
+- [280 · 20241223构建三低一高的投资系统](content/article.html?index=280)
+- [372 · 20260509.mp3](content/article.html?index=372)
 
 ## 二、选股框架：三低一高 + 能活能分红
 
@@ -85,11 +85,11 @@
 
 代表文稿：
 
-- [024 · 19年12月7日三低一高的投资逻辑和孩子财商教育](article.html?index=24)
-- [061 · 20220212盛世老师-02.mp3](article.html?index=61)
-- [090 · 20221203寻找变态低估和高股息的投资标的](article.html?index=90)
-- [176 · 20240128实业投资，耐心等待。远离热门股，回归常识规律](article.html?index=176)
-- [280 · 20241223构建三低一高的投资系统](article.html?index=280)
+- [024 · 19年12月7日三低一高的投资逻辑和孩子财商教育](content/article.html?index=24)
+- [061 · 20220212盛世老师-02.mp3](content/article.html?index=61)
+- [090 · 20221203寻找变态低估和高股息的投资标的](content/article.html?index=90)
+- [176 · 20240128实业投资，耐心等待。远离热门股，回归常识规律](content/article.html?index=176)
+- [280 · 20241223构建三低一高的投资系统](content/article.html?index=280)
 
 ### 2. 优先买“当下已经便宜”，不靠预测未来
 
@@ -107,10 +107,10 @@
 
 代表文稿：
 
-- [086 · 20221125普通人正确的投资方法，低估分散轮动](article.html?index=86)
-- [125 · 20230819企业的估值](article.html?index=125)
-- [178 · 20240204聊市盈率安全边际](article.html?index=178)
-- [183 · 20240402投资的本分，好价格比好企业更重要](article.html?index=183)
+- [086 · 20221125普通人正确的投资方法，低估分散轮动](content/article.html?index=86)
+- [125 · 20230819企业的估值](content/article.html?index=125)
+- [178 · 20240204聊市盈率安全边际](content/article.html?index=178)
+- [183 · 20240402投资的本分，好价格比好企业更重要](content/article.html?index=183)
 
 ### 3. 偏好的资产类型
 
@@ -130,13 +130,13 @@
 
 代表文稿：
 
-- [054 · 20211212盛世老师.mp3](article.html?index=54)
-- [067 · 20220405盛世老师.mp3](article.html?index=67)
-- [073 · 20220426接上回，如何做好投资](article.html?index=73)
-- [190 · 20240622啤酒行业，银行业，收息攒股复利前行](article.html?index=190)
-- [209 · 20240903聊银行，保险，再谈轮动](article.html?index=209)
-- [252 · 20241111聊聊中信金融](article.html?index=252)
-- [325 · 20250719股票投资的战略思维★](article.html?index=325)
+- [054 · 20211212盛世老师.mp3](content/article.html?index=54)
+- [067 · 20220405盛世老师.mp3](content/article.html?index=67)
+- [073 · 20220426接上回，如何做好投资](content/article.html?index=73)
+- [190 · 20240622啤酒行业，银行业，收息攒股复利前行](content/article.html?index=190)
+- [209 · 20240903聊银行，保险，再谈轮动](content/article.html?index=209)
+- [252 · 20241111聊聊中信金融](content/article.html?index=252)
+- [325 · 20250719股票投资的战略思维★](content/article.html?index=325)
 
 ## 三、估值框架：安全边际来自“价格足够低”
 
@@ -155,9 +155,9 @@
 
 代表文稿：
 
-- [125 · 20230819企业的估值](article.html?index=125)
-- [178 · 20240204聊市盈率安全边际](article.html?index=178)
-- [241 · 20241027塞思卡拉曼（安全边际）](article.html?index=241)
+- [125 · 20230819企业的估值](content/article.html?index=125)
+- [178 · 20240204聊市盈率安全边际](content/article.html?index=178)
+- [241 · 20241027塞思卡拉曼（安全边际）](content/article.html?index=241)
 
 ### 2. 股息率是重要估值锚，但不能单看
 
@@ -173,10 +173,10 @@
 
 代表文稿：
 
-- [076 · 20220701企业的股息分红比例、股息增长率、股息稳定性](article.html?index=76)
-- [096 · 20230131再谈复利](article.html?index=96)
-- [180 · 20240214归纳和演绎投资法，塞斯卡拉曼，行业周期高低投资](article.html?index=180)
-- [372 · 20260509.mp3](article.html?index=372)
+- [076 · 20220701企业的股息分红比例、股息增长率、股息稳定性](content/article.html?index=76)
+- [096 · 20230131再谈复利](content/article.html?index=96)
+- [180 · 20240214归纳和演绎投资法，塞斯卡拉曼，行业周期高低投资](content/article.html?index=180)
+- [372 · 20260509.mp3](content/article.html?index=372)
 
 ### 3. 月线和周期是辅助，不是短线技术
 
@@ -191,11 +191,11 @@
 
 代表文稿：
 
-- [001 · 看月线分享大师说投资认知](article.html?index=1)
-- [071 · 20220423谈次新股和股市的一些看法](article.html?index=71)
-- [146 · 20230906周期](article.html?index=146)
-- [205 · 20240822股市市场层面的周期轮动策略](article.html?index=205)
-- [228 · 20241011月线图看大做小谈投资逻辑要有大局观](article.html?index=228)
+- [001 · 看月线分享大师说投资认知](content/article.html?index=1)
+- [071 · 20220423谈次新股和股市的一些看法](content/article.html?index=71)
+- [146 · 20230906周期](content/article.html?index=146)
+- [205 · 20240822股市市场层面的周期轮动策略](content/article.html?index=205)
+- [228 · 20241011月线图看大做小谈投资逻辑要有大局观](content/article.html?index=228)
 
 ## 四、买入框架：低估区分批买，不猜最低点
 
@@ -232,10 +232,10 @@
 
 代表文稿：
 
-- [087 · 20221127谈长期投资的收益率和均值回归](article.html?index=87)
-- [175 · 20240122回顾经历，投资中认知和品性最重要](article.html?index=175)
-- [177 · 20240203股市大跌朋友来访，急不得还得复利前行](article.html?index=177)
-- [325 · 20250719股票投资的战略思维★](article.html?index=325)
+- [087 · 20221127谈长期投资的收益率和均值回归](content/article.html?index=87)
+- [175 · 20240122回顾经历，投资中认知和品性最重要](content/article.html?index=175)
+- [177 · 20240203股市大跌朋友来访，急不得还得复利前行](content/article.html?index=177)
+- [325 · 20250719股票投资的战略思维★](content/article.html?index=325)
 
 ## 五、持有框架：用分红攒股，形成复利发动机
 
@@ -265,12 +265,12 @@
 
 代表文稿：
 
-- [061 · 20220212盛世老师-02.mp3](article.html?index=61)
-- [096 · 20230131再谈复利](article.html?index=96)
-- [097 · 20230201复利的威力](article.html?index=97)
-- [173 · 20240106股权就是财富，复利，周期，轮动](article.html?index=173)
-- [262 · 20241124 好好攒股](article.html?index=262)
-- [270 · 20241206复利的威力](article.html?index=270)
+- [061 · 20220212盛世老师-02.mp3](content/article.html?index=61)
+- [096 · 20230131再谈复利](content/article.html?index=96)
+- [097 · 20230201复利的威力](content/article.html?index=97)
+- [173 · 20240106股权就是财富，复利，周期，轮动](content/article.html?index=173)
+- [262 · 20241124 好好攒股](content/article.html?index=262)
+- [270 · 20241206复利的威力](content/article.html?index=270)
 
 ### 3. 家庭资产要变成现金流管道
 
@@ -286,10 +286,10 @@
 
 代表文稿：
 
-- [271 · 20241207投资的真正含义](article.html?index=271)
-- [272 · 20241208打造自己的被动收入管道](article.html?index=272)
-- [345 · 20251206不是一次富，而是一直富！](article.html?index=345)
-- [362 · 20260307投资回归第一性原理，回归实业思维，攒股传家](article.html?index=362)
+- [271 · 20241207投资的真正含义](content/article.html?index=271)
+- [272 · 20241208打造自己的被动收入管道](content/article.html?index=272)
+- [345 · 20251206不是一次富，而是一直富！](content/article.html?index=345)
+- [362 · 20260307投资回归第一性原理，回归实业思维，攒股传家](content/article.html?index=362)
 
 ## 六、轮动框架：不是短炒，而是股权再配置
 
@@ -328,12 +328,12 @@
 
 代表文稿：
 
-- [068 · 20220411A股神华港股神华是否轮动mp3](article.html?index=68)
-- [094 · 20221225投资的基础逻辑，再谈轮动](article.html?index=94)
-- [181 · 20240225轮动时机和方式方法](article.html?index=181)
-- [185 · 20240425细说轮动](article.html?index=185)
-- [205 · 20240822股市市场层面的周期轮动策略](article.html?index=205)
-- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](article.html?index=363)
+- [068 · 20220411A股神华港股神华是否轮动mp3](content/article.html?index=68)
+- [094 · 20221225投资的基础逻辑，再谈轮动](content/article.html?index=94)
+- [181 · 20240225轮动时机和方式方法](content/article.html?index=181)
+- [185 · 20240425细说轮动](content/article.html?index=185)
+- [205 · 20240822股市市场层面的周期轮动策略](content/article.html?index=205)
+- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](content/article.html?index=363)
 
 ## 七、组合与风控：低估、分散、闲钱、无杠杆
 
@@ -353,9 +353,9 @@
 
 代表文稿：
 
-- [014 · 盛世2020.9.10浅谈投资系统](article.html?index=14)
-- [087 · 20221127谈长期投资的收益率和均值回归](article.html?index=87)
-- [173 · 20240106股权就是财富，复利，周期，轮动](article.html?index=173)
+- [014 · 盛世2020.9.10浅谈投资系统](content/article.html?index=14)
+- [087 · 20221127谈长期投资的收益率和均值回归](content/article.html?index=87)
+- [173 · 20240106股权就是财富，复利，周期，轮动](content/article.html?index=173)
 
 ### 2. 不用杠杆，不用急钱
 
@@ -365,9 +365,9 @@
 
 代表文稿：
 
-- [175 · 20240122回顾经历，投资中认知和品性最重要](article.html?index=175)
-- [177 · 20240203股市大跌朋友来访，急不得还得复利前行](article.html?index=177)
-- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](article.html?index=363)
+- [175 · 20240122回顾经历，投资中认知和品性最重要](content/article.html?index=175)
+- [177 · 20240203股市大跌朋友来访，急不得还得复利前行](content/article.html?index=177)
+- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](content/article.html?index=363)
 
 ### 3. 警惕周期高点的高股息陷阱
 
@@ -384,9 +384,9 @@
 
 代表文稿：
 
-- [146 · 20230906周期](article.html?index=146)
-- [180 · 20240214归纳和演绎投资法，塞斯卡拉曼，行业周期高低投资](article.html?index=180)
-- [304 · 20250413周期性行业的解读，投资的本源](article.html?index=304)
+- [146 · 20230906周期](content/article.html?index=146)
+- [180 · 20240214归纳和演绎投资法，塞斯卡拉曼，行业周期高低投资](content/article.html?index=180)
+- [304 · 20250413周期性行业的解读，投资的本源](content/article.html?index=304)
 
 ### 4. 牛市也要保留现金和再平衡能力
 
@@ -394,8 +394,8 @@
 
 代表文稿：
 
-- [345 · 20251206不是一次富，而是一直富！](article.html?index=345)
-- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](article.html?index=363)
+- [345 · 20251206不是一次富，而是一直富！](content/article.html?index=345)
+- [363 · 20260314攒股收息做时间的朋友，低估轮动行稳致远](content/article.html?index=363)
 
 ## 八、心法与训练：投资是一场认知和品性的修行
 
@@ -411,8 +411,8 @@
 
 代表文稿：
 
-- [009 · 信愿行闻思大师的投资系统和仓位配置](article.html?index=9)
-- [352 · 20260124换芯做股东，攒股投资也是修行和取经的过程](article.html?index=352)
+- [009 · 信愿行闻思大师的投资系统和仓位配置](content/article.html?index=9)
+- [352 · 20260124换芯做股东，攒股投资也是修行和取经的过程](content/article.html?index=352)
 
 ### 2. 普通人最大敌人不是市场，而是自己
 
@@ -430,10 +430,10 @@
 
 代表文稿：
 
-- [001 · 看月线分享大师说投资认知](article.html?index=1)
-- [011 · 8月28日浅论新韭菜和正确的投资观](article.html?index=11)
-- [080 · 20220728像施洛斯一样相信资产的力量知止而后得.mp3](article.html?index=80)
-- [175 · 20240122回顾经历，投资中认知和品性最重要](article.html?index=175)
+- [001 · 看月线分享大师说投资认知](content/article.html?index=1)
+- [011 · 8月28日浅论新韭菜和正确的投资观](content/article.html?index=11)
+- [080 · 20220728像施洛斯一样相信资产的力量知止而后得.mp3](content/article.html?index=80)
+- [175 · 20240122回顾经历，投资中认知和品性最重要](content/article.html?index=175)
 
 ### 3. 学习路径
 
@@ -449,10 +449,10 @@
 
 代表文稿：
 
-- [024 · 19年12月7日三低一高的投资逻辑和孩子财商教育](article.html?index=24)
-- [053 · 20211209盛世老师.mp3](article.html?index=53)
-- [241 · 20241027塞思卡拉曼（安全边际）](article.html?index=241)
-- [263 · 20241125读西格尔教授（股市长线法宝）](article.html?index=263)
+- [024 · 19年12月7日三低一高的投资逻辑和孩子财商教育](content/article.html?index=24)
+- [053 · 20211209盛世老师.mp3](content/article.html?index=53)
+- [241 · 20241027塞思卡拉曼（安全边际）](content/article.html?index=241)
+- [263 · 20241125读西格尔教授（股市长线法宝）](content/article.html?index=263)
 
 <!-- split:macro -->
 
@@ -470,9 +470,9 @@
 
 代表文稿：
 
-- [309 · 20250525货币政策对投资的影响](article.html?index=309)
-- [365 · 20260328把底层逻辑、第一性原理给弄清楚、弄明白，这样我们的人生才能幸福](article.html?index=365)
-- [370 · 20260501.mp3](article.html?index=370)
+- [309 · 20250525货币政策对投资的影响](content/article.html?index=309)
+- [365 · 20260328把底层逻辑、第一性原理给弄清楚、弄明白，这样我们的人生才能幸福](content/article.html?index=365)
+- [370 · 20260501.mp3](content/article.html?index=370)
 
 <!-- split:checklist -->
 

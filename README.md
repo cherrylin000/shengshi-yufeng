@@ -4,7 +4,7 @@
 
 ## 在线浏览
 
-本仓库可启用 GitHub Pages（**仓库根目录**为站点根目录）。
+本仓库可启用 GitHub Pages（**仓库根目录**为站点根目录）。根目录仅保留 `index.html` 作为默认首页；单篇文稿页位于 `content/article.html`，站内链接已统一指向该路径。
 
 - [投资体系与文稿库](index.html)
 
@@ -13,7 +13,8 @@
 ## 目录结构
 
 ```
-├── index.html / article.html / data.js   # 静态站点（可部署）
+├── index.html / data.js                  # 静态站点入口与数据（可部署）
+├── content/article.html                  # 单篇文稿阅读页
 ├── content/                              # 专辑文稿与 investment_system.md
 └── scripts/
     ├── site/                             # 构建 data.js、体系链接
@@ -42,7 +43,7 @@ python scripts/site/enrich_data.py
 # 从 API 拉取发布时间并写入全项目（约 4 分钟，支持 --resume）
 python scripts/site/sync_track_meta.py --resume --delay 0.4
 
-# 体系内代表文稿 → article.html（含 investment_system.md）
+# 体系内代表文稿 → content/article.html（含 investment_system.md）
 python scripts/site/link_system_articles.py
 python scripts/site/link_system_articles.py --labels-only
 

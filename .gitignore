@@ -1,1 +1,3 @@
 .migration-tmp/
+__pycache__/
+*.pyc

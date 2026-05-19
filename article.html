@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>文稿阅读 · 盛世裕丰</title>
+  <meta name="description" content="单篇音频文字稿阅读页。" />
+  <style>
+    :root {
+      --primary: #0066cc;
+      --primary-focus: #0071e3;
+      --ink: #1d1d1f;
+      --ink-muted-80: #333333;
+      --ink-muted-48: #7a7a7a;
+      --canvas: #ffffff;
+      --canvas-parchment: #f5f5f7;
+      --surface-pearl: #fafafc;
+      --surface-black: #000000;
+      --hairline: #e0e0e0;
+      --on-dark: #ffffff;
+      --font-display: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
+      --font-text: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", sans-serif;
+      --radius-pill: 9999px;
+      --radius-lg: 18px;
+      --radius-sm: 8px;
+      --read-width: 42rem;
+      --aside-width: 15.5rem;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--font-text);
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.47;
+      letter-spacing: -0.374px;
+      color: var(--ink);
+      background: var(--canvas);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0;
+      background: var(--primary);
+      z-index: 60;
+      transition: width 0.08s linear;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-inner {
+      max-width: calc(var(--read-width) + var(--aside-width) + 8rem);
+      margin: 0 auto;
+      padding: 0 24px;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: color-mix(in srgb, var(--canvas-parchment) 80%, transparent);
+      backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .back {
+      font-size: 14px;
+      letter-spacing: -0.224px;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+    .back:hover { text-decoration: none; }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: var(--ink);
+      color: var(--on-dark);
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: -0.224px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .icon-btn:active:not(:disabled) { transform: scale(0.95); }
+    .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; background: var(--ink-muted-48); }
+
+    .shell {
+      max-width: calc(var(--read-width) + var(--aside-width) + 8rem);
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      background: var(--canvas);
+      display: grid;
+      grid-template-columns: var(--aside-width) minmax(0, 1fr);
+      column-gap: 48px;
+      row-gap: 0;
+      align-items: start;
+    }
+    .shell--no-aside {
+      max-width: calc(var(--read-width) + 4rem);
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .article-intro,
+    .article-body {
+      grid-column: 2;
+      min-width: 0;
+      max-width: var(--read-width);
+    }
+    .shell--no-aside .article-intro,
+    .shell--no-aside .article-body {
+      grid-column: 1;
+    }
+    .article-intro { padding-top: 40px; }
+    .outline-aside {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      position: sticky;
+      top: 68px;
+      padding-top: 40px;
+      align-self: start;
+    }
+    .outline-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+      margin: 0 0 12px;
+    }
+    .toc {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .toc li { border-bottom: 1px solid var(--hairline); }
+    .toc li:last-child { border-bottom: 0; }
+    .toc a {
+      display: block;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.43;
+      letter-spacing: -0.224px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .toc a:hover { background: var(--canvas-parchment); text-decoration: none; }
+    .toc a.active { background: var(--canvas-parchment); color: var(--primary); }
+    .toc time {
+      display: block;
+      font-size: 12px;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+      margin-bottom: 2px;
+    }
+    .meta-card {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0 0 24px;
+      font-size: 14px;
+      line-height: 1.43;
+      color: var(--ink-muted-80);
+    }
+    .meta-card > div {
+      padding: 16px;
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+    }
+    .meta-card .meta-label {
+      display: block;
+      font-size: 12px;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+      margin: 0 0 6px;
+    }
+    .meta-card .meta-value {
+      display: block;
+      margin: 0;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: -0.12px;
+      padding: 6px 12px;
+      background: var(--surface-pearl);
+      color: var(--ink-muted-80);
+      border-radius: var(--radius-sm);
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: 0;
+      margin: 12px 0 20px;
+    }
+    .lede {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 400;
+      line-height: 1.47;
+      letter-spacing: 0.196px;
+      color: var(--ink-muted-80);
+      margin: 0 0 32px;
+      padding: 0;
+      border: 0;
+    }
+    .byline {
+      font-size: 14px;
+      line-height: 1.43;
+      color: var(--ink-muted-48);
+      margin: 0 0 14px;
+    }
+    .byline--end {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .lede--end { margin-bottom: 16px; }
+    .byline a { font-size: 14px; }
+
+    .section {
+      margin-top: 48px;
+      scroll-margin-top: 76px;
+    }
+    .section-title {
+      margin: 0 0 20px;
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.19;
+      letter-spacing: 0.231px;
+      color: var(--ink);
+    }
+    .toc .toc-entry {
+      display: block;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.43;
+      color: var(--ink);
+    }
+    .toc .toc-entry time {
+      display: block;
+      font-size: 12px;
+      color: var(--ink-muted-48);
+      margin-bottom: 2px;
+    }
+
+    .transcript {
+      font-size: 17px;
+      line-height: 1.47;
+      letter-spacing: -0.374px;
+      color: var(--ink);
+    }
+    .transcript p {
+      margin: 0 0 1.15em;
+      text-indent: 2em;
+    }
+    .transcript p:first-child { text-indent: 0; }
+    .transcript .notice {
+      text-indent: 0;
+      padding: 20px;
+      background: var(--canvas-parchment);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      font-size: 17px;
+      line-height: 1.47;
+      color: var(--ink-muted-48);
+    }
+
+    .pager {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--hairline);
+    }
+    .pager a {
+      flex: 1;
+      max-width: 48%;
+      padding: 16px 18px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      background: var(--canvas);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s ease;
+    }
+    .pager a:hover { background: var(--canvas-parchment); text-decoration: none; }
+    .pager .dir {
+      display: block;
+      font-size: 12px;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+      margin-bottom: 6px;
+    }
+    .pager .title {
+      display: block;
+      font-size: 14px;
+      line-height: 1.43;
+      font-weight: 600;
+      letter-spacing: -0.224px;
+    }
+    .pager .next { text-align: right; margin-left: auto; }
+
+    .colophon {
+      margin-top: 40px;
+      font-size: 12px;
+      line-height: 1.6;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+    }
+
+    .state {
+      padding: 80px 24px;
+      text-align: center;
+      color: var(--ink-muted-48);
+    }
+    .state h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 0 0 12px;
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: 1fr;
+        max-width: none;
+        row-gap: 0;
+      }
+      .article-intro,
+      .article-body,
+      .outline-aside {
+        grid-column: 1;
+        grid-row: auto;
+        max-width: none;
+      }
+      .outline-aside {
+        position: static;
+        margin: 0 0 8px;
+        padding-top: 0;
+        border-top: none;
+      }
+    }
+    @media (max-width: 520px) {
+      .shell, .topbar-inner { padding-left: 16px; padding-right: 16px; }
+      .transcript { font-size: 16px; }
+      .pager { flex-direction: column; }
+      .pager a { max-width: none; }
+      .meta-card { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="back" href="index.html#library">← 文稿库</a>
+      <div class="topbar-actions">
+        <button type="button" class="icon-btn" id="prevBtn" title="上一篇">上一篇</button>
+        <button type="button" class="icon-btn" id="nextBtn" title="下一篇">下一篇</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="app">
+    <p class="state">正在加载文稿…</p>
+  </main>
+
+  <script src="data.js"></script>
+  <script>
+    const data = window.SHENGSHI_DATA;
+    const app = document.getElementById('app');
+    const progress = document.getElementById('progress');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    const fmt = new Intl.NumberFormat('zh-CN');
+    let currentTrack = null;
+    let tocObserver = null;
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
+    }
+
+    function duration(seconds) {
+      const s = Number(seconds || 0);
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function splitParagraphs(text) {
+      const raw = String(text || '').trim();
+      if (!raw) return [];
+      const chunks = raw.includes('\n\n')
+        ? raw.split(/\n{2,}/)
+        : raw.split(/\n/);
+      return chunks.map(p => p.replace(/\n/g, '').trim()).filter(Boolean);
+    }
+
+    function resolveTrack() {
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id');
+      const index = params.get('index');
+      const hash = location.hash.replace(/^#/, '');
+      if (id) return data.tracks.find(t => String(t.trackId) === String(id));
+      if (index) return data.tracks.find(t => t.index === Number(index));
+      if (hash) {
+        if (/^\d+$/.test(hash)) {
+          const n = Number(hash);
+          return data.tracks.find(t => t.index === n) || data.tracks.find(t => String(t.trackId) === hash);
+        }
+        return data.tracks.find(t => String(t.trackId) === hash);
+      }
+      return data.tracks.find(t => t.status === 'ok') || data.tracks[0];
+    }
+
+    function neighborTracks(track) {
+      const readable = data.tracks.filter(t => t.status === 'ok');
+      const i = readable.findIndex(t => t.trackId === track.trackId);
+      return {
+        prev: i > 0 ? readable[i - 1] : null,
+        next: i >= 0 && i < readable.length - 1 ? readable[i + 1] : null
+      };
+    }
+
+    function pageUrl(track) {
+      return `article.html?index=${track.index}`;
+    }
+
+    function renderByline(track, extraClass = '') {
+      const author = escapeHtml(data.meta.author || '盛世裕丰');
+      let html = author;
+      if (track.publishedAt) html += ` · ${escapeHtml(track.publishedAt)}`;
+      if (track.playCount != null) html += ` · 🎧 ${fmt.format(track.playCount)}`;
+      html += ` · <a href="${track.url}" target="_blank" rel="noopener">喜马拉雅原音频 ↗</a>`;
+      return `<p class="byline${extraClass}">${html}</p>`;
+    }
+
+    function renderMetaCard(track) {
+      return `
+        <div class="meta-card" role="group" aria-label="本篇元信息">
+          <div><span class="meta-label">序号</span><span class="meta-value">${String(track.index).padStart(3, '0')} / ${data.meta.trackCount}</span></div>
+          <div><span class="meta-label">字数</span><span class="meta-value">${track.status === 'ok' ? fmt.format(track.charCount) + ' 字' : '—'}</span></div>
+          <div><span class="meta-label">时长</span><span class="meta-value">${duration(track.duration)}</span></div>
+          ${track.publishedAt ? `<div><span class="meta-label">发布时间</span><span class="meta-value">${escapeHtml(track.publishedAt)}</span></div>` : ''}
+          ${track.playCount != null ? `<div><span class="meta-label">播放量</span><span class="meta-value">${fmt.format(track.playCount)}</span></div>` : ''}
+          <div><span class="meta-label">音频 ID</span><span class="meta-value">${track.trackId}</span></div>
+        </div>
+      `;
+    }
+
+    function renderTranscript(track) {
+      if (track.status !== 'ok' || !track.content) {
+        const hint = (track.outline || []).length
+          ? '本篇暂无可用全文逐字稿；上方章节速览来自喜马拉雅AI速览，仅供检索与粗对齐。'
+          : (track.error || '本篇暂无可用全文文字稿，请收听原音频。');
+        return `<div class="transcript"><p class="notice">${escapeHtml(hint)}</p></div>`;
+      }
+      const paras = splitParagraphs(track.content);
+      return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;
+    }
+
+    function renderOutline(track) {
+      const items = track.outline || [];
+      if (!items.length) return '';
+      return items.map(c => `
+        <li><span class="toc-entry"><time>${escapeHtml(c.time)}</time>${escapeHtml(c.title)}</span></li>
+      `).join('');
+    }
+
+    function renderPager(track) {
+      const { prev, next } = neighborTracks(track);
+      prevBtn.disabled = !prev;
+      nextBtn.disabled = !next;
+      prevBtn.onclick = () => prev && navigate(prev);
+      nextBtn.onclick = () => next && navigate(next);
+      if (!prev && !next) return '';
+      return `
+        <nav class="pager" aria-label="上下篇">
+          ${prev ? `<a href="${pageUrl(prev)}"><span class="dir">上一篇</span><span class="title">${String(prev.index).padStart(3, '0')} · ${escapeHtml(prev.title)}</span></a>` : '<span></span>'}
+          ${next ? `<a class="next" href="${pageUrl(next)}"><span class="dir">下一篇</span><span class="title">${String(next.index).padStart(3, '0')} · ${escapeHtml(next.title)}</span></a>` : ''}
+        </nav>
+      `;
+    }
+
+    function bindToc() {
+      if (tocObserver) tocObserver.disconnect();
+      const link = document.querySelector('.toc a[href="#transcript"]');
+      const target = document.getElementById('transcript');
+      if (!link || !target) return;
+      tocObserver = new IntersectionObserver(entries => {
+        link.classList.toggle('active', entries.some(e => e.isIntersecting));
+      }, { rootMargin: '-20% 0px -55% 0px', threshold: 0 });
+      tocObserver.observe(target);
+    }
+
+    function bindProgress() {
+      function update() {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        progress.style.width = max > 0 ? `${(doc.scrollTop / max) * 100}%` : '0%';
+      }
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    }
+
+    function navigate(track) {
+      history.pushState(null, '', pageUrl(track));
+      render(track);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function render(track) {
+      if (!track) {
+        app.innerHTML = `
+          <div class="state">
+            <h2>未找到文稿</h2>
+            <p>请检查链接中的 index 或 id 参数，或<a href="index.html#library">返回文稿库</a>选择一篇。</p>
+          </div>
+        `;
+        return;
+      }
+      currentTrack = track;
+      document.title = `${track.title} · 盛世裕丰文稿`;
+
+      const outlineToc = renderOutline(track);
+      const intro = track.intro
+        ? `<p class="lede lede--end">${escapeHtml(track.intro)}</p>`
+        : '';
+      const bylineEnd = intro ? '' : ' byline--end';
+      const outlineHtml = outlineToc
+        ? `<nav class="outline-aside" aria-label="章节速览">
+            <p class="outline-label">章节速览</p>
+            <ul class="toc">${outlineToc}</ul>
+          </nav>`
+        : '';
+
+      app.innerHTML = `
+        <article class="shell${outlineToc ? '' : ' shell--no-aside'}">
+          <header class="article-intro">
+            <span class="badge">${track.status === 'ok' ? '已生成文稿' : '预览 / 无全文'}</span>
+            <h1>${escapeHtml(track.title)}</h1>
+            ${renderMetaCard(track)}
+            ${renderByline(track, bylineEnd)}
+            ${intro}
+          </header>
+
+          ${outlineHtml}
+
+          <div class="article-body">
+            <section class="section" id="transcript-section">
+              <h2 class="section-title">全文文字稿</h2>
+              ${renderTranscript(track)}
+            </section>
+
+            ${renderPager(track)}
+
+            <p class="colophon">说明：文字稿来自公开页面，可能存在错字与断句问题；本页为学习整理，不构成投资建议。</p>
+          </div>
+        </article>
+      `;
+
+      bindToc();
+      bindProgress();
+    }
+
+    window.addEventListener('popstate', () => render(resolveTrack()));
+    render(resolveTrack());
+  </script>
+</body>
+</html>

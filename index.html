@@ -3,195 +3,1481 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>盛世裕丰老师投资体系与音频文稿</title>
-  <meta name="description" content="盛世裕丰投资体系与音频文稿：电脑端交互版、手机端全文版。" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=Noto+Serif+SC:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <title>盛世裕丰老师投资体系与音频文稿全集</title>
+  <meta name="description" content="盛世裕丰投资体系与文稿库：体系整理、全文检索、章节速览与独立阅读页。" />
+  <meta property="og:title" content="盛世裕丰老师投资体系与音频文稿全集" />
+  <meta property="og:description" content="从 317 份音频文稿中整理投资体系：三低一高、分红攒股、低估轮动、长期现金流。" />
+  <meta property="og:type" content="website" />
   <style>
     :root {
-      --canvas: #f5f4ed;
-      --surface: #efeee5;
-      --ink: #1f1d18;
-      --muted: #6b665b;
-      --accent: #1B365D;
-      --hairline: #d4d1c5;
-      --serif: "Source Serif 4", "Noto Serif SC", "Songti SC", Georgia, serif;
-      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --primary: #0066cc;
+      --primary-focus: #0071e3;
+      --primary-on-dark: #2997ff;
+      --ink: #1d1d1f;
+      --ink-muted-80: #333333;
+      --ink-muted-48: #7a7a7a;
+      --canvas: #ffffff;
+      --canvas-parchment: #f5f5f7;
+      --surface-pearl: #fafafc;
+      --surface-tile-1: #272729;
+      --hairline: #e0e0e0;
+      --divider-soft: #f0f0f0;
+      --on-dark: #ffffff;
+      --font-display: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
+      --font-text: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", sans-serif;
+      --radius-pill: 9999px;
+      --radius-lg: 18px;
+      --radius-sm: 8px;
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: var(--serif);
+      font-family: var(--font-text);
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.47;
+      letter-spacing: -0.374px;
       color: var(--ink);
       background: var(--canvas);
-      line-height: 1.55;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
-    .page { max-width: 920px; margin: 0 auto; padding: 0 28px 80px; }
-    .folio {
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { width: min(980px, calc(100% - 48px)); margin: 0 auto; }
+
+    .nav-shell { position: sticky; top: 0; z-index: 40; }
+    .nav {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 20px 0 14px;
-      border-bottom: 1px solid var(--hairline);
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--muted);
+      min-height: 44px;
+      padding: 0 22px;
+      background: #000000;
+      color: var(--on-dark);
     }
-    .tag {
-      display: inline-block;
-      padding: 3px 10px;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      background: var(--surface);
-      color: var(--accent);
+    .logo {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: -0.12px;
+      color: var(--on-dark);
     }
+    .logo em { font-style: normal; opacity: 0.72; }
+    .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .nav-links a {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: -0.12px;
+      line-height: 1;
+      color: var(--on-dark);
+      opacity: 0.88;
+      padding: 4px 0;
+      text-decoration: none;
+    }
+    .nav-links a:hover { opacity: 1; text-decoration: none; color: var(--on-dark); }
+
+    .hero {
+      padding: clamp(48px, 8vw, 80px) 0;
+      background: var(--canvas-parchment);
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+      gap: clamp(32px, 5vw, 64px);
+      align-items: start;
+    }
+    .hero-main, .hero-aside { padding: 0; }
     h1 {
-      font-size: clamp(42px, 7vw, 72px);
-      line-height: 1.06;
-      letter-spacing: -0.02em;
-      font-weight: 500;
-      margin: 20px 0 16px;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 5vw, 56px);
+      font-weight: 600;
+      line-height: 1.07;
+      letter-spacing: -0.28px;
+      margin: 0 0 16px;
       max-width: 14ch;
     }
-    h1 em { font-style: italic; color: var(--accent); }
-    .lede {
-      font-size: clamp(17px, 2.2vw, 20px);
-      line-height: 1.55;
-      color: #3a382f;
-      max-width: 42em;
-      margin: 0 0 32px;
+    .lead {
+      font-family: var(--font-display);
+      font-size: clamp(21px, 2.5vw, 28px);
+      font-weight: 400;
+      line-height: 1.14;
+      letter-spacing: 0.196px;
+      color: var(--ink-muted-80);
+      max-width: 28em;
+      margin: 0 0 28px;
     }
-    .metrics {
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 22px;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: -0.374px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn:hover { text-decoration: none; }
+    .btn.primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+    .btn.primary:focus-visible { outline: 2px solid var(--primary-focus); outline-offset: 2px; }
+
+    .quote {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 600;
+      line-height: 1.47;
+      letter-spacing: -0.374px;
+      margin: 0 0 12px;
+    }
+    .muted { color: var(--ink-muted-48); font-size: 14px; line-height: 1.43; letter-spacing: -0.224px; }
+    .stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0;
-      border: 1px solid var(--hairline);
-      background: var(--hairline);
-      margin-bottom: 40px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 24px;
     }
-    .metric {
+    .stat {
       background: var(--canvas);
-      padding: 18px 20px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      padding: 20px 18px;
     }
-    .metric strong {
+    .stat strong {
       display: block;
-      font-size: clamp(26px, 4vw, 34px);
-      font-weight: 500;
-      color: var(--accent);
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
       line-height: 1.1;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.28px;
+      color: var(--ink);
     }
-    .metric span {
+    .stat span {
       display: block;
       margin-top: 6px;
+      font-size: 12px;
+      line-height: 1;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+    }
+
+    section { padding: clamp(48px, 8vw, 80px) 0; }
+    #system-map { background: var(--canvas); }
+    #system { background: var(--canvas-parchment); }
+    #library { background: var(--canvas); }
+
+    #system-macro { background: var(--canvas); }
+    #system-checklist { background: var(--canvas-parchment); }
+    #system-diagram { background: var(--canvas); }
+    #system-boundary {
+      background: var(--canvas-parchment);
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+    .section-head--library { align-items: flex-start; }
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: -0.12px;
+      padding: 6px 12px;
+      background: var(--surface-pearl);
+      color: var(--ink-muted-80);
+      border-radius: var(--radius-lg);
+    }
+    .library-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .library-updated {
+      font-size: 12px;
+      line-height: 1.3;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+      white-space: nowrap;
+    }
+    .principle {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 18px;
+      min-height: 0;
+    }
+    .principle span {
+      flex-shrink: 0;
+      margin-bottom: 0;
+    }
+    .principle > div {
+      flex: 1;
+      min-width: 0;
+      padding-top: 4px;
+    }
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    h2 {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: 0;
+      margin: 0;
+    }
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .principle {
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      padding: 20px 18px;
+      min-height: 120px;
+      font-size: 14px;
+      line-height: 1.43;
+      letter-spacing: -0.224px;
+    }
+    .principle span {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--on-dark);
+      background: var(--primary);
+      border-radius: var(--radius-full, 50%);
+      margin-bottom: 12px;
+    }
+
+    .panel {
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+    }
+
+    .panel {
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+    }
+    .system {
+      padding: clamp(24px, 4vw, 40px);
+    }
+    .system h2, .system h3 { scroll-margin-top: 120px; }
+    .system h2 {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--hairline);
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 600;
+      line-height: 1.47;
+      letter-spacing: -0.374px;
+    }
+    .system h2:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+    .system h3 {
+      margin-top: 24px;
+      color: var(--ink);
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.19;
+      letter-spacing: 0.231px;
+    }
+    .system-table,
+    .system table {
+      width: 100%;
+      max-width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 20px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .system-table caption,
+    .system table caption {
+      caption-side: top;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.12px;
+      color: var(--ink-muted-48);
+      padding: 0 0 8px;
+    }
+    .system-table th,
+    .system-table td,
+    .system th,
+    .system td {
+      border: 1px solid var(--hairline);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .system-table th,
+    .system th {
+      background: var(--canvas-parchment);
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .system-table th:first-child,
+    .system-table td:first-child,
+    .system table th:first-child,
+    .system table td:first-child {
+      font-size: 14px;
+      white-space: nowrap;
+      width: 1%;
+      min-width: 5em;
+    }
+    .system-table td:first-child,
+    .system table td:first-child {
+      color: var(--ink-muted-48);
+    }
+    .system-table-title {
+      margin: 24px 0 8px;
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: 0.231px;
+      color: var(--ink);
+    }
+    .system-table-note {
+      margin: 0 0 16px;
+      font-size: 14px;
+      color: var(--ink-muted-48);
+    }
+    .system-table td a.system-module-link {
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .system-table td a.system-module-link:hover { text-decoration: underline; }
+    @media (max-width: 640px) {
+      .system-table,
+      .system table { display: block; overflow-x: auto; }
+    }
+
+    #systemBoundaryContent .system-boundary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(32px, 5vw, 56px);
+      margin-top: 4px;
+    }
+    #systemBoundaryContent .system-boundary-heading {
+      margin: 0 0 14px;
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.19;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    #systemBoundaryContent .system-boundary-list {
+      margin: 0;
+      padding-left: 1.15em;
+      list-style: disc;
+    }
+    #systemBoundaryContent .system-boundary-list li {
+      margin: 0 0 10px;
+      padding-left: 0.1em;
+      font-size: 17px;
+      line-height: 1.47;
+      letter-spacing: -0.37px;
+      color: var(--ink);
+    }
+    #systemBoundaryContent .system-boundary-list li:last-child {
+      margin-bottom: 0;
+    }
+    @media (max-width: 720px) {
+      #systemBoundaryContent .system-boundary-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+    }
+
+    .system blockquote {
+      margin: 20px 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 400;
+      line-height: 1.47;
+      letter-spacing: 0.196px;
+      color: var(--ink-muted-80);
+    }
+    .system pre {
+      white-space: pre-wrap;
+      background: var(--surface-tile-1);
+      color: var(--on-dark);
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.43;
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+    }
+    .system ol.system-enum-list {
+      list-style: none;
+      counter-reset: system-enum;
+      padding: 0;
+      margin: 16px 0;
+    }
+    .system ol.system-enum-list > li {
+      counter-increment: system-enum;
+      position: relative;
+      padding-left: 2.6em;
+      margin: 14px 0;
+    }
+    .system ol.system-enum-list > li::before {
+      content: "（" counter(system-enum) "）";
+      position: absolute;
+      left: 0;
+      font-size: 14px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .system ol.system-enum-list > li > p {
+      margin: 8px 0 0;
+      color: var(--ink-muted-80);
+      line-height: 1.47;
+    }
+    .system ol.system-enum-list > li > strong {
+      font-weight: 600;
+    }
+    .system ol.system-enum-list--plain > li > p {
+      display: none;
+    }
+    .system-flow {
+      margin: 24px 0 32px;
+      padding: 24px 20px;
+      border: 1px solid var(--hairline);
+      background: var(--canvas);
+      border-radius: var(--radius-lg);
+    }
+    .system-flow-title {
+      margin: 0 0 16px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.224px;
+      color: var(--ink-muted-48);
+    }
+    .system-flow-note {
+      margin: 16px 0 0;
+      font-size: 14px;
+      color: var(--ink-muted-48);
+      text-align: center;
+    }
+    .system-flow-track {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    .system-flow--overview .system-flow-track { max-width: 100%; }
+    @media (min-width: 900px) {
+      .system-flow--overview .system-flow-track {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+      }
+      .system-flow--overview .flow-node { flex: 1 1 108px; max-width: 132px; }
+      .system-flow--overview .flow-connector {
+        width: 18px;
+        height: 1px;
+        min-height: 1px;
+        flex: 0 0 18px;
+        margin: 0;
+      }
+      .system-flow--overview .flow-connector::after {
+        top: 50%;
+        bottom: auto;
+        left: auto;
+        right: -4px;
+        transform: translateY(-50%);
+        border: 5px solid transparent;
+        border-left-color: var(--accent);
+        border-top-color: transparent;
+      }
+    }
+    .flow-node {
+      padding: 12px 14px;
+      border: 1px solid var(--hairline);
+      background: var(--canvas);
+      text-align: center;
+      display: grid;
+      gap: 4px;
+    }
+    .flow-node--start { border-color: var(--accent); }
+    .flow-node--end {
+      background: var(--accent);
+      color: var(--canvas);
+      border-color: var(--accent);
+    }
+    .flow-node--end .flow-node-index { color: #b8c9de; }
+    .flow-node-index {
       font-family: var(--mono);
       font-size: 10px;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
       color: var(--muted);
     }
-    .entries {
+    .flow-node-label {
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 500;
+    }
+    .flow-connector {
+      align-self: center;
+      width: 1px;
+      height: 18px;
+      background: var(--accent);
+      position: relative;
+      margin: 3px auto;
+      flex-shrink: 0;
+    }
+    .flow-connector::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: var(--accent);
+    }
+
+    .library {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(380px, 420px) minmax(0, 1fr);
       gap: 0;
       border: 1px solid var(--hairline);
       background: var(--hairline);
+      align-items: start;
     }
-    .entry {
-      display: block;
-      padding: 28px 26px;
+    .tools {
+      padding: 16px;
       background: var(--canvas);
-      color: inherit;
-      text-decoration: none;
-      transition: background 0.2s ease;
+      position: sticky;
+      top: 88px;
+      max-height: calc(100vh - 100px);
+      display: flex;
+      flex-direction: column;
     }
-    .entry:hover { background: var(--surface); }
-    .entry .num {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--accent);
+.library-guide {
+      display: flex;
+      flex-direction: column;
+      padding: clamp(20px, 3vw, 28px);
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 18px;
+      min-height: 320px;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", sans-serif;
     }
-    .entry h2 {
-      font-size: 24px;
-      font-weight: 500;
-      margin: 10px 0 8px;
-      letter-spacing: -0.02em;
+    .library-guide h3 {
+      margin: 0 0 4px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.19;
+      letter-spacing: 0.231px;
+      color: #1d1d1f;
+      flex-shrink: 0;
     }
-    .entry p {
+    .library-guide-hint {
+      margin: 0 0 16px;
+      font-size: 12px;
+      line-height: 1.3;
+      letter-spacing: -0.12px;
+      color: #7a7a7a;
+      flex-shrink: 0;
+    }
+    .outline-preview-body {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .outline-preview-placeholder {
       margin: 0;
-      font-size: 15px;
-      line-height: 1.5;
-      color: #3a382f;
+      font-size: 14px;
+      line-height: 1.43;
+      letter-spacing: -0.224px;
+      color: #7a7a7a;
     }
-    .entry .arrow {
-      display: inline-block;
-      margin-top: 14px;
+    .outline-preview-title {
+      margin: 0 0 12px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.29;
+      letter-spacing: -0.224px;
+      color: #1d1d1f;
+    }
+    .outline-preview-toc {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .outline-preview-toc li {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+      line-height: 1.43;
+      letter-spacing: -0.224px;
+      color: #1d1d1f;
+    }
+    .outline-preview-toc li:last-child { border-bottom: 0; }
+    .outline-preview-toc time {
+      flex-shrink: 0;
+      min-width: 2.8em;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      color: #7a7a7a;
+    }
+    .outline-preview-note {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.43;
+      color: #7a7a7a;
+    }
+    .outline-preview-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: auto;
+      padding: 11px 22px;
+      min-height: 44px;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: -0.374px;
+      color: #ffffff;
+      background: #0066cc;
+      border: 0;
+      border-radius: 9999px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .outline-preview-btn:hover { text-decoration: none; color: #ffffff; }
+    .outline-preview-btn:active { transform: scale(0.98); }
+    .outline-preview-btn:focus-visible {
+      outline: 2px solid #0071e3;
+      outline-offset: 2px;
+    }
+    .outline-preview-btn.is-hidden { display: none; }
+    input, select {
+      width: 100%;
+      border: 1px solid var(--hairline);
+      padding: 11px 12px;
+      font: 400 14px/1.4 var(--mono);
+      background: var(--canvas);
+      color: var(--ink);
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary-focus);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-focus) 25%, transparent);
+    }
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding-right: 36px;
+      background-color: var(--canvas);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a7a7a' d='M1.4 1.4 6 6l4.6-4.6L12 3l-6 6-6-6z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 10px 6px;
+      cursor: pointer;
+    }
+    .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .track-list {
+      flex: 1;
+      min-height: 0;
+      max-height: none;
+      overflow: auto;
+      margin-top: 10px;
+      border-top: 1px solid var(--hairline);
+    }
+    .track-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      border-bottom: 1px solid var(--hairline);
+      background: transparent;
+      padding: 12px 14px;
+      cursor: pointer;
+      color: inherit;
+      font-family: inherit;
+      text-decoration: none;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .track-item:hover { background: #f5f5f7; text-decoration: none; }
+    .track-item.is-preview-active {
+      background: #f5f5f7;
+      box-shadow: inset 3px 0 0 #0066cc;
+    }
+    .track-item:focus-visible {
+      outline: 2px solid #0071e3;
+      outline-offset: -2px;
+    }
+    .track-item strong { display: block; line-height: 1.35; font-weight: 600; font-size: 14px; letter-spacing: -0.224px; }
+    .track-meta {
       font-family: var(--mono);
       font-size: 11px;
-      letter-spacing: 0.08em;
-      color: var(--accent);
+      color: var(--muted);
+      margin-top: 4px;
     }
-    .colophon {
-      margin-top: 36px;
-      padding-top: 16px;
+    .empty { padding: 36px; text-align: center; color: var(--muted); }
+    .footer {
+      padding: 36px 0 56px;
       border-top: 1px solid var(--hairline);
       font-size: 13px;
-      line-height: 1.6;
       color: var(--muted);
     }
-    @media (max-width: 720px) {
-      .page { padding: 0 18px 60px; }
-      .metrics, .entries { grid-template-columns: 1fr; }
+
+    @media (min-width: 1100px) {
+      .principles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      h1 { max-width: 14ch; }
+    }
+    @media (max-width: 1023px) {
+      .library {
+        grid-template-columns: 1fr;
+      }
+      .tools {
+        position: static;
+        max-height: none;
+      }
+      .track-list {
+        max-height: 52vh;
+      }
+    }
+    @media (max-width: 980px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       h1 { max-width: none; }
-      .folio { flex-wrap: wrap; }
+    }
+    @media (max-width: 620px) {
+      .wrap { width: min(100% - 24px, 1320px); }
+      .nav { flex-direction: column; align-items: flex-start; }
+      .hero { padding: 32px 0 28px; }
+      .stats, .principles, .filters { grid-template-columns: 1fr; }
+      .section-head { flex-direction: column; align-items: flex-start; }
+      .track-list { max-height: 45vh; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header class="folio">
-      <span>盛世裕丰 · 文稿库</span>
-      <span>GitHub Pages</span>
-    </header>
-
-    <div class="tag">Archive Entry</div>
-    <h1>投资体系与<em>音频文稿</em>全集</h1>
-    <p class="lede">从 317 份喜马拉雅音频文字稿中整理投资体系。提供<strong>电脑端交互版</strong>（体系检索、文稿库、独立阅读页）与<strong>手机端全文版</strong>（单页离线展开，适合小屏）。</p>
-
-    <div class="metrics">
-      <div class="metric"><strong>374</strong><span>音频总数</span></div>
-      <div class="metric"><strong>317</strong><span>可读文稿</span></div>
-      <div class="metric"><strong>283万+</strong><span>文稿字数</span></div>
-      <div class="metric"><strong>2</strong><span>网页版本</span></div>
-    </div>
-
-    <nav class="entries" aria-label="版本入口">
-      <a class="entry" href="./shengshi-yufeng/">
-        <span class="num">01 · Desktop</span>
-        <h2>电脑端 · 交互版</h2>
-        <p>宽屏布局：投资体系表格、文稿库检索、跳转独立阅读页。建议在电脑或平板横屏使用。</p>
-        <span class="arrow">进入电脑版 →</span>
-      </a>
-      <a class="entry" href="./shengshi-yufeng/all.html">
-        <span class="num">02 · Mobile</span>
-        <h2>手机端 · 全文版</h2>
-        <p>单页嵌入全部文稿，点击展开阅读，无 data.js 依赖。适合手机离线浏览与检索。</p>
-        <span class="arrow">进入手机版 →</span>
-      </a>
+  <header class="nav-shell">
+    <nav class="nav" aria-label="主导航">
+      <div class="logo">盛世裕丰 <em>· 投资体系</em></div>
+      <div class="nav-links">
+        <a href="#system-map">投资浓缩十原则</a>
+        <a href="#system">投资体系</a>
+        <a href="#system-macro">宏观</a>
+        <a href="#system-checklist">清单</a>
+        <a href="#system-diagram">结构图</a>
+        <a href="#system-boundary">边界</a>
+        <a href="#library">文稿库</a>
+      </div>
     </nav>
+  </header>
 
-    <p class="colophon">说明：文字稿来自公开页面 AI/ASR 数据，可能存在错字与断句问题；本页为学习整理，不构成投资建议。</p>
-  </div>
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-main">
+        <h1>投资体系与音频文稿全集</h1>
+        <p class="lead">三低一高、分红攒股、低估轮动、核心股权、长期现金流——从 317 份文稿中整理的可检索知识库。</p>
+        <div class="actions">
+          <a class="btn primary" href="#system">阅读投资体系</a>
+          <a class="btn" href="#library">搜索全部文稿</a>
+        </div>
+      </div>
+      <aside class="hero-aside">
+        <p class="quote">做股东，吃分红，攒股权，等馈赠。</p>
+        <p class="muted">317 份可用音频文字稿 · 可检索 · 可分享</p>
+        <div class="stats" id="stats"></div>
+      </aside>
+    </div>
+  </header>
+
+  <main>
+    <section id="system-map">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>投资浓缩十原则</h2>
+            <p class="muted">十条核心原则一览，再进入完整体系与全文文稿。</p>
+          </div>
+        </div>
+        <div class="principles" id="principles"></div>
+      </div>
+    </section>
+
+    <section id="system" class="system-section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>投资体系</h2>
+            <p class="muted">底层信念、选股、估值、买入、持有、轮动、风控与心法（第一至八章）。</p>
+          </div>
+        </div>
+        <article class="panel system" id="systemContent"></article>
+      </div>
+    </section>
+
+    <section id="system-macro" class="system-section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>宏观框架</h2>
+            <p class="muted">宏观是背景，不是短线指令。</p>
+          </div>
+        </div>
+        <article class="panel system" id="systemMacroContent"></article>
+      </div>
+    </section>
+
+    <section id="system-checklist" class="system-section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>可执行清单</h2>
+            <p class="muted">建立股票池、买入前、持有中、轮动与风控检查项。</p>
+          </div>
+        </div>
+        <article class="panel system" id="systemChecklistContent"></article>
+      </div>
+    </section>
+
+    <section id="system-diagram" class="system-section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>体系结构图</h2>
+            <p class="muted">从长期闲钱到可传承资产的完整闭环。</p>
+          </div>
+        </div>
+        <article class="panel system" id="systemDiagramContent"></article>
+      </div>
+    </section>
+
+    <section id="system-boundary" class="system-section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <h2>体系边界</h2>
+            <p class="muted">不追求什么、追求什么。</p>
+          </div>
+        </div>
+        <article class="panel system" id="systemBoundaryContent"></article>
+      </div>
+    </section>
+
+    <section id="library">
+      <div class="wrap">
+        <div class="section-head section-head--library">
+          <div>
+            <h2>全部音频文稿库</h2>
+            <p class="muted">标题与全文搜索 · 点击条目预览章节速览，确认后阅读全文</p>
+            <div class="library-meta">
+              <span class="badge" id="resultCount"></span>
+              <span class="library-updated">最近更新时间：2026/5/14</span>
+            </div>
+          </div>
+        </div>
+        <div class="library">
+          <aside class="panel tools">
+            <input id="search" type="search" placeholder="搜索：三低一高、分红、银行、轮动…" autocomplete="off" />
+            <div class="filters">
+              <select id="statusFilter" aria-label="文稿状态">
+                <option value="all">清除筛选</option>
+                <option value="transcript" selected>有逐字稿</option>
+                <option value="outline">有 AI 速览</option>
+                <option value="none">无文稿</option>
+              </select>
+              <select id="sortBy" aria-label="排序">
+                <option value="published" selected>按发布时间（由远及近）</option>
+                <option value="asc">按序号升序</option>
+                <option value="desc">按序号降序</option>
+                <option value="chars">按文稿字数</option>
+                <option value="plays">按播放量降序</option>
+              </select>
+            </div>
+            <div class="track-list" id="trackList" role="listbox" aria-label="文稿列表"><p class="empty">正在加载文稿列表…</p></div>
+          </aside>
+                    <div class="library-guide panel" aria-label="章节速览预览">
+            <h3>章节速览预览</h3>
+            <p class="library-guide-hint">点击左侧条目查看速览，确认后再阅读全文。</p>
+            <div class="outline-preview-body" id="outlinePreviewBody">
+              <p class="outline-preview-placeholder">点击左侧条目，预览该篇章节速览。</p>
+            </div>
+            <a class="outline-preview-btn is-hidden" id="outlinePreviewBtn" href="#">阅读全文</a>
+          </div>
+</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>说明：本页为电脑端文字稿整理与学习索引，不构成投资建议。ASR 文稿可能存在识别错误，请结合原音频理解。</p>
+    </div>
+  </footer>
+
+  <script src="data.js" id="dataScript"></script>
+  <script>
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
+    }
+
+    function showDataLoadError(message) {
+      const html = `<p class="empty">${escapeHtml(message)}</p>`;
+      ['trackList', 'systemContent', 'systemMacroContent', 'systemChecklistContent', 'systemDiagramContent', 'systemBoundaryContent', 'principles'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+      });
+      const statsEl = document.getElementById('stats');
+      if (statsEl) statsEl.innerHTML = html;
+      const rc = document.getElementById('resultCount');
+      if (rc) rc.textContent = '加载失败';
+    }
+
+    const data = window.SHENGSHI_DATA;
+    if (!data || !Array.isArray(data.tracks)) {
+      showDataLoadError(
+        '文稿库数据（data.js）未能加载。请用本地 HTTP 服务打开本页（在仓库根目录运行 python -m http.server），不要直接双击 HTML；并确认 data.js 与 index.html 在同一目录。'
+      );
+      throw new Error('SHENGSHI_DATA missing');
+    }
+
+    const stats = document.getElementById('stats');
+    const fmt = new Intl.NumberFormat('zh-CN');
+    stats.innerHTML = `
+      <div class="stat"><strong>${fmt.format(data.meta.trackCount)}</strong><span>音频总数</span></div>
+      <div class="stat"><strong>${fmt.format(data.meta.okCount)}</strong><span>可读文稿</span></div>
+      <div class="stat"><strong>${fmt.format(data.meta.charTotal)}</strong><span>文稿字数</span></div>
+      <div class="stat"><strong>${fmt.format(data.meta.missingCount)}</strong><span>无 AI 文稿</span></div>
+    `;
+    document.getElementById('principles').innerHTML = data.principles.map((p, i) => `
+      <div class="principle"><span>${i + 1}</span><div>${escapeHtml(p)}</div></div>
+    `).join('');
+
+    const search = document.getElementById('search');
+    const statusFilter = document.getElementById('statusFilter');
+    const sortBy = document.getElementById('sortBy');
+    const trackList = document.getElementById('trackList');
+    const resultCount = document.getElementById('resultCount');
+    const outlinePreviewBody = document.getElementById('outlinePreviewBody');
+    const outlinePreviewBtn = document.getElementById('outlinePreviewBtn');
+    let activePreviewIndex = null;
+
+    function articleUrl(track) {
+      return `article.html?index=${track.index}`;
+    }
+
+    const SYSTEM_FLOW_OVERVIEW = [
+      '底层信念', '选股·三低一高', '估值·安全边际', '买入·分批',
+      '持有·分红攒股', '轮动·再配置', '风控·分散', '心性·纪律'
+    ];
+    const SYSTEM_MODULE_NAV = [
+      { label: '底层信念', match: '底层信念' },
+      { label: '选股·三低一高', match: '选股' },
+      { label: '估值·安全边际', match: '估值' },
+      { label: '买入·分批', match: '买入' },
+      { label: '持有·分红攒股', match: '持有' },
+      { label: '轮动·再配置', match: '轮动' },
+      { label: '风控·分散', match: '组合与风控' },
+      { label: '心性·纪律', match: '心法' }
+    ];
+    function buildFlowFigure(title, steps, figId, extraClass = '') {
+      const nodes = steps.map((label, i) => {
+        const n = String(i + 1).padStart(2, '0');
+        const cls = ['flow-node', i === 0 && 'flow-node--start', i === steps.length - 1 && 'flow-node--end'].filter(Boolean).join(' ');
+        const connector = i < steps.length - 1 ? '<div class="flow-connector" aria-hidden="true"></div>' : '';
+        return `<div class="${cls}"><span class="flow-node-index">${n}</span><span class="flow-node-label">${escapeHtml(label)}</span></div>${connector}`;
+      }).join('');
+      return `<figure class="system-flow ${extraClass}" aria-labelledby="${figId}"><figcaption id="${figId}" class="system-flow-title">${escapeHtml(title)}</figcaption><div class="system-flow-track">${nodes}</div></figure>`;
+    }
+    function findHeading(root, text) {
+      return [...root.querySelectorAll('h2, h3')].find(h => h.textContent.includes(text));
+    }
+    function slugifyHeading(text) {
+      return String(text || '').trim()
+        .replace(/[：:、。，；？！\s]+/g, '-')
+        .replace(/[“”‘’（）()【】\[\]《》]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+    function findChapterHeading(root, keyword) {
+      return [...root.querySelectorAll('h2, h3')].find(h => {
+        const t = h.textContent.trim();
+        return /^[一二三四五六七八九十]+、/.test(t) && t.includes(keyword);
+      });
+    }
+    function ensureChapterIds(root) {
+      root.querySelectorAll('h2, h3').forEach(h => {
+        const t = h.textContent.trim();
+        if (/^[一二三四五六七八九十]+、/.test(t) && !h.id) {
+          h.id = slugifyHeading(t);
+        }
+      });
+    }
+    function linkSystemOverviewModules(root) {
+      if (!root) return;
+      ensureChapterIds(root);
+      const title = [...root.querySelectorAll('.system-table-title, h3')].find(
+        el => el.textContent.trim() === '体系全景流程'
+      );
+      if (!title) return;
+      let table = title.nextElementSibling;
+      while (table && table.tagName !== 'TABLE') {
+        table = table.nextElementSibling;
+      }
+      if (!table?.classList?.contains('system-table')) return;
+      SYSTEM_MODULE_NAV.forEach(({ label, match }) => {
+        const row = [...table.querySelectorAll('tbody tr')].find(
+          tr => tr.cells[1]?.textContent.trim() === label
+        );
+        if (!row || row.cells[1].querySelector('a.system-module-link')) return;
+        const heading = findChapterHeading(root, match);
+        if (!heading) return;
+        if (!heading.id) heading.id = slugifyHeading(heading.textContent);
+        const a = document.createElement('a');
+        a.className = 'system-module-link';
+        a.href = `#${heading.id}`;
+        a.textContent = label;
+        row.cells[1].textContent = '';
+        row.cells[1].appendChild(a);
+      });
+      const flow = root.querySelector('.system-flow--overview');
+      if (flow) {
+        SYSTEM_MODULE_NAV.forEach(({ label, match }) => {
+          const node = [...flow.querySelectorAll('.flow-node-label')].find(
+            el => el.textContent.trim() === label
+          );
+          if (!node || node.closest('a')) return;
+          const heading = findChapterHeading(root, match);
+          if (!heading) return;
+          if (!heading.id) heading.id = slugifyHeading(heading.textContent);
+          const a = document.createElement('a');
+          a.className = 'system-module-link';
+          a.href = `#${heading.id}`;
+          a.textContent = label;
+          node.textContent = '';
+          node.appendChild(a);
+        });
+      }
+    }
+    function mergeBrokenOrderedLists(root) {
+      if (root.querySelector('p')?.textContent?.includes('偏好以下资产') &&
+          root.querySelector('.system-enum-list li strong')) return;
+      const intro = '体系明显偏好以下资产';
+      const html = root.innerHTML;
+      const marker = html.indexOf(intro);
+      if (marker < 0) return;
+      const slice = html.slice(marker, marker + 2200);
+      const innerRe = /<ol>\s*<li>([\s\S]*?)<\/li>\s*<p>([\s\S]*?)<\/p>\s*<\/ol>/gi;
+      const outerRe = /<ol>\s*<li>([\s\S]*?)<\/li>\s*<\/ol>\s*<p>([\s\S]*?)<\/p>/gi;
+      const items = [...slice.matchAll(innerRe)];
+      const outerItems = items.length >= 4 ? items : [...slice.matchAll(outerRe)];
+      if (outerItems.length < 4) return;
+      const block = outerItems.slice(0, 4).map(m => `<li>${m[1]}<p>${m[2]}</p></li>`).join('\n');
+      const chunkRe = outerItems.length >= 4 && items.length >= 4 ? innerRe : outerRe;
+      const chunkMatch = slice.match(new RegExp('(?:' + chunkRe.source + '\\s*){4}', 'i'));
+      if (!chunkMatch) return;
+      root.innerHTML = html.replace(chunkMatch[0], `<ol class="system-enum-list">\n${block}\n</ol>\n`);
+    }
+    const SYSTEM_PARTS = [
+      { elId: 'systemContent', key: 'core' },
+      { elId: 'systemMacroContent', key: 'macro' },
+      { elId: 'systemChecklistContent', key: 'checklist' },
+      { elId: 'systemDiagramContent', key: 'diagram' },
+      { elId: 'systemBoundaryContent', key: 'boundary' },
+    ];
+
+    function classifySystemBlock(title) {
+      if (/最浓缩|十三、/.test(title)) return 'drop';
+      if (/宏观框架/.test(title) || /^八、宏观/.test(title)) return 'macro';
+      if (/心法/.test(title) || /^九、心法/.test(title)) return 'mindset';
+      if (/可执行清单/.test(title) || /^十、/.test(title)) return 'checklist';
+      if (/体系结构图/.test(title) || /^十一、/.test(title)) return 'diagram';
+      if (/体系边界/.test(title) || /^十二、/.test(title)) return 'boundary';
+      if (/^[一二三四五六七八九十]+、/.test(title) || title === '一句话总纲' || title.includes('投资体系整理')) return 'core';
+      return 'core';
+    }
+
+    function renumberMindsetBlockHtml(block) {
+      return block.replace(
+        /<h2[^>]*>[\s\S]*?心法[\s\S]*?<\/h2>/i,
+        '<h2 id="八-心法与训练-投资是一场认知和品性的修行">八、心法与训练：投资是一场认知和品性的修行</h2>'
+      );
+    }
+
+    function stripLeadingH2(block) {
+      return String(block || '').replace(/^\s*<h2[^>]*>[\s\S]*?<\/h2>\s*/i, '');
+    }
+
+    function buildSystemSectionsFromHtml(html) {
+      const buckets = { core: [], macro: [], checklist: [], diagram: [], boundary: [] };
+      const parts = String(html || '').split(/(?=<h2\b)/i);
+      if (parts[0]?.trim()) buckets.core.push(parts[0]);
+      for (let i = 1; i < parts.length; i++) {
+        const block = parts[i];
+        const m = block.match(/^<h2[^>]*>([\s\S]*?)<\/h2>/i);
+        const title = m ? m[1].replace(/<[^>]+>/g, '').trim() : '';
+        const kind = classifySystemBlock(title);
+        if (kind === 'drop') continue;
+        if (kind === 'mindset') {
+          buckets.core.push(renumberMindsetBlockHtml(block));
+          continue;
+        }
+        if (kind === 'macro') {
+          buckets.macro.push(stripLeadingH2(block));
+          continue;
+        }
+        if (kind === 'checklist') {
+          buckets.checklist.push(stripLeadingH2(block));
+          continue;
+        }
+        if (kind === 'diagram') {
+          buckets.diagram.push(stripLeadingH2(block));
+          continue;
+        }
+        if (kind === 'boundary') {
+          buckets.boundary.push(stripLeadingH2(block));
+          continue;
+        }
+        buckets.core.push(block);
+      }
+      const out = {};
+      Object.keys(buckets).forEach(key => {
+        const joined = buckets[key].join('').trim();
+        if (joined) out[key] = joined;
+      });
+      return out;
+    }
+
+    function resolveSystemSections() {
+      const html = data.systemHtml || '';
+      const preset = data.systemSections;
+      const monolithic = /八、宏观/.test(html) && /九、心法/.test(html)
+        || (/宏观框架/.test(html) && /可执行清单/.test(html) && html.length > 16000);
+      if (preset?.macro && preset?.core) return preset;
+      if (monolithic) return buildSystemSectionsFromHtml(html);
+      if (preset) return preset;
+      return { core: html };
+    }
+
+    function updateDiagramSectionVisibility() {
+      const diagramSection = document.getElementById('system-diagram');
+      const diagramRoot = document.getElementById('systemDiagramContent');
+      if (!diagramSection || !diagramRoot) return;
+      const hasBody = [...diagramRoot.children].some(n => !/^H2$/i.test(n.tagName));
+      diagramSection.hidden = !hasBody;
+      document.querySelectorAll('a[href="#system-diagram"]').forEach(a => {
+        a.hidden = !hasBody;
+      });
+    }
+
+    function stripPanelDuplicateH2(root) {
+      const h2 = root?.querySelector(':scope > h2');
+      if (h2) h2.remove();
+    }
+
+    function mountSystemSections() {
+      const sections = resolveSystemSections();
+      SYSTEM_PARTS.forEach(({ elId, key }) => {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const html = sections[key];
+        if (html) {
+          el.innerHTML = html;
+          if (key === 'macro' || key === 'checklist' || key === 'boundary') {
+            stripPanelDuplicateH2(el);
+          }
+        }
+      });
+      updateDiagramSectionVisibility();
+    }
+
+    function forEachSystemRoot(fn) {
+      SYSTEM_PARTS.forEach(({ elId }) => {
+        const root = document.getElementById(elId);
+        if (root?.innerHTML?.trim()) fn(root);
+      });
+    }
+
+    function linkSystemArticles(root) {
+      if (!root || !data?.tracks?.length) return;
+      const byId = new Map(data.tracks.map(t => [String(t.trackId), t]));
+      root.querySelectorAll('a[href*="ximalaya.com/sound/"]').forEach(a => {
+        const m = a.getAttribute('href')?.match(/sound\/(\d+)/);
+        if (!m) return;
+        const track = byId.get(m[1]);
+        if (!track) {
+          a.href = `article.html?id=${m[1]}`;
+        } else {
+          a.href = `article.html?index=${track.index}`;
+          const label = a.textContent.trim();
+          if (!/^\d{3}\s*·\s*/.test(label)) {
+            a.textContent = `${String(track.index).padStart(3, '0')} · ${label}`;
+          }
+        }
+        a.removeAttribute('target');
+        a.removeAttribute('rel');
+      });
+      root.querySelectorAll('a[href*="article.html?index="]').forEach(a => {
+        const m = a.getAttribute('href')?.match(/index=(\d+)/);
+        if (!m) return;
+        const label = a.textContent.trim();
+        if (/^\d{3}\s*·\s*/.test(label)) return;
+        a.textContent = `${String(m[1]).padStart(3, '0')} · ${label}`;
+      });
+    }
+    function enhanceSystemContent() {
+      const root = document.getElementById('systemContent');
+      if (!root || root.dataset.flowEnhanced === '1') return;
+      if (root.querySelector('.system-table')) {
+        linkSystemOverviewModules(root);
+        root.dataset.flowEnhanced = '1';
+        return;
+      }
+      mergeBrokenOrderedLists(root);
+      const summary = findHeading(root, '一句话总纲');
+      const firstChapter = findHeading(root, '底层信念');
+      if (summary && firstChapter && !root.querySelector('#system-flow-overview')) {
+        const overview = document.createElement('div');
+        overview.innerHTML = buildFlowFigure('体系全景流程', SYSTEM_FLOW_OVERVIEW, 'system-flow-overview', 'system-flow--overview')
+          + '<p class="system-flow-note">从信念到执行，八个模块串联成完整投资系统。</p>';
+        firstChapter.parentNode.insertBefore(overview, firstChapter);
+      }
+      linkSystemOverviewModules(root);
+      root.dataset.flowEnhanced = '1';
+    }
+
+    function stripDiagramMainFlow(root) {
+      if (!root) return;
+      const title = [...root.querySelectorAll('h3.system-table-title')].find(
+        h => h.textContent.trim() === '体系主流程'
+      );
+      if (title) {
+        let el = title.nextElementSibling;
+        while (el) {
+          const next = el.nextElementSibling;
+          if (el.tagName === 'H3' || el.tagName === 'H2') break;
+          el.remove();
+          el = next;
+        }
+        title.remove();
+      }
+      [...root.querySelectorAll('figure.system-flow')].forEach(fig => {
+        if (fig.textContent.includes('体系主流程') || fig.querySelector('#system-flow-main')) fig.remove();
+      });
+    }
+
+    function enhanceBoundaryLayout(root) {
+      if (!root || root.dataset.boundaryEnhanced === '1') return;
+      if (root.querySelector('.system-boundary-grid')) {
+        root.dataset.boundaryEnhanced = '1';
+        return;
+      }
+      const tables = [...root.querySelectorAll('table.system-table')];
+      if (tables.length < 2) return;
+      const titles = ['不追求', '追求'];
+      const cols = tables.slice(0, 2).map((table, i) => {
+        const cap = table.querySelector('caption')?.textContent?.trim();
+        const title = cap && cap !== '要点' ? cap : titles[i];
+        const items = [...table.querySelectorAll('tbody td')].map(td =>
+          td.textContent.replace(/[；;]\s*$/, '').trim()
+        ).filter(Boolean);
+        return { title, items };
+      });
+      root.querySelectorAll('p').forEach(p => {
+        if (/这套体系(不)?追求/.test(p.textContent)) p.remove();
+      });
+      tables.forEach(t => t.remove());
+      const grid = document.createElement('div');
+      grid.className = 'system-boundary-grid';
+      grid.innerHTML = cols.map(col => `
+        <div class="system-boundary-col">
+          <h3 class="system-boundary-heading">${escapeHtml(col.title)}</h3>
+          <ul class="system-boundary-list">
+            ${col.items.map(it => `<li>${escapeHtml(it)}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+      const anchor = root.querySelector('h2') || root.firstElementChild;
+      if (anchor) anchor.insertAdjacentElement('afterend', grid);
+      else root.appendChild(grid);
+      root.dataset.boundaryEnhanced = '1';
+    }
+
+    function enhanceAllSystemSections() {
+      forEachSystemRoot(linkSystemArticles);
+      enhanceSystemContent();
+      enhanceBoundaryLayout(document.getElementById('systemBoundaryContent'));
+      stripDiagramMainFlow(document.getElementById('systemDiagramContent'));
+      updateDiagramSectionVisibility();
+      forEachSystemRoot(linkSystemArticles);
+    }
+    function duration(seconds) {
+      const s = Number(seconds || 0);
+      return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+    function normalize(value) {
+      return String(value || '').toLowerCase().replace(/\s+/g, '');
+    }
+    function outlineHaystack(track) {
+      return (track.outline || []).map(c => `${c.time}${c.title}`).join('');
+    }
+    function findTrackByIndex(index) {
+      return data.tracks.find(t => t.index === index);
+    }
+    function markPreviewActive(index) {
+      trackList.querySelectorAll('.track-item').forEach(el => {
+        const on = index != null && Number(el.dataset.trackIndex) === index;
+        el.classList.toggle('is-preview-active', on);
+        el.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+    function setOutlinePreview(track) {
+      if (!track) {
+        activePreviewIndex = null;
+        outlinePreviewBody.innerHTML = '<p class="outline-preview-placeholder">点击左侧条目，预览该篇章节速览。</p>';
+        outlinePreviewBtn.classList.add('is-hidden');
+        outlinePreviewBtn.removeAttribute('href');
+        markPreviewActive(null);
+        return;
+      }
+      activePreviewIndex = track.index;
+      outlinePreviewBtn.href = articleUrl(track);
+      outlinePreviewBtn.classList.remove('is-hidden');
+      markPreviewActive(track.index);
+      const heading = `<p class="outline-preview-title">${String(track.index).padStart(3, '0')} · ${escapeHtml(track.title)}</p>`;
+      const items = track.outline || [];
+      const body = items.length
+        ? `<ul class="outline-preview-toc">${items.map(c => `
+            <li><time>${escapeHtml(c.time)}</time><span>${escapeHtml(c.title)}</span></li>
+          `).join('')}</ul>`
+        : '<p class="outline-preview-note">本篇暂无章节速览，可阅读全文查看简介与文稿。</p>';
+      outlinePreviewBody.innerHTML = heading + body;
+    }
+    trackList.addEventListener('click', e => {
+      const item = e.target.closest('.track-item');
+      if (!item) return;
+      e.preventDefault();
+      const track = findTrackByIndex(Number(item.dataset.trackIndex));
+      if (track) setOutlinePreview(track);
+    });
+    function publishedAtSortKey(track) {
+      const s = track.publishedAt;
+      if (!s) return Number.MAX_SAFE_INTEGER;
+      const ms = Date.parse(s.replace(' ', 'T'));
+      return Number.isFinite(ms) ? ms : Number.MAX_SAFE_INTEGER;
+    }
+    function hasTranscript(track) {
+      return track.status === 'ok' && !!track.content;
+    }
+    function hasAiOutline(track) {
+      if (hasTranscript(track)) return false;
+      return !!(track.intro || (track.outline && track.outline.length));
+    }
+    function hasNoScript(track) {
+      return !hasTranscript(track) && !hasAiOutline(track);
+    }
+    function getFiltered() {
+      const q = normalize(search.value);
+      let list = data.tracks.filter(t => {
+        if (statusFilter.value === 'transcript' && !hasTranscript(t)) return false;
+        else if (statusFilter.value === 'outline' && !hasAiOutline(t)) return false;
+        else if (statusFilter.value === 'none' && !hasNoScript(t)) return false;
+        if (!q) return true;
+        return normalize(t.title).includes(q)
+          || normalize(t.content).includes(q)
+          || normalize(t.intro).includes(q)
+          || normalize(outlineHaystack(t)).includes(q)
+          || String(t.trackId).includes(q);
+      });
+      if (sortBy.value === 'desc') list.sort((a, b) => b.index - a.index);
+      else if (sortBy.value === 'chars') list.sort((a, b) => b.charCount - a.charCount);
+      else if (sortBy.value === 'plays') {
+        list.sort((a, b) => (b.playCount || 0) - (a.playCount || 0) || a.index - b.index);
+      } else if (sortBy.value === 'published') {
+        list.sort((a, b) => {
+          const da = publishedAtSortKey(a);
+          const db = publishedAtSortKey(b);
+          if (da !== db) return da - db;
+          return a.index - b.index;
+        });
+      } else list.sort((a, b) => a.index - b.index);
+      return list;
+    }
+    function renderList() {
+      const list = getFiltered();
+      resultCount.textContent = `${list.length} 条结果`;
+      trackList.innerHTML = list.map(t => `
+        <button type="button" class="track-item" role="option" data-track-index="${t.index}" aria-selected="false">
+          <strong>${String(t.index).padStart(3, '0')} · ${escapeHtml(t.title)}</strong>
+          <div class="track-meta">${hasTranscript(t)
+            ? `${fmt.format(t.charCount)} 字 · ${duration(t.duration)}`
+            : (hasAiOutline(t)
+              ? `${t.outline && t.outline.length ? t.outline.length + ' 节速览' : 'AI 简介'} · 无逐字稿`
+              : '无文稿')}${t.playCount != null ? ` · ${fmt.format(t.playCount)} 播放` : ''}${t.publishedAt ? ` · ${t.publishedAt.slice(0, 10)}` : ''} · ID ${t.trackId}</div>
+        </button>
+      `).join('') || '<div class="empty">没有匹配结果</div>';
+      if (list.length && activePreviewIndex != null) {
+        const keep = list.find(t => t.index === activePreviewIndex);
+        setOutlinePreview(keep || null);
+      } else if (!list.length) {
+        setOutlinePreview(null);
+      } else {
+        markPreviewActive(activePreviewIndex);
+      }
+    }
+    [search, statusFilter, sortBy].forEach(el => el.addEventListener('input', renderList));
+    const hashMatch = location.hash.match(/track-(\d+)/);
+    if (hashMatch) {
+      location.replace(`article.html?index=${hashMatch[1]}`);
+    }
+    try {
+      renderList();
+    } catch (err) {
+      console.error(err);
+      showDataLoadError('文稿列表渲染失败：' + (err && err.message ? err.message : String(err)));
+    }
+
+    requestAnimationFrame(() => {
+      mountSystemSections();
+      enhanceAllSystemSections();
+    });
+  </script>
 </body>
 </html>

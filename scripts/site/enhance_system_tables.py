@@ -121,6 +121,19 @@ def _clean_cell(text: str) -> str:
     return m.group(1) if m else s
 
 
+def strip_malformed_assets_prefix(html: str) -> str:
+    """Remove orphan <tr> rows and broken table fragments before the assets dl-flow."""
+    return re.sub(
+        r"(<h3[^>]*>3\.\s*偏好的资产类型</h3>\s*)"
+        r"(?:(?:<tr>[\s\S]*?</tr>\s*)+"
+        r"(?:<table\b[\s\S]*?(?:</table>|(?=<p>体系明显偏好|<div class=\"system-dl-flow)))"
+        r")?",
+        r"\1",
+        html,
+        count=1,
+    )
+
+
 def normalize_assets_section(html: str) -> str:
     if "体系明显偏好以下资产" not in html:
         return html
@@ -543,6 +556,7 @@ def transform(html: str) -> str:
     html = replace_overview_flow_figure(html)
     html = fix_markdown_pipe_table(html)
     html = replace_enum_lists(html)
+    html = strip_malformed_assets_prefix(html)
     html = strip_assets_table_serial(html)
     html = replace_principles_ol(html)
     html = replace_checklists(html)

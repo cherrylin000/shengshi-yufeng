@@ -577,16 +577,6 @@
       letter-spacing: var(--tracking-body);
     }
     .system h2:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
-    #systemContent h2[id^="一-"],
-    #systemContent h2[id^="二-"],
-    #systemContent h2[id^="三-"],
-    #systemContent h2[id^="四-"],
-    #systemContent h2[id^="五-"],
-    #systemContent h2[id^="六-"],
-    #systemContent h2[id^="七-"],
-    #systemContent h2[id^="八-"] {
-      color: var(--primary);
-    }
     .system h3 {
       margin-top: 24px;
       color: var(--ink);
@@ -882,19 +872,22 @@
       border-radius: var(--radius-lg);
       overflow-x: auto;
     }
-    .system ol.system-enum-list {
+    .system ol {
       list-style: none;
       counter-reset: system-enum;
       padding: 0;
       margin: 16px 0;
     }
-    .system ol.system-enum-list > li {
+    .system ol > li {
       counter-increment: system-enum;
       position: relative;
       padding-left: 2.6em;
       margin: 14px 0;
     }
-    .system ol.system-enum-list > li::before {
+    .system ol:not(.system-enum-list) > li {
+      margin: 6px 0;
+    }
+    .system ol > li::before {
       content: "（" counter(system-enum) "）";
       position: absolute;
       left: 0;
@@ -2235,6 +2228,30 @@
 
     function cleanupAssetsSection(root) {
       if (!root) return;
+      const assetsHeading = [...root.querySelectorAll('h3')].find(h => {
+        const t = h.textContent.trim();
+        return t === '3. 偏好的资产类型' || h.id === '3-偏好的资产类型';
+      });
+      if (assetsHeading) {
+        let node = assetsHeading.nextElementSibling;
+        while (node) {
+          const next = node.nextElementSibling;
+          if (node.tagName === 'TR') {
+            node.remove();
+            node = next;
+            continue;
+          }
+          if (node.tagName === 'TABLE' && node.classList.contains('system-table')) {
+            node.remove();
+            node = next;
+            continue;
+          }
+          if (node.classList?.contains('system-dl-flow')) break;
+          if (node.tagName === 'P' && node.textContent.trim() === '体系明显偏好以下资产：') break;
+          if (node.tagName === 'H2' || node.tagName === 'H3') break;
+          node = next;
+        }
+      }
       const intro = [...root.querySelectorAll('p')].find(
         p => p.textContent.trim() === '体系明显偏好以下资产：'
       );

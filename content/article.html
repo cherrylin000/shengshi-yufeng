@@ -9,6 +9,7 @@
     :root {
       --primary: #0066cc;
       --primary-focus: #0071e3;
+      --primary-on-dark: #2997ff;
       --ink: #1d1d1f;
       --ink-muted-80: #333333;
       --ink-muted-48: #7a7a7a;
@@ -18,18 +19,33 @@
       --surface-black: #000000;
       --hairline: #e0e0e0;
       --on-dark: #ffffff;
+      --muted: var(--ink-muted-48);
+      --accent: var(--primary);
       --font-display: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
       --font-text: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", sans-serif;
       --radius-pill: 9999px;
       --radius-lg: 18px;
       --radius-sm: 8px;
+      --nav-h: 44px;
+      --gutter: clamp(16px, 4vw, 48px);
       --read-width: 42rem;
       --aside-width: 15.5rem;
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
     body {
       margin: 0;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      padding-bottom: env(safe-area-inset-bottom);
       font-family: var(--font-text);
       font-size: 17px;
       font-weight: 400;
@@ -57,11 +73,12 @@
       position: sticky;
       top: 0;
       z-index: 50;
+      padding-top: env(safe-area-inset-top);
     }
     .topbar-inner {
       max-width: calc(var(--read-width) + var(--aside-width) + 8rem);
       margin: 0 auto;
-      padding: 0 24px;
+      padding: 0 max(16px, var(--gutter));
       min-height: 52px;
       display: flex;
       align-items: center;
@@ -133,7 +150,7 @@
       grid-column: 1;
       grid-row: 1 / span 2;
       position: sticky;
-      top: 68px;
+      top: calc(52px + env(safe-area-inset-top, 0px));
       padding-top: 40px;
       align-self: start;
     }
@@ -245,7 +262,29 @@
 
     .section {
       margin-top: 48px;
-      scroll-margin-top: 76px;
+      scroll-margin-top: calc(var(--nav-h) + 24px);
+    }
+    .outline-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      margin: 0 0 12px;
+      padding: 11px 22px;
+      width: 100%;
+      border: 1px solid var(--primary);
+      border-radius: var(--radius-pill);
+      background: transparent;
+      color: var(--primary);
+      font-family: var(--font-text);
+      font-size: 14px;
+      letter-spacing: -0.224px;
+      cursor: pointer;
+    }
+    .outline-toggle:active { transform: scale(0.95); }
+    .outline-toggle:focus-visible {
+      outline: 2px solid var(--primary-focus);
+      outline-offset: 2px;
     }
     .section-title {
       margin: 0 0 20px;
@@ -303,6 +342,7 @@
     .pager a {
       flex: 1;
       max-width: 48%;
+      min-height: 44px;
       padding: 16px 18px;
       border: 1px solid var(--hairline);
       border-radius: var(--radius-lg);
@@ -354,6 +394,8 @@
         grid-template-columns: 1fr;
         max-width: none;
         row-gap: 0;
+        padding-left: max(16px, var(--gutter));
+        padding-right: max(16px, var(--gutter));
       }
       .article-intro,
       .article-body,
@@ -362,12 +404,15 @@
         grid-row: auto;
         max-width: none;
       }
+      .outline-toggle { display: inline-flex; }
       .outline-aside {
         position: static;
-        margin: 0 0 8px;
+        margin: 0 0 16px;
         padding-top: 0;
         border-top: none;
+        display: none;
       }
+      .outline-aside.is-expanded { display: block; }
     }
     @media (max-width: 520px) {
       .shell, .topbar-inner { padding-left: 16px; padding-right: 16px; }
@@ -460,7 +505,7 @@
       let html = author;
       if (track.publishedAt) html += ` · ${escapeHtml(track.publishedAt)}`;
       if (track.playCount != null) html += ` · 🎧 ${fmt.format(track.playCount)}`;
-      html += ` · <a href="${track.url}" target="_blank" rel="noopener">喜马拉雅原音频 ↗</a>`;
+      html += `<br><a href="${track.url}" target="_blank" rel="noopener">喜马拉雅原音频 ↗</a>`;
       return `<p class="byline${extraClass}">${html}</p>`;
     }
 
@@ -470,8 +515,6 @@
           <div><span class="meta-label">序号</span><span class="meta-value">${String(track.index).padStart(3, '0')} / ${data.meta.trackCount}</span></div>
           <div><span class="meta-label">字数</span><span class="meta-value">${track.status === 'ok' ? fmt.format(track.charCount) + ' 字' : '—'}</span></div>
           <div><span class="meta-label">时长</span><span class="meta-value">${duration(track.duration)}</span></div>
-          ${track.publishedAt ? `<div><span class="meta-label">发布时间</span><span class="meta-value">${escapeHtml(track.publishedAt)}</span></div>` : ''}
-          ${track.playCount != null ? `<div><span class="meta-label">播放量</span><span class="meta-value">${fmt.format(track.playCount)}</span></div>` : ''}
           <div><span class="meta-label">音频 ID</span><span class="meta-value">${track.trackId}</span></div>
         </div>
       `;
@@ -557,7 +600,8 @@
         : '';
       const bylineEnd = intro ? '' : ' byline--end';
       const outlineHtml = outlineToc
-        ? `<nav class="outline-aside" aria-label="章节速览">
+        ? `<button type="button" class="outline-toggle" id="outlineToggle" aria-expanded="false" aria-controls="outlineAside">本章目录</button>
+          <nav class="outline-aside" id="outlineAside" aria-label="章节速览">
             <p class="outline-label">章节速览</p>
             <ul class="toc">${outlineToc}</ul>
           </nav>`
@@ -590,6 +634,14 @@
 
       bindToc();
       bindProgress();
+      const outlineToggle = document.getElementById('outlineToggle');
+      const outlineAside = document.getElementById('outlineAside');
+      if (outlineToggle && outlineAside) {
+        outlineToggle.addEventListener('click', () => {
+          const open = outlineAside.classList.toggle('is-expanded');
+          outlineToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      }
     }
 
     window.addEventListener('popstate', () => render(resolveTrack()));

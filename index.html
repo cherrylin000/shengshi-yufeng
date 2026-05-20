@@ -20,64 +20,250 @@
       --canvas-parchment: #f5f5f7;
       --surface-pearl: #fafafc;
       --surface-tile-1: #272729;
+      --surface-black: #000000;
       --hairline: #e0e0e0;
       --divider-soft: #f0f0f0;
       --on-dark: #ffffff;
+      --muted: var(--ink-muted-48);
+      --accent: var(--primary);
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       --font-display: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Noto Sans SC", sans-serif;
       --font-text: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Noto Sans SC", sans-serif;
       --radius-pill: 9999px;
       --radius-lg: 18px;
       --radius-sm: 8px;
+      --nav-h: 44px;
+      --gutter: clamp(16px, 4vw, 48px);
+      --page-max: min(1068px, 100% - 2 * var(--gutter));
+      --spacing-section: clamp(48px, 8vw, 80px);
+      /* Typography — 6 级，组件只引用变量 */
+      --type-display: clamp(28px, 5vw, 48px);
+      --type-title: clamp(26px, 3.5vw, 32px);
+      --type-headline: 19px;
+      --type-lead: clamp(18px, 2.2vw, 24px);
+      --type-body: 17px;
+      --type-caption: 14px;
+      --type-small: 12px;
+      --type-micro: 11px;
+      --type-stat: clamp(20px, 3.5vw, 24px);
+      --leading-body: 1.47;
+      --leading-tight: 1.35;
+      --tracking-body: -0.374px;
+      --tracking-caption: -0.224px;
+      --tracking-small: -0.12px;
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
     body {
       margin: 0;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      padding-bottom: env(safe-area-inset-bottom);
       font-family: var(--font-text);
-      font-size: 17px;
+      font-size: var(--type-body);
       font-weight: 400;
-      line-height: 1.47;
-      letter-spacing: -0.374px;
+      line-height: var(--leading-body);
+      letter-spacing: var(--tracking-body);
       color: var(--ink);
       background: var(--canvas);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
+    body.nav-open { overflow: hidden; }
     a { color: var(--primary); text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .wrap { width: min(980px, calc(100% - 48px)); margin: 0 auto; }
+    .wrap { width: var(--page-max); margin: 0 auto; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
 
-    .nav-shell { position: sticky; top: 0; z-index: 40; }
+    .nav-shell {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding-top: env(safe-area-inset-top);
+    }
     .nav {
+      position: relative;
+      background: var(--surface-black);
+      color: var(--on-dark);
+    }
+    .nav-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      min-height: 44px;
-      padding: 0 22px;
-      background: #000000;
-      color: var(--on-dark);
+      min-height: var(--nav-h);
+      padding: 0 var(--gutter);
     }
     .logo {
+      display: flex;
+      align-items: center;
       font-family: var(--font-display);
-      font-size: 12px;
+      font-size: var(--type-small);
       font-weight: 400;
-      letter-spacing: -0.12px;
+      line-height: 1;
+      letter-spacing: var(--tracking-small);
       color: var(--on-dark);
+      white-space: nowrap;
     }
     .logo em { font-style: normal; opacity: 0.72; }
-    .nav-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .nav-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: 44px;
+      min-width: 44px;
+      height: 38px;
+      min-height: 38px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--on-dark);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-toggle svg {
+      display: block;
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+    .nav-toggle-bar {
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: transform 0.25s ease;
+    }
+    .nav-shell.nav-open .nav-toggle-bar--top {
+      transform: translateY(4.4px) rotate(45deg);
+    }
+    .nav-shell.nav-open .nav-toggle-bar--bottom {
+      transform: translateY(-4.4px) rotate(-45deg);
+    }
+    #navToggle {
+      height: 38px;
+      min-height: 38px;
+      max-height: 38px;
+      width: 44px;
+      min-width: 44px;
+    }
+    .nav-toggle:focus-visible {
+      outline: 2px solid var(--primary-focus);
+      outline-offset: 2px;
+    }
+    .nav-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 38;
+      background: rgba(0, 0, 0, 0.48);
+    }
+    .nav-drawer {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 12px var(--gutter) 24px;
+    }
     .nav-links a {
-      font-size: 12px;
+      display: block;
+      font-size: var(--type-small);
       font-weight: 400;
-      letter-spacing: -0.12px;
-      line-height: 1;
+      letter-spacing: var(--tracking-small);
+      line-height: 1.47;
       color: var(--on-dark);
       opacity: 0.88;
-      padding: 4px 0;
+      padding: 12px 0;
       text-decoration: none;
     }
     .nav-links a:hover { opacity: 1; text-decoration: none; color: var(--on-dark); }
+    @media (min-width: 834px) {
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        min-height: var(--nav-h);
+        padding: 0 var(--gutter);
+      }
+      .nav-bar {
+        flex: 0 0 auto;
+        padding: 0;
+        min-height: auto;
+      }
+      .nav-toggle { display: none !important; }
+      .nav-drawer {
+        position: static;
+        flex: 1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 20px;
+        padding: 0;
+        transform: none;
+        overflow: visible;
+        background: transparent;
+      }
+      .nav-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: flex-end; }
+      .nav-links a { padding: 4px 0; }
+      .nav-overlay { display: none !important; }
+    }
+    @media (max-width: 833px) {
+      .nav-toggle {
+        display: inline-flex;
+        width: auto;
+        min-width: 44px;
+        justify-content: flex-end;
+        padding: 0 0 0 31px;
+      }
+      #navToggle {
+        width: auto;
+        min-width: 44px;
+        max-width: none;
+      }
+      .nav-bar {
+        width: var(--page-max);
+        margin-inline: auto;
+        padding-inline: 0;
+        justify-content: space-between;
+        align-items: center;
+        min-height: var(--nav-h);
+      }
+      .logo {
+        height: 38px;
+      }
+      .nav-drawer {
+        position: fixed;
+        top: calc(env(safe-area-inset-top) + var(--nav-h));
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 39;
+        padding: 8px var(--gutter) 32px;
+        background: var(--surface-black);
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+      }
+      .nav-shell.nav-open .nav-drawer { transform: translateX(0); }
+      .nav-shell.nav-open .nav-overlay { display: block; }
+    }
 
     .hero {
       padding: clamp(48px, 8vw, 80px) 0;
@@ -92,7 +278,7 @@
     .hero-main, .hero-aside { padding: 0; }
     h1 {
       font-family: var(--font-display);
-      font-size: clamp(34px, 5vw, 56px);
+      font-size: var(--type-display);
       font-weight: 600;
       line-height: 1.07;
       letter-spacing: -0.28px;
@@ -101,7 +287,7 @@
     }
     .lead {
       font-family: var(--font-display);
-      font-size: clamp(21px, 2.5vw, 28px);
+      font-size: var(--type-lead);
       font-weight: 400;
       line-height: 1.14;
       letter-spacing: 0.196px;
@@ -116,10 +302,10 @@
       justify-content: center;
       min-height: 44px;
       padding: 11px 22px;
-      font-size: 17px;
+      font-size: var(--type-body);
       font-weight: 400;
       line-height: 1;
-      letter-spacing: -0.374px;
+      letter-spacing: var(--tracking-body);
       border-radius: var(--radius-pill);
       border: 1px solid var(--primary);
       background: transparent;
@@ -139,13 +325,18 @@
 
     .quote {
       font-family: var(--font-display);
-      font-size: clamp(24px, 3vw, 34px);
+      font-size: var(--type-lead);
       font-weight: 600;
-      line-height: 1.47;
-      letter-spacing: -0.374px;
+      line-height: var(--leading-body);
+      letter-spacing: var(--tracking-body);
       margin: 0 0 12px;
     }
-    .muted { color: var(--ink-muted-48); font-size: 14px; line-height: 1.43; letter-spacing: -0.224px; }
+    .muted {
+      color: var(--ink-muted-48);
+      font-size: var(--type-caption);
+      line-height: 1.43;
+      letter-spacing: var(--tracking-caption);
+    }
     .stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -161,7 +352,7 @@
     .stat strong {
       display: block;
       font-family: var(--font-display);
-      font-size: 28px;
+      font-size: var(--type-stat);
       font-weight: 600;
       line-height: 1.1;
       letter-spacing: -0.28px;
@@ -170,13 +361,13 @@
     .stat span {
       display: block;
       margin-top: 6px;
-      font-size: 12px;
+      font-size: var(--type-small);
       line-height: 1;
-      letter-spacing: -0.12px;
+      letter-spacing: var(--tracking-small);
       color: var(--ink-muted-48);
     }
 
-    section { padding: clamp(48px, 8vw, 80px) 0; }
+    section { padding: var(--spacing-section) 0; }
     #system-map { background: var(--canvas); }
     #system { background: var(--canvas-parchment); }
     #library { background: var(--canvas); }
@@ -192,9 +383,9 @@
     .section-head--library { align-items: flex-start; }
     .badge {
       display: inline-block;
-      font-size: 12px;
+      font-size: var(--type-small);
       font-weight: 400;
-      letter-spacing: -0.12px;
+      letter-spacing: var(--tracking-small);
       padding: 6px 12px;
       background: var(--surface-pearl);
       color: var(--ink-muted-80);
@@ -208,17 +399,16 @@
       margin-top: 12px;
     }
     .library-updated {
-      font-size: 12px;
+      font-size: var(--type-small);
       line-height: 1.3;
-      letter-spacing: -0.12px;
+      letter-spacing: var(--tracking-small);
       color: var(--ink-muted-48);
       white-space: nowrap;
     }
     .principle {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 12px;
-      padding: 16px 18px;
       min-height: 0;
     }
     .principle span {
@@ -228,7 +418,7 @@
     .principle > div {
       flex: 1;
       min-width: 0;
-      padding-top: 4px;
+      padding-top: 0;
     }
     .section-head {
       display: flex;
@@ -239,7 +429,7 @@
     }
     h2 {
       font-family: var(--font-display);
-      font-size: clamp(28px, 4vw, 40px);
+      font-size: var(--type-title);
       font-weight: 600;
       line-height: 1.1;
       letter-spacing: 0;
@@ -247,30 +437,30 @@
     }
     .principles {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: 1fr;
       gap: 12px;
     }
     .principle {
       background: var(--canvas);
       border: 1px solid var(--hairline);
       border-radius: var(--radius-lg);
-      padding: 20px 18px;
-      min-height: 120px;
-      font-size: 14px;
+      padding: 14px 16px;
+      min-height: 0;
+      font-size: var(--type-caption);
       line-height: 1.43;
-      letter-spacing: -0.224px;
+      letter-spacing: var(--tracking-caption);
     }
     .principle span {
       display: inline-grid;
       place-items: center;
       width: 28px;
       height: 28px;
-      font-size: 12px;
+      font-size: var(--type-small);
       font-weight: 600;
       color: var(--on-dark);
       background: var(--primary);
       border-radius: var(--radius-full, 50%);
-      margin-bottom: 12px;
+      margin-bottom: 0;
     }
 
     .panel {
@@ -286,26 +476,101 @@
     }
     .system {
       padding: clamp(24px, 4vw, 40px);
+      font-size: var(--type-body);
+      line-height: var(--leading-body);
     }
-    .system h2, .system h3 { scroll-margin-top: 120px; }
+    .system h2, .system h3 { scroll-margin-top: calc(var(--nav-h) + 12px); }
+    .system-dl-flow {
+      margin: 16px 0 20px;
+      min-width: 0;
+    }
+    .system-dl {
+      margin: 0;
+      font-size: var(--type-caption);
+      line-height: 1.5;
+    }
+    .system-dl-caption {
+      margin: 0 0 8px;
+      font-size: var(--type-small);
+      font-weight: 600;
+      letter-spacing: var(--tracking-small);
+      color: var(--ink-muted-48);
+    }
+    .system-dl-row {
+      display: grid;
+      grid-template-columns: minmax(5.5em, 28%) minmax(0, 1fr);
+      gap: 4px 16px;
+      padding: 12px 0;
+      align-items: start;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .system-dl-row:last-child {
+      border-bottom: 0;
+    }
+    .system-dl-row--cols-3 {
+      grid-template-columns: minmax(4.5em, 22%) minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .system-dl-term {
+      margin: 0;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .system-dl-term--index {
+      color: var(--ink-muted-48);
+      font-variant-numeric: tabular-nums;
+    }
+    .system-dl-desc {
+      margin: 0;
+      color: var(--ink-muted-80);
+    }
+    .system-dl-desc p {
+      margin: 0 0 8px;
+    }
+    .system-dl-desc p:last-child {
+      margin-bottom: 0;
+    }
+    .system-dl-desc a.system-module-link {
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .system-dl-desc a.system-module-link:hover,
+    .system-dl-term a.system-module-link:hover {
+      text-decoration: underline;
+    }
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 16px 0 20px;
+    }
+    .table-scroll table { margin: 0; }
     .system h2 {
       margin-top: 40px;
       padding-top: 24px;
       border-top: 1px solid var(--hairline);
       font-family: var(--font-display);
-      font-size: clamp(24px, 3vw, 34px);
+      font-size: var(--type-headline);
       font-weight: 600;
-      line-height: 1.47;
-      letter-spacing: -0.374px;
+      line-height: var(--leading-body);
+      letter-spacing: var(--tracking-body);
     }
     .system h2:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
     .system h3 {
       margin-top: 24px;
       color: var(--ink);
-      font-size: 21px;
+      font-size: var(--type-headline);
       font-weight: 600;
       line-height: 1.19;
       letter-spacing: 0.231px;
+    }
+    .system ul:not(.system-boundary-list):not(.system-enum-list) {
+      margin: 12px 0;
+      padding-left: 1.25em;
+    }
+    .system ul:not(.system-boundary-list):not(.system-enum-list) > li {
+      margin: 0 0 8px;
+    }
+    .system ul:not(.system-boundary-list):not(.system-enum-list) > li:last-child {
+      margin-bottom: 0;
     }
     .system-table,
     .system table {
@@ -313,16 +578,16 @@
       max-width: 100%;
       border-collapse: collapse;
       margin: 16px 0 20px;
-      font-size: 14px;
+      font-size: var(--type-caption);
       line-height: 1.5;
     }
     .system-table caption,
     .system table caption {
       caption-side: top;
       text-align: left;
-      font-size: 12px;
+      font-size: var(--type-small);
       font-weight: 600;
-      letter-spacing: -0.12px;
+      letter-spacing: var(--tracking-small);
       color: var(--ink-muted-48);
       padding: 0 0 8px;
     }
@@ -341,40 +606,130 @@
       font-weight: 600;
       color: var(--ink);
     }
-    .system-table th:first-child,
-    .system-table td:first-child,
-    .system table th:first-child,
-    .system table td:first-child {
-      font-size: 14px;
+    .system-table--has-index th:first-child,
+    .system-table--has-index td:first-child {
+      font-size: var(--type-caption);
       white-space: nowrap;
       width: 1%;
       min-width: 5em;
-    }
-    .system-table td:first-child,
-    .system table td:first-child {
       color: var(--ink-muted-48);
+    }
+    .system-table--has-index th:first-child {
+      color: var(--ink);
     }
     .system-table-title {
       margin: 24px 0 8px;
-      font-size: 21px;
+      font-size: var(--type-headline);
       font-weight: 600;
       letter-spacing: 0.231px;
       color: var(--ink);
     }
     .system-table-note {
       margin: 0 0 16px;
-      font-size: 14px;
+      font-size: var(--type-caption);
       color: var(--ink-muted-48);
+    }
+    #systemChecklistContent {
+      overflow: hidden;
+      min-width: 0;
+    }
+    .system-checklist-accordion {
+      min-width: 0;
+      max-width: 100%;
+    }
+    .system-checklist-item {
+      border-bottom: 1px solid var(--hairline);
+    }
+    .system-checklist-item:last-child {
+      border-bottom: 0;
+    }
+    .system-checklist-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 0;
+      cursor: pointer;
+      list-style: none;
+      font-family: var(--font-text);
+      font-size: var(--type-body);
+      font-weight: 400;
+      line-height: var(--leading-body);
+      letter-spacing: var(--tracking-body);
+      color: var(--ink);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .system-checklist-summary::-webkit-details-marker {
+      display: none;
+    }
+    .system-checklist-summary:hover {
+      color: var(--ink-muted-80);
+    }
+    .system-checklist-label {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .system-checklist-chevron {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      color: var(--ink-muted-48);
+      transition: transform 0.25s ease;
+    }
+    .system-checklist-item[open] .system-checklist-chevron {
+      transform: rotate(180deg);
+    }
+    .system-checklist-panel {
+      padding: 0 0 16px 1.25em;
+      min-width: 0;
+    }
+    .system-checklist-fieldset {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      min-width: 0;
+    }
+    .system-checklist-options {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .system-checklist-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      max-width: 100%;
+      cursor: pointer;
+      font-family: var(--font-text);
+      font-size: var(--type-caption);
+      line-height: 1.5;
+      letter-spacing: var(--tracking-caption);
+      color: var(--ink-muted-80);
+    }
+    .system-checklist-input {
+      width: 1em;
+      height: 1em;
+      min-width: 1em;
+      min-height: 1em;
+      margin: 0;
+      flex-shrink: 0;
+      accent-color: var(--primary);
+      border: 1px solid var(--hairline);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .system-checklist-option-text {
+      flex: 1;
+      min-width: 0;
+      font-weight: 400;
     }
     .system-table td a.system-module-link {
       font-weight: 500;
       text-decoration: none;
     }
     .system-table td a.system-module-link:hover { text-decoration: underline; }
-    @media (max-width: 640px) {
-      .system-table,
-      .system table { display: block; overflow-x: auto; }
-    }
 
     #systemBoundaryContent .system-boundary-grid {
       display: grid;
@@ -385,7 +740,7 @@
     #systemBoundaryContent .system-boundary-heading {
       margin: 0 0 14px;
       font-family: var(--font-display);
-      font-size: 21px;
+      font-size: var(--type-headline);
       font-weight: 600;
       line-height: 1.19;
       letter-spacing: -0.02em;
@@ -399,9 +754,9 @@
     #systemBoundaryContent .system-boundary-list li {
       margin: 0 0 10px;
       padding-left: 0.1em;
-      font-size: 17px;
-      line-height: 1.47;
-      letter-spacing: -0.37px;
+      font-size: inherit;
+      line-height: var(--leading-body);
+      letter-spacing: var(--tracking-body);
       color: var(--ink);
     }
     #systemBoundaryContent .system-boundary-list li:last-child {
@@ -415,15 +770,24 @@
     }
 
     .system blockquote {
-      margin: 20px 0;
-      padding: 0;
+      margin: 16px 0;
+      padding: 0 0 0 14px;
       border: 0;
+      border-left: 3px solid var(--primary);
       background: transparent;
-      font-family: var(--font-display);
-      font-size: 21px;
+      font-family: var(--font-text);
+      font-size: inherit;
       font-weight: 400;
-      line-height: 1.47;
-      letter-spacing: 0.196px;
+      line-height: var(--leading-body);
+      letter-spacing: var(--tracking-body);
+      color: var(--ink);
+    }
+    .system blockquote:first-of-type {
+      padding: 0;
+      border-left: none;
+      font-size: var(--type-caption);
+      line-height: 1.43;
+      letter-spacing: var(--tracking-caption);
       color: var(--ink-muted-80);
     }
     .system pre {
@@ -431,7 +795,7 @@
       background: var(--surface-tile-1);
       color: var(--on-dark);
       padding: 20px;
-      font-size: 14px;
+      font-size: var(--type-caption);
       line-height: 1.43;
       border-radius: var(--radius-lg);
       overflow-x: auto;
@@ -452,7 +816,7 @@
       content: "（" counter(system-enum) "）";
       position: absolute;
       left: 0;
-      font-size: 14px;
+      font-size: var(--type-caption);
       color: var(--primary);
       font-weight: 600;
     }
@@ -476,14 +840,14 @@
     }
     .system-flow-title {
       margin: 0 0 16px;
-      font-size: 14px;
+      font-size: var(--type-caption);
       font-weight: 600;
-      letter-spacing: -0.224px;
+      letter-spacing: var(--tracking-caption);
       color: var(--ink-muted-48);
     }
     .system-flow-note {
       margin: 16px 0 0;
-      font-size: 14px;
+      font-size: var(--type-caption);
       color: var(--ink-muted-48);
       text-align: center;
     }
@@ -495,6 +859,50 @@
       margin: 0 auto;
     }
     .system-flow--overview .system-flow-track { max-width: 100%; }
+    #systemDiagramContent {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    #systemDiagramContent > .system-flow-track.system-diagram-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: min(100%, 520px);
+      margin: 0 auto;
+    }
+    #systemDiagramContent .system-flow-note {
+      width: 100%;
+      max-width: min(100%, 520px);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--hairline);
+      text-align: center;
+    }
+    #systemDiagramContent .flow-node {
+      border: 0;
+      background: transparent;
+      padding: 8px 0;
+      display: grid;
+      gap: 4px;
+      justify-items: center;
+      text-align: center;
+      width: 100%;
+    }
+    #systemDiagramContent .flow-node--end {
+      background: transparent;
+      color: var(--ink);
+      border: 0;
+      font-weight: 600;
+    }
+    #systemDiagramContent .flow-node--end .flow-node-index {
+      color: var(--muted);
+    }
+    #systemDiagramContent .flow-node-label {
+      text-align: center;
+    }
     @media (min-width: 900px) {
       .system-flow--overview .system-flow-track {
         flex-direction: row;
@@ -539,12 +947,12 @@
     .flow-node--end .flow-node-index { color: #b8c9de; }
     .flow-node-index {
       font-family: var(--mono);
-      font-size: 10px;
+      font-size: var(--type-micro);
       letter-spacing: 0.1em;
       color: var(--muted);
     }
     .flow-node-label {
-      font-size: 14px;
+      font-size: var(--type-caption);
       line-height: 1.45;
       font-weight: 500;
     }
@@ -567,12 +975,44 @@
       border-top-color: var(--accent);
     }
 
+    .library-tabs {
+      display: none;
+      grid-column: 1 / -1;
+      gap: 0;
+      padding: 4px;
+      margin: 0 0 12px;
+      background: var(--canvas-parchment);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+    }
+    .library-tab {
+      flex: 1;
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: calc(var(--radius-lg) - 4px);
+      background: transparent;
+      font-family: var(--font-text);
+      font-size: var(--type-caption);
+      font-weight: 400;
+      letter-spacing: var(--tracking-caption);
+      color: var(--ink-muted-80);
+      cursor: pointer;
+    }
+    .library-tab[aria-selected="true"] {
+      background: var(--canvas);
+      color: var(--ink);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .library-tab:focus-visible {
+      outline: 2px solid var(--primary-focus);
+      outline-offset: 2px;
+    }
     .library {
       display: grid;
-      grid-template-columns: minmax(380px, 420px) minmax(0, 1fr);
-      gap: 0;
-      border: 1px solid var(--hairline);
-      background: var(--hairline);
+      grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+      gap: 12px;
       align-items: start;
     }
     .tools {
@@ -597,8 +1037,8 @@
     }
     .library-guide h3 {
       margin: 0 0 4px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
-      font-size: 21px;
+      font-family: var(--font-display);
+      font-size: var(--type-headline);
       font-weight: 600;
       line-height: 1.19;
       letter-spacing: 0.231px;
@@ -607,12 +1047,13 @@
     }
     .library-guide-hint {
       margin: 0 0 16px;
-      font-size: 12px;
+      font-size: var(--type-small);
       line-height: 1.3;
-      letter-spacing: -0.12px;
+      letter-spacing: var(--tracking-small);
       color: #7a7a7a;
       flex-shrink: 0;
     }
+    .library-guide-hint--mobile { display: none; }
     .outline-preview-body {
       flex: 1;
       min-height: 0;
@@ -620,17 +1061,17 @@
     }
     .outline-preview-placeholder {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--type-caption);
       line-height: 1.43;
-      letter-spacing: -0.224px;
+      letter-spacing: var(--tracking-caption);
       color: #7a7a7a;
     }
     .outline-preview-title {
       margin: 0 0 12px;
-      font-size: 14px;
+      font-size: var(--type-caption);
       font-weight: 600;
       line-height: 1.29;
-      letter-spacing: -0.224px;
+      letter-spacing: var(--tracking-caption);
       color: #1d1d1f;
     }
     .outline-preview-toc {
@@ -644,22 +1085,22 @@
       align-items: baseline;
       padding: 10px 0;
       border-bottom: 1px solid #f0f0f0;
-      font-size: 14px;
+      font-size: var(--type-caption);
       line-height: 1.43;
-      letter-spacing: -0.224px;
+      letter-spacing: var(--tracking-caption);
       color: #1d1d1f;
     }
     .outline-preview-toc li:last-child { border-bottom: 0; }
     .outline-preview-toc time {
       flex-shrink: 0;
       min-width: 2.8em;
-      font-size: 12px;
+      font-size: var(--type-small);
       font-variant-numeric: tabular-nums;
       color: #7a7a7a;
     }
     .outline-preview-note {
       margin: 0;
-      font-size: 14px;
+      font-size: var(--type-caption);
       line-height: 1.43;
       color: #7a7a7a;
     }
@@ -672,10 +1113,10 @@
       margin-top: auto;
       padding: 11px 22px;
       min-height: 44px;
-      font-size: 17px;
+      font-size: var(--type-body);
       font-weight: 400;
       line-height: 1;
-      letter-spacing: -0.374px;
+      letter-spacing: var(--tracking-body);
       color: #ffffff;
       background: #0066cc;
       border: 0;
@@ -691,30 +1132,44 @@
       outline-offset: 2px;
     }
     .outline-preview-btn.is-hidden { display: none; }
-    input, select {
+    #search,
+    .tools select {
       width: 100%;
-      border: 1px solid var(--hairline);
-      padding: 11px 12px;
-      font: 400 14px/1.4 var(--mono);
+      min-height: 44px;
+      font-family: var(--font-text);
+      font-size: var(--type-body);
+      font-weight: 400;
+      line-height: var(--leading-body);
+      letter-spacing: var(--tracking-body);
       background: var(--canvas);
       color: var(--ink);
       outline: none;
     }
-    input:focus, select:focus {
+    #search {
+      padding: 12px 20px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: var(--radius-pill);
+    }
+    #search:focus {
       border-color: var(--primary-focus);
       box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-focus) 25%, transparent);
     }
-    select {
+    .tools select {
+      border: 1px solid var(--hairline);
+      padding: 11px 36px 11px 12px;
       appearance: none;
       -webkit-appearance: none;
       -moz-appearance: none;
-      padding-right: 36px;
       background-color: var(--canvas);
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237a7a7a' d='M1.4 1.4 6 6l4.6-4.6L12 3l-6 6-6-6z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 16px center;
       background-size: 10px 6px;
       cursor: pointer;
+    }
+    .tools select:focus {
+      border-color: var(--primary-focus);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-focus) 25%, transparent);
     }
     .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
     .track-list {
@@ -748,10 +1203,10 @@
       outline: 2px solid #0071e3;
       outline-offset: -2px;
     }
-    .track-item strong { display: block; line-height: 1.35; font-weight: 600; font-size: 14px; letter-spacing: -0.224px; }
+    .track-item strong { display: block; line-height: var(--leading-tight); font-weight: 600; font-size: var(--type-caption); letter-spacing: var(--tracking-caption); }
     .track-meta {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: var(--type-micro);
       color: var(--muted);
       margin-top: 4px;
     }
@@ -759,10 +1214,16 @@
     .footer {
       padding: 36px 0 56px;
       border-top: 1px solid var(--hairline);
-      font-size: 13px;
+      font-size: var(--type-caption);
       color: var(--muted);
     }
 
+    @media (min-width: 640px) {
+      .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 980px) {
+      .hero-grid { grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr); }
+    }
     @media (min-width: 1100px) {
       .principles { grid-template-columns: repeat(5, minmax(0, 1fr)); }
       h1 { max-width: 14ch; }
@@ -776,36 +1237,152 @@
         max-height: none;
       }
       .track-list {
-        max-height: 52vh;
+        max-height: min(52vh, 520px);
       }
     }
-    @media (max-width: 980px) {
+    @media (max-width: 979px) {
       .hero-grid { grid-template-columns: 1fr; }
-      .principles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       h1 { max-width: none; }
     }
-    @media (max-width: 620px) {
-      .wrap { width: min(100% - 24px, 1320px); }
-      .nav { flex-direction: column; align-items: flex-start; }
-      .hero { padding: 32px 0 28px; }
-      .stats, .principles, .filters { grid-template-columns: 1fr; }
+    @media (max-width: 767px) {
+      .library-tabs { display: flex; }
+      .library-panel[data-panel="list"]:not(.is-active),
+      .library-panel[data-panel="preview"]:not(.is-active) {
+        display: none;
+      }
+      .library-guide-hint--desktop { display: none; }
+      .library-guide-hint--mobile { display: block; }
+    }
+    @media (min-width: 768px) {
+      .library-guide-hint--mobile { display: none; }
+    }
+    @media (max-width: 767px) {
+      :root {
+        --type-display: clamp(26px, 6.5vw, 34px);
+        --type-title: clamp(22px, 5vw, 26px);
+        --type-headline: 17px;
+        --type-lead: 17px;
+        --type-body: 15px;
+        --type-caption: 13px;
+        --type-small: 11px;
+        --type-micro: 10px;
+        --type-stat: clamp(17px, 4.2vw, 19px);
+        --spacing-section: clamp(40px, 7vw, 56px);
+      }
+      .hero { padding: clamp(32px, 6vw, 48px) 0; }
+      .lead { margin-bottom: 20px; }
+      .section-head { margin-bottom: 24px; }
+      .system { padding: clamp(16px, 4vw, 24px); }
+      .system h2 { margin-top: 28px; padding-top: 18px; }
+      .outline-preview-btn {
+        min-height: 40px;
+        padding: 9px 18px;
+        font-size: var(--type-caption);
+      }
+      #search,
+      .tools select { min-height: 40px; }
+      #search { padding: 10px 16px; }
+      .tools select { padding: 10px 36px 10px 12px; }
+      .hero-main .actions {
+        flex-wrap: nowrap;
+        gap: 12px;
+      }
+      .hero-main .actions .btn {
+        flex: 0 1 auto;
+        min-height: 36px;
+        height: 36px;
+        padding: 0 16px;
+        font-size: var(--type-caption);
+        line-height: 1.29;
+        letter-spacing: var(--tracking-caption);
+        white-space: nowrap;
+      }
+      .hero-aside .quote { margin-bottom: 6px; }
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1px;
+        margin-top: 0;
+        padding: 1px;
+        background: var(--hairline);
+        border: 1px solid var(--hairline);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+      .stat {
+        padding: 10px 12px;
+        border: none;
+        border-radius: 0;
+      }
+      .stat strong {
+        line-height: 1.15;
+        letter-spacing: -0.2px;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat span { margin-top: 3px; }
+      #system-map .principles {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        border: 1px solid var(--hairline);
+        border-radius: 14px;
+        overflow: hidden;
+        background: var(--canvas);
+      }
+      #system-map .principle {
+        min-height: 0;
+        border: none;
+        border-radius: 0;
+        border-bottom: 1px solid var(--hairline);
+        padding: 12px 14px;
+        background: transparent;
+        gap: 10px;
+      }
+      #system-map .principle:last-child {
+        border-bottom: none;
+      }
+      #system-map .principle span {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 0;
+      }
+      #system-map .principle > div {
+        padding-top: 2px;
+        line-height: 1.35;
+      }
+    }
+    @media (max-width: 640px) {
+      .filters { grid-template-columns: 1fr; }
       .section-head { flex-direction: column; align-items: flex-start; }
-      .track-list { max-height: 45vh; }
+      .track-list { max-height: min(45vh, 420px); }
+    }
+    @media (min-width: 1441px) {
+      .wrap { max-width: 1440px; }
     }
   </style>
 </head>
 <body>
-  <header class="nav-shell">
-    <nav class="nav" aria-label="主导航">
-      <div class="logo">盛世裕丰 <em>· 投资体系</em></div>
-      <div class="nav-links">
-        <a href="#system-map">投资浓缩十原则</a>
-        <a href="#system">投资体系</a>
-        <a href="#system-macro">宏观</a>
-        <a href="#system-checklist">清单</a>
-        <a href="#system-diagram">结构图</a>
-        <a href="#system-boundary">边界</a>
-        <a href="#library">文稿库</a>
+  <header class="nav-shell" id="navShell">
+    <div class="nav-overlay" id="navOverlay" hidden></div>
+    <nav class="nav global-nav" aria-label="主导航">
+      <div class="nav-bar">
+        <div class="logo">盛世裕丰 <em>· 投资体系</em></div>
+        <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navDrawer" aria-label="打开菜单">
+          <svg width="13" height="13" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
+            <rect class="nav-toggle-bar nav-toggle-bar--top" x="0" y="3.5" width="18" height="1.2" rx="0.6" fill="currentColor"/>
+            <rect class="nav-toggle-bar nav-toggle-bar--bottom" x="0" y="13.3" width="18" height="1.2" rx="0.6" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+      <div id="navDrawer" class="nav-drawer">
+        <div class="nav-links">
+          <a href="#system-map">投资浓缩十原则</a>
+          <a href="#system">投资体系</a>
+          <a href="#system-macro">宏观</a>
+          <a href="#system-checklist">清单</a>
+          <a href="#system-diagram">结构图</a>
+          <a href="#system-boundary">边界</a>
+          <a href="#library">文稿库</a>
+        </div>
       </div>
     </nav>
   </header>
@@ -822,7 +1399,6 @@
       </div>
       <aside class="hero-aside">
         <p class="quote">做股东，吃分红，攒股权，等馈赠。</p>
-        <p class="muted">317 份可用音频文字稿 · 可检索 · 可分享</p>
         <div class="stats" id="stats"></div>
       </aside>
     </div>
@@ -913,8 +1489,12 @@
             </div>
           </div>
         </div>
-        <div class="library">
-          <aside class="panel tools">
+        <div class="library" id="libraryRoot">
+          <div class="library-tabs" role="tablist" aria-label="文稿库视图">
+            <button type="button" class="library-tab" role="tab" data-tab="list" aria-selected="true" id="libraryTabList">列表</button>
+            <button type="button" class="library-tab" role="tab" data-tab="preview" aria-selected="false" id="libraryTabPreview">速览</button>
+          </div>
+          <aside class="panel tools library-panel is-active" data-panel="list">
             <input id="search" type="search" placeholder="搜索：三低一高、分红、银行、轮动…" autocomplete="off" />
             <div class="filters">
               <select id="statusFilter" aria-label="文稿状态">
@@ -933,11 +1513,12 @@
             </div>
             <div class="track-list" id="trackList" role="listbox" aria-label="文稿列表"><p class="empty">正在加载文稿列表…</p></div>
           </aside>
-                    <div class="library-guide panel" aria-label="章节速览预览">
+          <div class="library-guide panel library-panel" data-panel="preview" aria-label="章节速览预览">
             <h3>章节速览预览</h3>
-            <p class="library-guide-hint">点击左侧条目查看速览，确认后再阅读全文。</p>
+            <p class="library-guide-hint library-guide-hint--desktop">点击列表中的条目查看速览，确认后再阅读全文。</p>
+            <p class="library-guide-hint library-guide-hint--mobile">在「列表」中选一篇，切到「速览」查看章节摘要。</p>
             <div class="outline-preview-body" id="outlinePreviewBody">
-              <p class="outline-preview-placeholder">点击左侧条目，预览该篇章节速览。</p>
+              <p class="outline-preview-placeholder">点击列表中的条目，预览该篇章节速览。</p>
             </div>
             <a class="outline-preview-btn is-hidden" id="outlinePreviewBtn" href="#">阅读全文</a>
           </div>
@@ -948,7 +1529,7 @@
 
   <footer class="footer">
     <div class="wrap">
-      <p>说明：本页为电脑端文字稿整理与学习索引，不构成投资建议。ASR 文稿可能存在识别错误，请结合原音频理解。</p>
+      <p>说明：本页为文字稿整理与学习索引，不构成投资建议。ASR 文稿可能存在识别错误，请结合原音频理解。</p>
     </div>
   </footer>
 
@@ -1017,15 +1598,33 @@
       { label: '风控·分散', match: '组合与风控' },
       { label: '心性·纪律', match: '心法' }
     ];
-    function buildFlowFigure(title, steps, figId, extraClass = '') {
+    function buildFlowFigure(title, steps, figId, extraClass = '', { showTitle = true, footerHtml = '' } = {}) {
       const nodes = steps.map((label, i) => {
         const n = String(i + 1).padStart(2, '0');
         const cls = ['flow-node', i === 0 && 'flow-node--start', i === steps.length - 1 && 'flow-node--end'].filter(Boolean).join(' ');
         const connector = i < steps.length - 1 ? '<div class="flow-connector" aria-hidden="true"></div>' : '';
         return `<div class="${cls}"><span class="flow-node-index">${n}</span><span class="flow-node-label">${escapeHtml(label)}</span></div>${connector}`;
       }).join('');
-      return `<figure class="system-flow ${extraClass}" aria-labelledby="${figId}"><figcaption id="${figId}" class="system-flow-title">${escapeHtml(title)}</figcaption><div class="system-flow-track">${nodes}</div></figure>`;
+      const cap = showTitle && title
+        ? `<figcaption id="${figId}" class="system-flow-title">${escapeHtml(title)}</figcaption>`
+        : '';
+      const aria = showTitle && title
+        ? `aria-labelledby="${figId}"`
+        : (title ? `aria-label="${escapeHtml(title)}"` : '');
+      return `<figure class="system-flow ${extraClass}" ${aria}>${cap}<div class="system-flow-track">${nodes}</div>${footerHtml}</figure>`;
     }
+    function buildFlowNodes(steps) {
+      return steps.map((label, i) => {
+        const n = String(i + 1).padStart(2, '0');
+        const cls = ['flow-node', i === 0 && 'flow-node--start', i === steps.length - 1 && 'flow-node--end'].filter(Boolean).join(' ');
+        const connector = i < steps.length - 1 ? '<div class="flow-connector" aria-hidden="true"></div>' : '';
+        return `<div class="${cls}"><span class="flow-node-index">${n}</span><span class="flow-node-label">${escapeHtml(label)}</span></div>${connector}`;
+      }).join('');
+    }
+    function buildFlowTrack(steps, { footerHtml = '', ariaLabel = '体系主流程' } = {}) {
+      return `<div class="system-flow-track system-diagram-flow" aria-label="${escapeHtml(ariaLabel)}">${buildFlowNodes(steps)}</div>${footerHtml}`;
+    }
+
     function findHeading(root, text) {
       return [...root.querySelectorAll('h2, h3')].find(h => h.textContent.includes(text));
     }
@@ -1050,6 +1649,95 @@
         }
       });
     }
+    function buildDlRow(headers, cells) {
+      const row = document.createElement('div');
+      row.className = 'system-dl-row';
+      if (headers[0] === '序号' && cells.length === 2) {
+        const dt = document.createElement('dt');
+        dt.className = 'system-dl-term system-dl-term--index';
+        dt.innerHTML = cells[0];
+        const dd = document.createElement('dd');
+        dd.className = 'system-dl-desc';
+        dd.innerHTML = cells[1];
+        row.append(dt, dd);
+        return row;
+      }
+      const start = headers[0] === '序号' ? 1 : 0;
+      const h = headers.slice(start);
+      const data = cells.slice(start);
+      if (!data.length) return row;
+      if (data.length === 1) {
+        const dt = document.createElement('dt');
+        dt.className = 'system-dl-term';
+        dt.textContent = h[0]?.replace(/<[^>]+>/g, '') || '';
+        const dd = document.createElement('dd');
+        dd.className = 'system-dl-desc';
+        dd.innerHTML = data[0];
+        row.append(dt, dd);
+        return row;
+      }
+      if (data.length === 2) {
+        const dt = document.createElement('dt');
+        dt.className = 'system-dl-term';
+        dt.textContent = sanitizeDlCell(data[0].replace(/<[^>]+>/g, ''));
+        const dd = document.createElement('dd');
+        dd.className = 'system-dl-desc';
+        dd.textContent = sanitizeDlCell(data[1].replace(/<[^>]+>/g, ''));
+        row.append(dt, dd);
+        return row;
+      }
+      row.classList.add(`system-dl-row--cols-${data.length}`);
+      const dt = document.createElement('dt');
+      dt.className = 'system-dl-term';
+      dt.innerHTML = data[0];
+      row.appendChild(dt);
+      data.slice(1).forEach(part => {
+        const dd = document.createElement('dd');
+        dd.className = 'system-dl-desc';
+        dd.innerHTML = part;
+        row.appendChild(dd);
+      });
+      return row;
+    }
+
+    function tableToDefinitionList(table) {
+      const headers = [...table.querySelectorAll('thead th')].map(th => th.innerHTML.trim());
+      const rows = [...table.querySelectorAll('tbody tr')].map(tr =>
+        [...tr.cells].map(td => td.innerHTML.trim())
+      );
+      const flow = document.createElement('div');
+      flow.className = 'system-dl-flow';
+      const caption = table.querySelector('caption');
+      if (caption?.textContent?.trim()) {
+        const cap = document.createElement('p');
+        cap.className = 'system-dl-caption';
+        cap.textContent = caption.textContent.trim();
+        flow.appendChild(cap);
+      }
+      const dl = document.createElement('dl');
+      dl.className = headers[0] === '序号' ? 'system-dl system-dl--has-index' : 'system-dl';
+      rows.forEach(cells => {
+        if (cells.length) dl.appendChild(buildDlRow(headers, cells));
+      });
+      flow.appendChild(dl);
+      return flow;
+    }
+
+    function convertSystemTablesToDefinitionLists(root) {
+      if (!root) return;
+      [...root.querySelectorAll('table.system-table')].forEach(table => {
+        const host = table.closest('.table-scroll') || table;
+        host.replaceWith(tableToDefinitionList(table));
+      });
+    }
+
+    function getModuleLabelCell(row) {
+      if (!row) return null;
+      const dd = row.querySelector('.system-dl-desc');
+      if (dd) return dd;
+      return row.querySelector('.system-dl-term:not(.system-dl-term--index)');
+    }
+
     function linkSystemOverviewModules(root) {
       if (!root) return;
       ensureChapterIds(root);
@@ -1057,16 +1745,24 @@
         el => el.textContent.trim() === '体系全景流程'
       );
       if (!title) return;
-      let table = title.nextElementSibling;
-      while (table && table.tagName !== 'TABLE') {
-        table = table.nextElementSibling;
+      let block = title.nextElementSibling;
+      while (block && !block.classList?.contains('system-dl-flow')) {
+        if (block.tagName === 'TABLE' && block.classList.contains('system-table')) {
+          block.replaceWith(tableToDefinitionList(block));
+          block = title.nextElementSibling;
+          break;
+        }
+        block = block.nextElementSibling;
       }
-      if (!table?.classList?.contains('system-table')) return;
+      if (!block?.classList?.contains('system-dl-flow')) return;
       SYSTEM_MODULE_NAV.forEach(({ label, match }) => {
-        const row = [...table.querySelectorAll('tbody tr')].find(
-          tr => tr.cells[1]?.textContent.trim() === label
-        );
-        if (!row || row.cells[1].querySelector('a.system-module-link')) return;
+        const row = [...block.querySelectorAll('.system-dl-row')].find(item => {
+          const target = getModuleLabelCell(item);
+          return target?.textContent?.trim() === label;
+        });
+        if (!row) return;
+        const target = getModuleLabelCell(row);
+        if (!target || target.querySelector('a.system-module-link')) return;
         const heading = findChapterHeading(root, match);
         if (!heading) return;
         if (!heading.id) heading.id = slugifyHeading(heading.textContent);
@@ -1074,8 +1770,8 @@
         a.className = 'system-module-link';
         a.href = `#${heading.id}`;
         a.textContent = label;
-        row.cells[1].textContent = '';
-        row.cells[1].appendChild(a);
+        target.textContent = '';
+        target.appendChild(a);
       });
       const flow = root.querySelector('.system-flow--overview');
       if (flow) {
@@ -1212,6 +1908,101 @@
       if (h2) h2.remove();
     }
 
+    const CHECKLIST_CHEVRON = '<svg class="system-checklist-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>';
+
+    function checklistItemsFromTable(table) {
+      return [...table.querySelectorAll('tbody tr')].map(tr => {
+        const cells = [...tr.cells].map(td => td.textContent.trim());
+        if (cells.length >= 2 && /^\d+$/.test(cells[0])) return cells[1];
+        return cells[0] || '';
+      }).filter(Boolean);
+    }
+
+    function buildChecklistFieldset(items, groupId) {
+      const fieldset = document.createElement('fieldset');
+      fieldset.className = 'system-checklist-fieldset';
+      const legend = document.createElement('legend');
+      legend.className = 'sr-only';
+      legend.textContent = '检查项';
+      fieldset.appendChild(legend);
+      const list = document.createElement('div');
+      list.className = 'system-checklist-options';
+      items.forEach((text, i) => {
+        const id = `${groupId}-item-${i + 1}`;
+        const label = document.createElement('label');
+        label.className = 'system-checklist-option';
+        label.setAttribute('for', id);
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.className = 'system-checklist-input';
+        input.id = id;
+        const span = document.createElement('span');
+        span.className = 'system-checklist-option-text';
+        span.textContent = text;
+        label.append(input, span);
+        list.appendChild(label);
+      });
+      fieldset.appendChild(list);
+      return fieldset;
+    }
+
+    function convertChecklistTablesToFieldsets(root) {
+      root.querySelectorAll('.system-checklist-panel').forEach((panel, sectionIdx) => {
+        if (panel.querySelector('.system-checklist-fieldset')) return;
+        const table = panel.querySelector('table.system-table');
+        if (!table) return;
+        panel.replaceChildren(buildChecklistFieldset(checklistItemsFromTable(table), `checklist-${sectionIdx}`));
+      });
+    }
+
+    function enhanceChecklistAccordion(root) {
+      if (!root) return;
+      if (root.querySelector(':scope > .system-checklist-accordion')) {
+        convertChecklistTablesToFieldsets(root);
+        root.dataset.checklistAccordion = '1';
+        return;
+      }
+      const h3List = [...root.querySelectorAll(':scope > h3')];
+      if (!h3List.length) return;
+
+      const accordion = document.createElement('div');
+      accordion.className = 'system-checklist-accordion';
+
+      h3List.forEach((h3, index) => {
+        const tables = [];
+        let next = h3.nextElementSibling;
+        while (next && /^TABLE$/i.test(next.tagName)) {
+          const grab = next;
+          next = next.nextElementSibling;
+          tables.push(grab);
+        }
+
+        const details = document.createElement('details');
+        details.className = 'system-checklist-item';
+        if (index === 0) details.open = true;
+
+        const summary = document.createElement('summary');
+        summary.className = 'system-checklist-summary';
+        const label = document.createElement('span');
+        label.className = 'system-checklist-label';
+        label.textContent = h3.textContent.trim();
+        summary.append(label);
+        summary.insertAdjacentHTML('beforeend', CHECKLIST_CHEVRON);
+
+        const panel = document.createElement('div');
+        panel.className = 'system-checklist-panel';
+        tables.forEach(t => panel.appendChild(t));
+
+        h3.remove();
+        details.append(summary, panel);
+        accordion.append(details);
+      });
+
+      root.appendChild(accordion);
+      convertChecklistTablesToFieldsets(root);
+      root.dataset.checklistAccordion = '1';
+    }
+
     function mountSystemSections() {
       const sections = resolveSystemSections();
       SYSTEM_PARTS.forEach(({ elId, key }) => {
@@ -1220,12 +2011,14 @@
         const html = sections[key];
         if (html) {
           el.innerHTML = html;
-          if (key === 'macro' || key === 'checklist' || key === 'boundary') {
+          if (key === 'macro' || key === 'checklist' || key === 'boundary' || key === 'diagram') {
             stripPanelDuplicateH2(el);
           }
         }
       });
       updateDiagramSectionVisibility();
+      const checklistRoot = document.getElementById('systemChecklistContent');
+      if (checklistRoot) enhanceChecklistAccordion(checklistRoot);
     }
 
     function forEachSystemRoot(fn) {
@@ -1262,11 +2055,79 @@
         a.textContent = `${String(m[1]).padStart(3, '0')} · ${label}`;
       });
     }
+    function sanitizeDlCell(value) {
+      const s = String(value || '').trim();
+      const m = s.match(/^\['([\s\S]*)'\]$/) || s.match(/^\["([\s\S]*)"\]$/);
+      return m ? m[1] : s;
+    }
+
+    function cleanupAssetsSection(root) {
+      if (!root) return;
+      const intro = [...root.querySelectorAll('p')].find(
+        p => p.textContent.trim() === '体系明显偏好以下资产：'
+      );
+      if (!intro) return;
+      let node = intro.nextElementSibling;
+      let kept = false;
+      while (node) {
+        const next = node.nextElementSibling;
+        const tag = node.tagName;
+        if (node.classList?.contains('system-dl-flow')) {
+          if (kept) {
+            node.remove();
+          } else {
+            kept = true;
+            node.querySelectorAll('.system-dl-desc').forEach(dd => {
+              const cleaned = sanitizeDlCell(dd.textContent);
+              if (cleaned !== dd.textContent.trim()) dd.textContent = cleaned;
+            });
+            node.querySelectorAll('.system-dl-row:not(.system-dl-row--head)').forEach(row => {
+              if (row.querySelector('dt, dd')) return;
+              const t = row.textContent.trim();
+              const m = t.match(/^(.+?)\s+\['([\s\S]*)'\]$/) || t.match(/^(.+?)\s+\["([\s\S]*)"\]$/);
+              if (!m) return;
+              row.innerHTML =
+                `<dt class="system-dl-term">${escapeHtml(m[1].trim())}</dt>` +
+                `<dd class="system-dl-desc">${escapeHtml(m[2].trim())}</dd>`;
+            });
+          }
+          node = next;
+          continue;
+        }
+        if (tag === 'TABLE' && node.classList.contains('system-table')) {
+          node.remove();
+          node = next;
+          continue;
+        }
+        if (tag === 'P' && (node.textContent.trim().startsWith('但是') || node.textContent.trim() === '代表文稿：')) break;
+        if (tag === 'H2' || tag === 'H3') break;
+        node = next;
+      }
+    }
+
+    function removeDlHeadRows(root) {
+      if (!root) return;
+      root.querySelectorAll('.system-dl-row--head').forEach(el => el.remove());
+    }
+
+    function cleanupOverviewArtifacts(root) {
+      if (!root) return;
+      removeDlHeadRows(root);
+      root.querySelectorAll('.system-dl-row--solo').forEach(el => el.remove());
+      const noteText = '从信念到执行，八个模块串联成完整投资系统。';
+      const notes = [...root.querySelectorAll('.system-table-note, .system-flow-note')]
+        .filter(p => p.textContent.trim() === noteText);
+      notes.slice(1).forEach(p => p.remove());
+    }
+
     function enhanceSystemContent() {
       const root = document.getElementById('systemContent');
       if (!root || root.dataset.flowEnhanced === '1') return;
-      if (root.querySelector('.system-table')) {
-        linkSystemOverviewModules(root);
+      cleanupOverviewArtifacts(root);
+      convertSystemTablesToDefinitionLists(root);
+      cleanupAssetsSection(root);
+      linkSystemOverviewModules(root);
+      if (root.querySelector('.system-dl-flow') || root.querySelector('.system-flow--overview')) {
         root.dataset.flowEnhanced = '1';
         return;
       }
@@ -1279,28 +2140,11 @@
           + '<p class="system-flow-note">从信念到执行，八个模块串联成完整投资系统。</p>';
         firstChapter.parentNode.insertBefore(overview, firstChapter);
       }
+      convertSystemTablesToDefinitionLists(root);
+      cleanupOverviewArtifacts(root);
+      cleanupAssetsSection(root);
       linkSystemOverviewModules(root);
       root.dataset.flowEnhanced = '1';
-    }
-
-    function stripDiagramMainFlow(root) {
-      if (!root) return;
-      const title = [...root.querySelectorAll('h3.system-table-title')].find(
-        h => h.textContent.trim() === '体系主流程'
-      );
-      if (title) {
-        let el = title.nextElementSibling;
-        while (el) {
-          const next = el.nextElementSibling;
-          if (el.tagName === 'H3' || el.tagName === 'H2') break;
-          el.remove();
-          el = next;
-        }
-        title.remove();
-      }
-      [...root.querySelectorAll('figure.system-flow')].forEach(fig => {
-        if (fig.textContent.includes('体系主流程') || fig.querySelector('#system-flow-main')) fig.remove();
-      });
     }
 
     function enhanceBoundaryLayout(root) {
@@ -1340,13 +2184,58 @@
       root.dataset.boundaryEnhanced = '1';
     }
 
+    function unwrapDiagramFlowFigure(root) {
+      if (!root) return;
+      const fig = root.querySelector('figure.system-flow--main');
+      if (!fig) return;
+      const track = fig.querySelector('.system-flow-track');
+      if (track) {
+        track.classList.add('system-diagram-flow');
+        root.insertBefore(track, fig);
+      }
+      const noteInFig = fig.querySelector('.system-flow-note');
+      if (noteInFig) root.insertBefore(noteInFig, fig);
+      fig.remove();
+      const orphanNote = root.querySelector(':scope > .system-flow-note, :scope > .system-table-note');
+      if (orphanNote && track && !track.contains(orphanNote) && orphanNote.previousElementSibling !== track) {
+        track.after(orphanNote);
+      }
+    }
+
+    function enhanceDiagramFlow(root) {
+      if (!root) return;
+      unwrapDiagramFlowFigure(root);
+      if (root.querySelector('.system-diagram-flow')) return;
+      const title = root.querySelector('h3.system-table-title');
+      const dl = root.querySelector('.system-dl-flow');
+      if (!title || title.textContent.trim() !== '体系主流程' || !dl) return;
+      const steps = [...dl.querySelectorAll('.system-dl-desc')].map(
+        dd => dd.textContent.trim()
+      ).filter(Boolean);
+      if (steps.length < 2) return;
+      const note = root.querySelector('.system-table-note, .system-flow-note');
+      const noteHtml = note
+        ? note.outerHTML
+        : '<p class="system-flow-note">长期闲钱进入系统，以分红攒股与轮动完成复利闭环。</p>';
+      root.insertAdjacentHTML('afterbegin', buildFlowTrack(steps, { footerHtml: noteHtml }));
+      title.remove();
+      dl.remove();
+      if (note) note.remove();
+    }
+
     function enhanceAllSystemSections() {
       forEachSystemRoot(linkSystemArticles);
       enhanceSystemContent();
       enhanceBoundaryLayout(document.getElementById('systemBoundaryContent'));
-      stripDiagramMainFlow(document.getElementById('systemDiagramContent'));
+      enhanceDiagramFlow(document.getElementById('systemDiagramContent'));
       updateDiagramSectionVisibility();
-      forEachSystemRoot(linkSystemArticles);
+      unwrapDiagramFlowFigure(document.getElementById('systemDiagramContent'));
+      forEachSystemRoot(root => {
+        linkSystemArticles(root);
+        convertSystemTablesToDefinitionLists(root);
+        removeDlHeadRows(root);
+        cleanupAssetsSection(root);
+      });
     }
     function duration(seconds) {
       const s = Number(seconds || 0);
@@ -1371,7 +2260,7 @@
     function setOutlinePreview(track) {
       if (!track) {
         activePreviewIndex = null;
-        outlinePreviewBody.innerHTML = '<p class="outline-preview-placeholder">点击左侧条目，预览该篇章节速览。</p>';
+        outlinePreviewBody.innerHTML = '<p class="outline-preview-placeholder">点击列表中的条目，预览该篇章节速览。</p>';
         outlinePreviewBtn.classList.add('is-hidden');
         outlinePreviewBtn.removeAttribute('href');
         markPreviewActive(null);
@@ -1389,6 +2278,9 @@
           `).join('')}</ul>`
         : '<p class="outline-preview-note">本篇暂无章节速览，可阅读全文查看简介与文稿。</p>';
       outlinePreviewBody.innerHTML = heading + body;
+      if (window.matchMedia('(max-width: 767px)').matches && typeof setLibraryTab === 'function') {
+        setLibraryTab('preview');
+      }
     }
     trackList.addEventListener('click', e => {
       const item = e.target.closest('.track-item');
@@ -1473,6 +2365,46 @@
       console.error(err);
       showDataLoadError('文稿列表渲染失败：' + (err && err.message ? err.message : String(err)));
     }
+
+    (function initNav() {
+      const shell = document.getElementById('navShell');
+      const toggle = document.getElementById('navToggle');
+      const overlay = document.getElementById('navOverlay');
+      function setNavOpen(open) {
+        shell?.classList.toggle('nav-open', open);
+        toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle?.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
+        if (overlay) overlay.hidden = !open;
+        document.body.classList.toggle('nav-open', open);
+      }
+      toggle?.addEventListener('click', () => setNavOpen(!shell?.classList.contains('nav-open')));
+      overlay?.addEventListener('click', () => setNavOpen(false));
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        a.addEventListener('click', () => setNavOpen(false));
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') setNavOpen(false);
+      });
+    })();
+
+    let setLibraryTab = function setLibraryTab(name) {
+      const root = document.getElementById('libraryRoot');
+      if (!root) return;
+      root.querySelectorAll('.library-tab').forEach(tab => {
+        const on = tab.dataset.tab === name;
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      root.querySelectorAll('.library-panel').forEach(panel => {
+        panel.classList.toggle('is-active', panel.dataset.panel === name);
+      });
+    };
+    (function initLibraryTabs() {
+      const root = document.getElementById('libraryRoot');
+      if (!root) return;
+      root.querySelectorAll('.library-tab').forEach(tab => {
+        tab.addEventListener('click', () => setLibraryTab(tab.dataset.tab));
+      });
+    })();
 
     requestAnimationFrame(() => {
       mountSystemSections();

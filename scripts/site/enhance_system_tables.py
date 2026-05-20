@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import html
 import json
 import re
 from pathlib import Path
@@ -39,22 +40,61 @@ SAN_DI_ROWS = [
 ]
 
 
-def table(headers: list[str], rows: list[tuple], caption: str = "") -> str:
-    cap = f"<caption>{caption}</caption>\n" if caption else ""
-    head = "<thead><tr>" + "".join(f'<th scope="col">{h}</th>' for h in headers) + "</tr></thead>"
-    body_rows = []
-    for row in rows:
-        body_rows.append("<tr>" + "".join(f"<td>{cell}</td>" for cell in row) + "</tr>")
-    body = "<tbody>\n" + "\n".join(body_rows) + "\n</tbody>"
-    return (
-        f'<table class="system-table" border="1" cellpadding="8" cellspacing="0" width="100%">\n'
-        f"{cap}{head}\n{body}\n</table>"
+def _dl_row(headers: list[str], cells: tuple[str, ...]) -> str:
+    h = list(headers)
+    c = [str(cell) for cell in cells]
+    if h and h[0] == "序号" and len(c) == 2:
+        return (
+            '<div class="system-dl-row">'
+            f'<dt class="system-dl-term system-dl-term--index">{c[0]}</dt>'
+            f'<dd class="system-dl-desc">{c[1]}</dd>'
+            "</div>"
+        )
+    start = 1 if h and h[0] == "序号" else 0
+    h = h[start:]
+    c = c[start:]
+    if not c:
+        return ""
+    if len(c) == 1:
+        label = html.escape(h[0]) if h else ""
+        return (
+            '<div class="system-dl-row">'
+            f'<dt class="system-dl-term">{label}</dt>'
+            f'<dd class="system-dl-desc">{c[0]}</dd>'
+            "</div>"
+        )
+    if len(c) == 2:
+        return (
+            '<div class="system-dl-row">'
+            f'<dt class="system-dl-term">{_clean_cell(c[0])}</dt>'
+            f'<dd class="system-dl-desc">{_clean_cell(c[1])}</dd>'
+            "</div>"
+        )
+    cls = f"system-dl-row system-dl-row--cols-{len(c)}"
+    parts = [f'<dt class="system-dl-term">{_clean_cell(c[0])}</dt>']
+    parts.extend(f'<dd class="system-dl-desc">{_clean_cell(part)}</dd>' for part in c[1:])
+    return f'<div class="{cls}">' + "".join(parts) + "</div>"
+
+
+def definition_list(headers: list[str], rows: list[tuple], caption: str = "") -> str:
+    cap_html = (
+        f'<p class="system-dl-caption">{html.escape(caption)}</p>\n' if caption else ""
     )
+    body = "\n".join(_dl_row(headers, row) for row in rows if _dl_row(headers, row))
+    dl_cls = "system-dl system-dl--has-index" if headers and headers[0] == "序号" else "system-dl"
+    return (
+        f'<div class="system-dl-flow">\n{cap_html}'
+        f'<dl class="{dl_cls}">\n{body}\n</dl>\n</div>'
+    )
+
+
+def table(headers: list[str], rows: list[tuple], caption: str = "") -> str:
+    return definition_list(headers, rows, caption)
 
 
 def numbered_table(headers: list[str], items: list[tuple]) -> str:
     rows = [(str(i), *rest) for i, rest in enumerate(items, 1)]
-    return table(["序号", *headers], rows)
+    return definition_list(["序号", *headers], rows)
 
 
 def strengthen_tables(html: str) -> str:
@@ -67,6 +107,36 @@ def strengthen_tables(html: str) -> str:
     return re.sub(r"<table\b[^>]*>", repl, html)
 
 
+def assets_table_html() -> str:
+    return table(
+        ["资产类型", "说明"],
+        [(title, desc) for title, desc in ASSETS],
+    )
+
+
+def _clean_cell(text: str) -> str:
+    s = str(text).strip()
+    m = re.fullmatch(r"\['(.*)'\]", s, re.S) or re.fullmatch(r'\["(.*)"\]', s, re.S)
+    return m.group(1) if m else s
+
+
+def normalize_assets_section(html: str) -> str:
+    if "体系明显偏好以下资产" not in html:
+        return html
+    block = "<p>体系明显偏好以下资产：</p>\n" + assets_table_html() + "\n"
+    pat = (
+        r"<p>体系明显偏好以下资产：</p>"
+        r"[\s\S]*?"
+        r"(?=<p>代表文稿|<p>但是|<h2\b|<h3\b|<blockquote|<ul\b|<ol\b|\Z)"
+    )
+    return re.sub(pat, block, html, count=1)
+
+
+def strip_assets_table_serial(html: str) -> str:
+    """Ensure preferred-assets block is a single two-column definition list."""
+    return normalize_assets_section(html)
+
+
 def replace_enum_lists(html: str) -> str:
     questions_tbl = numbered_table(["要点"], [(q,) for q in QUESTIONS])
     html = re.sub(
@@ -75,10 +145,7 @@ def replace_enum_lists(html: str) -> str:
         html,
         count=1,
     )
-    assets_tbl = numbered_table(
-        ["资产类型", "说明"],
-        [(t, d) for t, d in ASSETS],
-    )
+    assets_tbl = assets_table_html()
     html = re.sub(
         r"<p>体系明显偏好以下资产：</p>\s*<ol[^>]*>[\s\S]*?</ol>",
         "<p>体系明显偏好以下资产：</p>\n" + assets_tbl,
@@ -105,20 +172,64 @@ def replace_principles_ol(html: str) -> str:
     return pat.sub(repl, html)
 
 
-def replace_overview_flow_figure(html: str) -> str:
+def overview_flow_block() -> str:
     overview_tbl = numbered_table(["模块"], [(m,) for m in FLOW_OVERVIEW])
-    overview_block = (
+    return (
         f'<h3 class="system-table-title">体系全景流程</h3>\n{overview_tbl}\n'
         '<p class="system-table-note">从信念到执行，八个模块串联成完整投资系统。</p>\n'
     )
+
+
+OVERVIEW_NOTE_TEXT = "从信念到执行，八个模块串联成完整投资系统。"
+
+
+def _overview_trailing_junk() -> str:
+    note = re.escape(OVERVIEW_NOTE_TEXT)
+    return (
+        rf'(?:\s*<p class="system-(?:flow|table)-note">{note}</p>)*'
+        r'(?:\s*<div class="system-dl-row system-dl-row--solo">[\s\S]*?</div>)*'
+        r'(?:\s*</dl>\s*</div>\s*)*'
+    )
+
+
+def normalize_overview_section(html: str) -> str:
+    if "体系全景流程" not in html:
+        return html
+    overview_block = overview_flow_block()
+    pat = (
+        r'<h3 class="system-table-title">体系全景流程</h3>'
+        r'[\s\S]*?'
+        r'(?=<h2\b)'
+    )
+    return re.sub(pat, overview_block + "\n", html, count=1)
+
+
+def replace_overview_flow_figure(html: str) -> str:
+    overview_block = overview_flow_block()
+    junk = _overview_trailing_junk()
     if "system-flow--overview" in html:
         return re.sub(
-            r'<figure class="system-flow system-flow--overview"[\s\S]*?</figure>\s*'
-            r'(?:<p class="system-flow-note">[\s\S]*?</p>\s*)?',
+            r'<figure class="system-flow system-flow--overview"[\s\S]*?</figure>'
+            + junk,
             overview_block,
             html,
             count=1,
         )
+    if "体系全景流程" in html:
+        dl_flow = (
+            r'<div class="system-dl-flow">\s*'
+            r'<dl class="system-dl[^"]*"[\s\S]*?</dl>\s*</div>'
+        )
+        table = r'<table class="system-table"[\s\S]*?</table>'
+        section = (
+            r'<h3 class="system-table-title">体系全景流程</h3>\s*'
+            rf'(?:{dl_flow}|{table})'
+            + junk
+        )
+        html, n = re.subn(section, overview_block, html, count=1)
+        if n:
+            return html
+        return normalize_overview_section(html)
     return html
 
 
@@ -136,15 +247,102 @@ def fix_markdown_pipe_table(html: str) -> str:
     return re.sub(pat, repl, html, count=1)
 
 
-def chapter_eleven_block(html: str) -> str:
-    main_tbl = numbered_table(["环节"], [(s,) for s in FLOW_MAIN])
-    main_inner = (
-        f'<h3 class="system-table-title">体系主流程</h3>\n{main_tbl}\n'
-        '<p class="system-table-note">长期闲钱进入系统，以分红攒股与轮动完成复利闭环。</p>\n'
+def _flow_nodes_html(steps: list[str]) -> str:
+    nodes: list[str] = []
+    last = len(steps) - 1
+    for i, label in enumerate(steps):
+        n = str(i + 1).zfill(2)
+        cls_parts = ["flow-node"]
+        if i == 0:
+            cls_parts.append("flow-node--start")
+        if i == last:
+            cls_parts.append("flow-node--end")
+        cls = " ".join(cls_parts)
+        connector = (
+            '<div class="flow-connector" aria-hidden="true"></div>'
+            if i < last
+            else ""
+        )
+        nodes.append(
+            f'<div class="{cls}">'
+            f'<span class="flow-node-index">{n}</span>'
+            f'<span class="flow-node-label">{html.escape(label)}</span>'
+            f"</div>{connector}"
+        )
+    return "".join(nodes)
+
+
+def flow_track_html(
+    steps: list[str],
+    *,
+    track_class: str = "system-flow-track system-diagram-flow",
+    footer_html: str = "",
+    aria_label: str = "",
+) -> str:
+    aria = f' aria-label="{html.escape(aria_label)}"' if aria_label else ""
+    return (
+        f'<div class="{track_class}"{aria}>'
+        f"{_flow_nodes_html(steps)}"
+        f"</div>{footer_html}"
     )
+
+
+def flow_figure_html(
+    title: str,
+    steps: list[str],
+    fig_id: str,
+    extra_class: str = "",
+    *,
+    include_title: bool = True,
+    footer_html: str = "",
+) -> str:
+    flow_cls = "system-flow " + extra_class if extra_class else "system-flow"
+    cap = (
+        f'<figcaption id="{fig_id}" class="system-flow-title">{html.escape(title)}</figcaption>'
+        if include_title and title
+        else ""
+    )
+    if include_title and title:
+        aria = f' aria-labelledby="{fig_id}"'
+    elif title:
+        aria = f' aria-label="{html.escape(title)}"'
+    else:
+        aria = ""
+    return (
+        f'<figure class="{flow_cls.strip()}"{aria}>'
+        f"{cap}"
+        f'<div class="system-flow-track">{_flow_nodes_html(steps)}</div>'
+        f"{footer_html}"
+        f"</figure>"
+    )
+
+
+def diagram_main_flow_inner() -> str:
+    note = '<p class="system-flow-note">长期闲钱进入系统，以分红攒股与轮动完成复利闭环。</p>'
+    return flow_track_html(FLOW_MAIN, footer_html=note, aria_label="体系主流程")
+
+
+def diagram_section_block() -> str:
+    return f'<h2 id="体系结构图">体系结构图</h2>\n{diagram_main_flow_inner()}'
+
+
+def normalize_diagram_section(html: str) -> str:
+    if "体系结构图" not in html:
+        return html
+    block = diagram_section_block()
+    pat = (
+        r'<h2[^>]*>体系结构图</h2>'
+        r"[\s\S]*?"
+        r"(?=<h2[^>]*>体系边界|<h2[^>]*>十二、|\Z)"
+    )
+    return re.sub(pat, block + "\n", html, count=1)
+
+
+def chapter_eleven_block(html: str) -> str:
+    inner = diagram_main_flow_inner()
     if re.search(r"<h2[^>]*>十二、体系边界</h2>", html):
-        return f'<h2 id="十一-体系结构图">十一、体系结构图</h2>\n{main_inner}'
-    return f"<h3>十一、体系结构图</h3>\n{main_inner}"
+        return f'<h2 id="十一-体系结构图">十一、体系结构图</h2>\n{inner}'
+    return f"<h3>十一、体系结构图</h3>\n{inner}"
 
 
 def fix_chapter_eleven(html: str) -> str:
@@ -152,8 +350,11 @@ def fix_chapter_eleven(html: str) -> str:
 
     html = re.sub(
         r"<h3 class=\"system-table-title\">体系主流程</h3>\s*"
-        r'<table class="system-table"[\s\S]*?</table>\s*'
-        r'<p class="system-table-note">[\s\S]*?</p>\s*',
+        r"(?:<div class=\"system-dl-flow\">[\s\S]*?</div>|"
+        r'<table class="system-table"[\s\S]*?</table>|'
+        r'<figure class="system-flow[\s\S]*?</figure>|'
+        r'<div class="system-flow-track system-diagram-flow[\s\S]*?</div>)\s*'
+        r'<p class="system-(?:table|flow)-note">[\s\S]*?</p>\s*',
         "",
         html,
         count=1,
@@ -164,8 +365,10 @@ def fix_chapter_eleven(html: str) -> str:
             r"(?:<pre>[\s\S]*?</pre>|"
             r'<figure class="system-flow[\s\S]*?</figure>\s*'
             r'(?:<p class="system-flow-note">[\s\S]*?</p>\s*)?|'
+            r'<div class="system-flow-track system-diagram-flow[\s\S]*?</div>\s*'
+            r'(?:<p class="system-flow-note">[\s\S]*?</p>\s*)?|'
             r'<h3 class="system-table-title">体系主流程</h3>[\s\S]*?'
-            r'<p class="system-table-note">[\s\S]*?</p>\s*)*',
+            r'<p class="system-(?:table|flow)-note">[\s\S]*?</p>\s*)*',
             chapter,
             html,
             count=1,
@@ -180,8 +383,46 @@ def fix_chapter_eleven(html: str) -> str:
     return html
 
 
+CHECKLIST_CHEVRON = (
+    '<svg class="system-checklist-chevron" width="20" height="20" viewBox="0 0 24 24" '
+    'fill="none" stroke="currentColor" aria-hidden="true" focusable="false">'
+    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>'
+    "</svg>"
+)
+
+
+def checklist_fieldset(items: list[str], group_id: str) -> str:
+    options = []
+    for i, item in enumerate(items):
+        cid = f"{group_id}-item-{i + 1}"
+        options.append(
+            f'<label class="system-checklist-option" for="{cid}">'
+            f'<input type="checkbox" class="system-checklist-input" id="{cid}" />'
+            f'<span class="system-checklist-option-text">{html.escape(item)}</span>'
+            f"</label>"
+        )
+    return (
+        '<fieldset class="system-checklist-fieldset">'
+        '<legend class="sr-only">检查项</legend>'
+        f'<div class="system-checklist-options">{"".join(options)}</div>'
+        "</fieldset>"
+    )
+
+
+def checklist_details(title_html: str, panel_html: str, *, open_first: bool = False) -> str:
+    title = re.sub(r"<[^>]+>", "", title_html).strip()
+    open_attr = " open" if open_first else ""
+    return (
+        f'<details class="system-checklist-item"{open_attr}>'
+        f'<summary class="system-checklist-summary">'
+        f'<span class="system-checklist-label">{html.escape(title)}</span>{CHECKLIST_CHEVRON}</summary>'
+        f'<div class="system-checklist-panel">{panel_html}</div>'
+        f"</details>"
+    )
+
+
 def replace_checklists(html: str) -> str:
-    """Each h3 under 十、执行清单 + following ul → table."""
+    """Each h3 under 十、执行清单 + following ul → accordion details + table."""
     marker = re.search(r"<h[23][^>]*>十、可?执行清单</h[23]>", html, re.I)
     if not marker:
         return html
@@ -190,31 +431,33 @@ def replace_checklists(html: str) -> str:
     end = start + end_m.start() if end_m else len(html)
     chunk = html[start:end]
 
+    details_blocks: list[str] = []
+
     def repl_block(m: re.Match[str]) -> str:
-        title = re.sub(r"<[^>]+>", "", m.group(1)).strip()
         items = re.findall(r"<li>([\s\S]*?)</li>", m.group(2))
         if not items:
             return m.group(0)
-        rows = [(it.strip(),) for it in items]
-        tbl = numbered_table(["检查项"], rows)
-        return m.group(0).split("<ul>")[0].replace(
-            m.group(1), m.group(1)
-        )  # noqa - use structured rebuild
-        # rebuild: keep h3, replace ul with table
-        h3 = m.group(0)[: m.group(0).find("<ul>")]
-        return h3 + tbl
+        plain_items = [re.sub(r"\s+", " ", it.strip()) for it in items]
+        fieldset = checklist_fieldset(plain_items, f"checklist-{len(details_blocks)}")
+        details_blocks.append(
+            checklist_details(m.group(1), fieldset, open_first=len(details_blocks) == 0)
+        )
+        return ""
 
-    chunk2 = re.sub(
+    chunk_body = re.sub(
         r"(<h[34][^>]*>[\s\S]*?</h[34]>)\s*<ul>([\s\S]*?)</ul>",
-        lambda m: (
-            m.group(1)
-            + "\n"
-            + numbered_table(
-                ["检查项"],
-                [(re.sub(r"\s+", " ", it.strip()),) for it in re.findall(r"<li>([\s\S]*?)</li>", m.group(2))],
-            )
-        ),
+        repl_block,
         chunk,
+    )
+    if not details_blocks:
+        return html
+    accordion = '<div class="system-checklist-accordion">' + "".join(details_blocks) + '</div>'
+    chunk2 = re.sub(
+        r"<h[23][^>]*>十、可?执行清单</h[23]>",
+        lambda m: m.group(0) + "\n" + accordion,
+        chunk_body,
+        count=1,
+        flags=re.I,
     )
     return html[:start] + chunk2 + html[end:]
 
@@ -252,11 +495,7 @@ def replace_boundary_lists(html: str) -> str:
 
 
 def inject_flow_tables(html: str) -> str:
-    overview_tbl = numbered_table(["模块"], [(m,) for m in FLOW_OVERVIEW])
-    overview_block = (
-        f'<h3 class="system-table-title">体系全景流程</h3>\n{overview_tbl}\n'
-        '<p class="system-table-note">从信念到执行，八个模块串联成完整投资系统。</p>\n'
-    )
+    overview_block = overview_flow_block()
     main_block = chapter_eleven_block(html)
 
     if "体系全景流程" not in html and "system-table-title" not in html:
@@ -278,16 +517,41 @@ def inject_flow_tables(html: str) -> str:
     return html
 
 
+INVESTOR_NICKNAMES: list[tuple[str, str]] = [
+    ("格雷厄姆", "祖师爷"),
+    ("巴菲特", "巴老"),
+    ("芒格", "芒格老"),
+    ("施洛斯", "大师兄"),
+    ("西格尔", "西格尔教授"),
+]
+
+
+def annotate_investor_nicknames(html: str) -> str:
+    for name, nick in INVESTOR_NICKNAMES:
+        html = re.sub(
+            rf"<li>{re.escape(name)}(?!（)(：)",
+            f"<li>{name}（{nick}）：",
+            html,
+        )
+    html = re.sub(r"<li>卡拉曼(：)", "<li>塞思·卡拉曼：", html)
+    return html
+
+
 def transform(html: str) -> str:
     html = strengthen_tables(html)
     html = replace_overview_flow_figure(html)
     html = fix_markdown_pipe_table(html)
     html = replace_enum_lists(html)
+    html = strip_assets_table_serial(html)
     html = replace_principles_ol(html)
     html = replace_checklists(html)
     html = replace_boundary_lists(html)
     html = inject_flow_tables(html)
     html = fix_chapter_eleven(html)
+    html = normalize_overview_section(html)
+    html = normalize_assets_section(html)
+    html = normalize_diagram_section(html)
+    html = annotate_investor_nicknames(html)
     return html
 
 

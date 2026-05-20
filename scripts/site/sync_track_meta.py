@@ -14,7 +14,8 @@ from datetime import datetime
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
+
+from data_bundle import load_data, save_data  # noqa: E402
 CONTENT = REPO / "content"
 TRACKS_PATH = CONTENT / "tracks.json"
 INDEX_PATH = CONTENT / "index.csv"
@@ -94,16 +95,6 @@ def patch_markdown(text: str, published_at: str | None, play_count: int | None) 
         out = rebuilt
 
     return "\n".join(out) + ("\n" if text.endswith("\n") else "")
-
-
-def load_data() -> dict:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    return json.loads(raw.removeprefix("window.SHENGSHI_DATA = ").strip().rstrip(";"))
-
-
-def save_data(data: dict) -> None:
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
 
 
 def load_tracks() -> list[dict]:
@@ -274,7 +265,7 @@ def main() -> None:
 
     with_pub = sum(1 for t in all_tracks if t.get("publishedAt"))
     with_play = sum(1 for t in all_tracks if t.get("playCount") is not None)
-    print(f"Saved {TRACKS_PATH}, {DATA_JS}, {INDEX_PATH}")
+    print(f"Saved {TRACKS_PATH}, data-index.js, {INDEX_PATH}")
     print(
         f"publishedAt: {with_pub}/{len(all_tracks)}, playCount: {with_play}/{len(all_tracks)}, "
         f"markdown patched: {md_updated}, fetched: {fetched}, skipped: {skipped}"

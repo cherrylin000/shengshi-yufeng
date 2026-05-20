@@ -9,7 +9,8 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
+
+from data_bundle import load_data, save_data  # noqa: E402
 
 AVOID = [
     "短期暴利",
@@ -59,8 +60,7 @@ def extract_from_tables(text: str) -> tuple[list[str], list[str]] | None:
 
 
 def main() -> None:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    data = json.loads(raw.removeprefix("window.SHENGSHI_DATA = ").strip().rstrip(";"))
+    data = load_data()
     boundary = data.get("systemSections", {}).get("boundary", "")
     parsed = extract_from_tables(boundary)
     avoid, pursue = parsed if parsed else (AVOID, PURSUE)
@@ -75,8 +75,7 @@ def main() -> None:
             count=1,
         )
 
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
+    save_data(data)
     print(f"patched boundary: {len(avoid)} avoid, {len(pursue)} pursue")
 
 

@@ -98,27 +98,43 @@
     .topbar-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      border: 1px solid transparent;
     }
-    .icon-btn {
+    .paddlenav-arrow {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 44px;
-      min-height: 44px;
-      padding: 0 14px;
-      border: 0;
-      border-radius: var(--radius-sm);
-      background: var(--ink);
-      color: var(--on-dark);
-      font-size: 14px;
-      font-weight: 400;
-      letter-spacing: -0.224px;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: rgba(29, 29, 31, 1);
       cursor: pointer;
-      transition: transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
     }
-    .icon-btn:active:not(:disabled) { transform: scale(0.95); }
-    .icon-btn:disabled { opacity: 0.35; cursor: not-allowed; background: var(--ink-muted-48); }
+    .paddlenav-arrow:hover:not(:disabled) {
+      background: #d2d2d7;
+    }
+    .paddlenav-arrow:active:not(:disabled) {
+      transform: scale(0.94);
+    }
+    .paddlenav-arrow:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      background: #e8e8ed;
+    }
+    .paddlenav-arrow svg {
+      display: block;
+      width: 36px;
+      height: 36px;
+      pointer-events: none;
+    }
 
     .shell {
       max-width: calc(var(--read-width) + var(--aside-width) + 8rem);
@@ -430,8 +446,16 @@
     <div class="topbar-inner">
       <a class="back" href="../index.html#library">← 文稿库</a>
       <div class="topbar-actions">
-        <button type="button" class="icon-btn" id="prevBtn" title="上一篇">上一篇</button>
-        <button type="button" class="icon-btn" id="nextBtn" title="下一篇">下一篇</button>
+        <button type="button" class="paddlenav-arrow paddlenav-arrow-previous" id="prevBtn" aria-label="上一篇" title="上一篇">
+          <svg viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+            <path d="M21.2 23.4l-5.2-5.4 5.2-5.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button type="button" class="paddlenav-arrow paddlenav-arrow-next" id="nextBtn" aria-label="下一篇" title="下一篇">
+          <svg viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+            <path d="M14.8 23.4l5.2-5.4-5.2-5.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -440,9 +464,9 @@
     <p class="state">正在加载文稿…</p>
   </main>
 
-  <script src="../data.js"></script>
+  <script src="../data-index.js"></script>
   <script>
-    const data = window.SHENGSHI_DATA;
+    const data = window.SHENGSHI_INDEX;
     const app = document.getElementById('app');
     const progress = document.getElementById('progress');
     const prevBtn = document.getElementById('prevBtn');
@@ -470,7 +494,8 @@
       return chunks.map(p => p.replace(/\n/g, '').trim()).filter(Boolean);
     }
 
-    function resolveTrack() {
+    function resolveTrackMeta() {
+      if (!data || !Array.isArray(data.tracks)) return null;
       const params = new URLSearchParams(location.search);
       const id = params.get('id');
       const index = params.get('index');
@@ -485,6 +510,18 @@
         return data.tracks.find(t => String(t.trackId) === hash);
       }
       return data.tracks.find(t => t.status === 'ok') || data.tracks[0];
+    }
+
+    function articleJsonUrl(index) {
+      return `articles/${String(index).padStart(3, '0')}.json`;
+    }
+
+    async function loadArticleBody(meta) {
+      if (!meta) return null;
+      const res = await fetch(articleJsonUrl(meta.index), { cache: 'force-cache' });
+      if (!res.ok) return { ...meta };
+      const body = await res.json();
+      return { ...meta, ...body };
     }
 
     function neighborTracks(track) {
@@ -575,10 +612,21 @@
       update();
     }
 
-    function navigate(track) {
+    async function navigate(track) {
       history.pushState(null, '', pageUrl(track));
-      render(track);
+      await showTrack(track);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function showTrack(meta) {
+      app.innerHTML = '<p class="state">正在加载文稿…</p>';
+      try {
+        const track = await loadArticleBody(meta);
+        render(track);
+      } catch (err) {
+        console.error(err);
+        app.innerHTML = `<p class="state">文稿加载失败：${escapeHtml(err && err.message ? err.message : String(err))}</p>`;
+      }
     }
 
     function render(track) {
@@ -644,8 +692,19 @@
       }
     }
 
-    window.addEventListener('popstate', () => render(resolveTrack()));
-    render(resolveTrack());
+    window.addEventListener('popstate', () => showTrack(resolveTrackMeta()));
+
+    if (!data || !Array.isArray(data.tracks)) {
+      app.innerHTML = `
+        <div class="state">
+          <h2>索引未能加载</h2>
+          <p>请用本地 HTTP 服务打开（<code>python -m http.server</code>），并确认 <code>data-index.js</code> 在站点根目录。</p>
+          <p><a href="../index.html#library">返回文稿库</a></p>
+        </div>
+      `;
+    } else {
+      showTrack(resolveTrackMeta());
+    }
   </script>
 </body>
 </html>

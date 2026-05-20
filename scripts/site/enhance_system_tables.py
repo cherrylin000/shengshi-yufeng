@@ -10,7 +10,8 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
+
+from data_bundle import load_data, save_data  # noqa: E402
 FLOW_OVERVIEW = [
     "底层信念", "选股·三低一高", "估值·安全边际", "买入·分批",
     "持有·分红攒股", "轮动·再配置", "风控·分散", "心性·纪律",
@@ -556,8 +557,6 @@ def transform(html: str) -> str:
 
 
 def patch_data_js() -> None:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    data = json.loads(raw.split("=", 1)[1].strip().rstrip(";"))
     import sys
 
     site_dir = Path(__file__).resolve().parent
@@ -565,14 +564,14 @@ def patch_data_js() -> None:
         sys.path.insert(0, str(site_dir))
     from split_system_sections import build_sections, merge_monolithic_if_needed
 
+    data = load_data()
     html = merge_monolithic_if_needed(data)
     html = transform(html)
     sections = build_sections(html)
     data["systemSections"] = sections
     data["systemHtml"] = sections["core"]
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
-    print("data.js: systemHtml → tables + systemSections split")
+    save_data(data)
+    print("data-index.js: systemHtml → tables + systemSections split")
 
 
 if __name__ == "__main__":

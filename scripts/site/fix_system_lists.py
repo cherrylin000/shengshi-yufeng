@@ -9,7 +9,10 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
+
+from data_bundle import load_data, save_data  # noqa: E402
+
+
 def merge_broken_ols(html: str) -> str:
     """Only merge the four asset-type items under 偏好以下资产."""
     inner = re.compile(
@@ -37,18 +40,15 @@ def merge_broken_ols(html: str) -> str:
 
 
 def patch_data_js() -> None:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    prefix = "window.SHENGSHI_DATA = "
-    data = json.loads(raw.removeprefix(prefix).strip().rstrip(";"))
+    data = load_data()
     before = data["systemHtml"]
     after = merge_broken_ols(before)
     if before == after:
-        print("data.js: no broken ol runs found")
+        print("data-index.js: no broken ol runs found")
         return
     data["systemHtml"] = after
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"{prefix}{body};\n", encoding="utf-8")
-    print("data.js: patched systemHtml")
+    save_data(data)
+    print("data-index.js: patched systemHtml")
 
 
 if __name__ == "__main__":

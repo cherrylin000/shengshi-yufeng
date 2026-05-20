@@ -13,11 +13,12 @@
 ## 目录结构
 
 ```
-├── index.html / data.js                  # 静态站点入口与数据（可部署）
-├── content/article.html                  # 单篇文稿阅读页
+├── index.html / data-index.js            # 首页（轻量索引，不含全文稿）
+├── content/article.html                  # 单篇阅读页（按篇加载 articles/*.json）
+├── content/articles/                     # 单篇文稿 JSON（构建生成）
 ├── content/                              # 专辑文稿与 investment_system.md
 └── scripts/
-    ├── site/                             # 构建 data.js、体系链接
+    ├── site/                             # 构建 data-index.js、体系链接
     └── transcripts/                      # 文稿规范化与 Show Notes 回退
 ```
 
@@ -31,11 +32,14 @@ python -m http.server 8080
 ## 维护命令
 
 ```bash
-# 从 content/transcripts 全量同步到 data.js（文稿 + AI 简介/章节速览 + 元信息）
+# 从 content/transcripts 全量同步到 data-index.js + content/articles/（按篇 JSON）
 python scripts/site/sync_data_from_content.py
 
 # 或一键：文稿 + 播放量/发布时间（来自 tracks.json 与 Markdown）
 python scripts/site/rebuild_data_js.py
+
+# 若仅有旧版 data.js，可一次性拆分为索引 + 单篇 JSON：
+python scripts/site/data_bundle.py
 
 # 仅补充 intro / outline（旧命令，不含全文稿）
 python scripts/site/enrich_data.py

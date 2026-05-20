@@ -14,7 +14,6 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
 CONTENT = REPO / "content"
 INDEX_PATH = CONTENT / "index.csv"
 TRACKS_PATH = CONTENT / "tracks.json"
@@ -32,14 +31,7 @@ PLACEHOLDER_MARKERS = (
 )
 
 
-def load_data() -> dict:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    return json.loads(raw.removeprefix("window.SHENGSHI_DATA = ").strip().rstrip(";"))
-
-
-def save_data(data: dict) -> None:
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
+from data_bundle import load_data, save_data  # noqa: E402
 
 
 def load_index() -> dict[int, dict[str, str]]:
@@ -200,7 +192,7 @@ def main() -> None:
     ok = sum(1 for t in data["tracks"] if t.get("status") == "ok")
     with_pub = sum(1 for t in data["tracks"] if t.get("publishedAt"))
     with_play = sum(1 for t in data["tracks"] if t.get("playCount") is not None)
-    print(f"Saved {DATA_JS}")
+    print("Saved data-index.js + content/articles/")
     print(
         f"tracks: {len(data['tracks'])}, ok: {ok}, intro: {updated_intro}, "
         f"outline: {updated_outline}, content updated: {updated_content}, "

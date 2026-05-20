@@ -9,22 +9,12 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
 SYSTEM_MD = REPO / "content" / "investment_system.md"
+
+from data_bundle import load_data, save_data  # noqa: E402
 
 H2 = re.compile(r"(<h2[^>]*>)([\s\S]*?)(</h2>)", re.I)
 CHAPTER = re.compile(r"^[一二三四五六七八九十]+、")
-
-
-def load_data() -> dict:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    payload = raw.removeprefix("window.SHENGSHI_DATA = ").strip().rstrip(";")
-    return json.loads(payload)
-
-
-def save_data(data: dict) -> None:
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
 
 
 def merge_monolithic_if_needed(data: dict) -> str:
@@ -173,7 +163,7 @@ def main() -> None:
     save_data(data)
     for key, val in sections.items():
         print(f"  {key}: {len(val)} chars")
-    print(f"Updated {DATA_JS}")
+    print("Updated data-index.js")
 
 
 if __name__ == "__main__":

@@ -13,8 +13,9 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
 CONTENT = REPO / "content"
+
+from data_bundle import load_data, save_data  # noqa: E402
 TRANSCRIPTS_ROOT = CONTENT
 
 CHAPTER_LINE = re.compile(r"^- (\d{1,2}:\d{2}(?::\d{2})?)\s+(.+?)\s*$")
@@ -61,17 +62,6 @@ def resolve_md_path(track: dict) -> Path | None:
     return None
 
 
-def load_data() -> dict:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    payload = raw.removeprefix("window.SHENGSHI_DATA = ").strip().rstrip(";")
-    return json.loads(payload)
-
-
-def save_data(data: dict) -> None:
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
-
-
 def main() -> None:
     data = load_data()
     enriched = 0
@@ -95,7 +85,7 @@ def main() -> None:
     save_data(data)
     with_outline = sum(1 for t in data["tracks"] if t.get("outline"))
     with_intro = sum(1 for t in data["tracks"] if t.get("intro"))
-    print(f"Saved {DATA_JS}")
+    print("Saved data-index.js + content/articles/")
     print(f"intro: {with_intro}, outline: {with_outline}, tracks: {len(data['tracks'])}")
 
 

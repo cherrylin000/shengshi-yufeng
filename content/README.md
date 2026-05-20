@@ -14,6 +14,7 @@
 - `investment_system.md`：基于可用文稿整理出的盛世裕丰投资体系。
 - `transcripts/`：逐条音频 Markdown 文稿。
 - `../index.html`：可对外分享的静态网页（仓库根），含投资体系与文稿检索。
-- `article.html`：单篇文稿阅读页（与 `../data.js` 配合使用）。
+- `article.html`：单篇文稿阅读页（`../data-index.js` + `articles/{序号}.json`）。
+- `articles/`：单篇文稿正文与简介/速览（由 `scripts/site/data_bundle.py` 生成）。
 
 > 文稿来自页面公开返回的 AI/ASR 文稿数据，可能存在同音字、断句和识别错误。

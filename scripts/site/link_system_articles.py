@@ -9,8 +9,9 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-DATA_JS = REPO / "data.js"
 SYSTEM_MD = REPO / "content" / "investment_system.md"
+
+from data_bundle import load_data, save_data  # noqa: E402
 
 SOUND_HREF = re.compile(
     r'(<a\b[^>]*\bhref=")https://www\.ximalaya\.com/sound/(\d+)("[^>]*>)',
@@ -91,25 +92,22 @@ def rewrite_markdown(text: str, by_id: dict[str, int]) -> str:
 
 
 def patch_data_js() -> int:
-    raw = DATA_JS.read_text(encoding="utf-8")
-    data = json.loads(raw.split("=", 1)[1].strip().rstrip(";"))
+    data = load_data()
     by_id, _ = build_maps(data["tracks"])
     before = data["systemHtml"]
     after = rewrite_html_labels(rewrite_html(before, by_id))
     data["systemHtml"] = after
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
+    save_data(data)
     n = len(SOUND_HREF.findall(before))
     left = len(SOUND_HREF.findall(after))
-    print(f"data.js: {n} links rewritten, {left} ximalaya links remain")
+    print(f"data-index.js: {n} links rewritten, {left} ximalaya links remain")
     return n - left
 
 
 def patch_markdown() -> int:
     if not SYSTEM_MD.is_file():
         return 0
-    raw = DATA_JS.read_text(encoding="utf-8")
-    data = json.loads(raw.split("=", 1)[1].strip().rstrip(";"))
+    data = load_data()
     by_id, _ = build_maps(data["tracks"])
     text = SYSTEM_MD.read_text(encoding="utf-8")
     before = len(MD_LINK.findall(text))
@@ -122,12 +120,10 @@ def patch_markdown() -> int:
 
 def label_only() -> None:
     """Add 001 · prefixes to existing content/article.html links (no ximalaya rewrite)."""
-    raw = DATA_JS.read_text(encoding="utf-8")
-    data = json.loads(raw.split("=", 1)[1].strip().rstrip(";"))
+    data = load_data()
     data["systemHtml"] = rewrite_html_labels(data["systemHtml"])
-    body = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    DATA_JS.write_text(f"window.SHENGSHI_DATA = {body};\n", encoding="utf-8")
-    print("data.js: article link labels updated")
+    save_data(data)
+    print("data-index.js: article link labels updated")
 
     if SYSTEM_MD.is_file():
         md = rewrite_markdown_labels(SYSTEM_MD.read_text(encoding="utf-8"))

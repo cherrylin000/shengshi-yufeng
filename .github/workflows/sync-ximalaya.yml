@@ -51,11 +51,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes — album already up to date."
           else
-            git commit -m "$(cat <<'EOF'
-chore: sync Ximalaya album and rebuild site data
-
-Automated weekly sync: tracks.json, transcripts, data-index.js, articles.
-EOF
-)"
+            git commit -m "chore: sync Ximalaya album and rebuild site data"
             git push
           fi

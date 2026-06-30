@@ -53,7 +53,7 @@ jobs:
       - name: Rebuild data-index.js and articles
         run: python scripts/site/rebuild_data_js.py
 
-      - name: Update library updated date
+      - name: Update index.html and corpus counts from meta
         run: python scripts/site/update_library_date.py
 
       - name: Commit and push changes

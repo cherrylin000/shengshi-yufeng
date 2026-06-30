@@ -3,7 +3,8 @@
 """
 Rebuild data.js track fields from content/transcripts/*.md and content/index.csv.
 
-Syncs: intro, outline, content (ASR), charCount, status, publishedAt, playCount.
+Syncs: intro, outline, content (ASR), charCount, status, publishedAt, playCount;
+merges new rows from index.csv and recomputes meta.trackCount / okCount / charTotal.
 """
 
 from __future__ import annotations
@@ -32,14 +33,69 @@ PLACEHOLDER_MARKERS = (
 
 
 from data_bundle import load_data, save_data  # noqa: E402
+from site_meta import recompute_meta  # noqa: E402
+
+
+def load_index_rows() -> list[dict[str, str]]:
+    with INDEX_PATH.open(encoding="utf-8", newline="") as f:
+        return list(csv.DictReader(f))
 
 
 def load_index() -> dict[int, dict[str, str]]:
     rows: dict[int, dict[str, str]] = {}
-    with INDEX_PATH.open(encoding="utf-8", newline="") as f:
-        for row in csv.DictReader(f):
-            rows[int(row["trackId"])] = row
+    for row in load_index_rows():
+        rows[int(row["trackId"])] = row
     return rows
+
+
+def new_track_from_index(row: dict[str, str], tj: dict | None) -> dict:
+    tid = int(row["trackId"])
+    track: dict = {
+        "index": int(row["index"]),
+        "trackId": tid,
+        "title": row.get("title") or (tj or {}).get("title") or "",
+        "duration": int(row.get("duration") or (tj or {}).get("duration") or 0),
+        "status": row.get("status") or "unavailable",
+        "charCount": int(row.get("charCount") or 0),
+        "segments": int(row.get("segments") or 0),
+    }
+    rel = row.get("transcriptFile") or ""
+    if rel:
+        track["transcriptFile"] = rel
+    if row.get("publishedAt"):
+        track["publishedAt"] = row["publishedAt"]
+    elif tj and tj.get("publishedAt"):
+        track["publishedAt"] = tj["publishedAt"]
+    if row.get("playCount"):
+        track["playCount"] = int(row["playCount"])
+    elif tj and tj.get("playCount") is not None:
+        track["playCount"] = int(tj["playCount"])
+    err = row.get("error") or ""
+    if err:
+        track["error"] = err
+    return track
+
+
+def merge_tracks_from_index(data: dict, index_rows: list[dict[str, str]], tracks_json: dict[int, dict]) -> int:
+    """Align data-index tracks with index.csv (add new rows, drop removed, refresh index order)."""
+    existing = {int(t["trackId"]): t for t in data.get("tracks", [])}
+    merged: list[dict] = []
+    added = 0
+    for row in sorted(index_rows, key=lambda r: int(r["index"])):
+        tid = int(row["trackId"])
+        track = existing.get(tid)
+        if track is None:
+            track = new_track_from_index(row, tracks_json.get(tid))
+            added += 1
+        else:
+            track["index"] = int(row["index"])
+            if row.get("title"):
+                track["title"] = row["title"]
+            if row.get("duration"):
+                track["duration"] = int(row["duration"])
+        merged.append(track)
+    data["tracks"] = merged
+    return added
 
 
 def load_tracks_json() -> dict[int, dict]:
@@ -167,8 +223,10 @@ def apply_parsed(track: dict, parsed: dict, index_row: dict[str, str] | None, tj
 
 def main() -> None:
     data = load_data()
-    index_by_id = load_index()
+    index_rows = load_index_rows()
+    index_by_id = {int(row["trackId"]): row for row in index_rows}
     tracks_json = load_tracks_json()
+    added = merge_tracks_from_index(data, index_rows, tracks_json)
     updated_content = 0
     updated_intro = 0
     updated_outline = 0
@@ -176,6 +234,9 @@ def main() -> None:
     for track in data.get("tracks", []):
         tid = int(track["trackId"])
         md_path = resolve_md_path(track)
+        if not md_path and index_by_id.get(tid, {}).get("transcriptFile"):
+            rel = index_by_id[tid]["transcriptFile"]
+            md_path = CONTENT / rel.replace("\\", "/")
         if not md_path:
             continue
         parsed = parse_markdown(md_path.read_text(encoding="utf-8"))
@@ -188,14 +249,15 @@ def main() -> None:
         if track.get("outline"):
             updated_outline += 1
 
+    stats = recompute_meta(data)
     save_data(data)
-    ok = sum(1 for t in data["tracks"] if t.get("status") == "ok")
     with_pub = sum(1 for t in data["tracks"] if t.get("publishedAt"))
     with_play = sum(1 for t in data["tracks"] if t.get("playCount") is not None)
     print("Saved data-index.js + content/articles/")
     print(
-        f"tracks: {len(data['tracks'])}, ok: {ok}, intro: {updated_intro}, "
-        f"outline: {updated_outline}, content updated: {updated_content}, "
+        f"tracks: {stats['trackCount']} (+{added} new), ok: {stats['okCount']}, "
+        f"missing: {stats['missingCount']}, chars: {stats['charTotal']}, "
+        f"intro: {updated_intro}, outline: {updated_outline}, content updated: {updated_content}, "
         f"publishedAt: {with_pub}, playCount: {with_play}"
     )
 

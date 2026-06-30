@@ -35,6 +35,13 @@ python -m http.server 8080
 # 喜马拉雅专辑有更新：刷新 tracks.json / index.csv，并为新音频生成 md 文稿
 python scripts/transcripts/sync_album_from_api.py --fetch-transcripts --delay 2
 
+# 补抓未拿到全文的文稿（373+ 等需登录 Cookie 才能拉「原文文稿」）
+# 先设置环境变量 XIMALAYA_COOKIE（见下方说明），再执行：
+python scripts/transcripts/sync_album_from_api.py --skip-tracks-json --refetch-incomplete --from-index 373 --delay 2
+
+# 单条测试原文文稿 API：
+python scripts/transcripts/fetch_aidoc.py 980020064
+
 # 从 content/transcripts 全量同步到 data-index.js + content/articles/（按篇 JSON）
 python scripts/site/sync_data_from_content.py
 
@@ -70,3 +77,17 @@ python scripts/transcripts/normalize_transcripts.py
 手动触发：GitHub 仓库 → **Actions** → **Sync Ximalaya album** → **Run workflow**。
 
 首次启用需在仓库 **Settings → Actions → General → Workflow permissions** 中选择 **Read and write permissions**。
+
+### 原文文稿（373 集及以后）
+
+手机 App 里的「原文文稿」来自 `anchor-works-web/aiDoc/page`，**需要登录 Cookie**，公开 Show Notes API 往往没有 `aiDocUrl`。
+
+1. 浏览器登录 [喜马拉雅](https://www.ximalaya.com)，打开**有「原文文稿」的音频页**（如 [第 377 集](https://www.ximalaya.com/sound/980020064)）。
+2. F12 → **Network** → 刷新 → 任选同域请求 → 复制请求头整段 **Cookie**（需含登录态；仅首页 Cookie 可能不够）。
+3. 本地：`$env:XIMALAYA_COOKIE="..."`；GitHub：**Settings → Secrets → Actions** → `XIMALAYA_COOKIE`。
+4. 验证：`python scripts/transcripts/fetch_aidoc.py 980020064 --debug`（应看到 `chars:` 与正文预览）。
+5. 补抓：`python scripts/transcripts/sync_album_from_api.py --skip-tracks-json --refetch-incomplete --from-index 373 --delay 2`
+
+若本地公司网络拦截 `m.ximalaya.com`（Fortinet 等），请在 GitHub Actions 手动运行 workflow 测试；或手机热点后再跑本地命令。
+
+Cookie 仅用于抓取您有权访问的专辑文稿，**不要**粘贴到 Issue/聊天；过期后重新复制更新 Secret。

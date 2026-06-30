@@ -5,9 +5,10 @@ Sync Ximalaya album track list into tracks.json + index.csv, and fetch markdown
 transcripts for newly discovered tracks.
 
 Transcript fallback (always writes .md):
-  1. Full ASR via Show Notes aiDocUrl when available
-  2. Show Notes preview (AI intro + chapter outline)
-  3. Empty placeholder stub
+  1. Mobile「原文文稿」via aiDoc/page (requires XIMALAYA_COOKIE)
+  2. Full ASR via Show Notes aiDocUrl when available
+  3. Show Notes preview (AI intro + chapter outline)
+  4. Empty placeholder stub
 """
 
 from __future__ import annotations
@@ -73,6 +74,7 @@ from fetch_shownotes_fallback import (  # noqa: E402
     meta_extra_lines,
     parse_shownotes_payload,
 )
+from fetch_aidoc import fetch_aidoc_text, get_cookie  # noqa: E402
 
 
 def char_count(text: str) -> int:
@@ -366,22 +368,44 @@ def fetch_transcript_md(track: dict) -> tuple[str, str, str, int, int]:
     """
     track_id = int(track["trackId"])
     notes_error = ""
+    ai_intro: str | None = None
+    chapters: list[tuple[str, str]] = []
+    payload: dict | None = None
 
+    # 1) Mobile「原文文稿」— requires XIMALAYA_COOKIE (login session)
+    if get_cookie():
+        try:
+            asr_body = fetch_aidoc_text(track_id)
+            if asr_body and not any(m in asr_body for m in PLACEHOLDER_MARKERS):
+                try:
+                    payload = fetch_shownotes(track_id)
+                    ai_intro, chapters = parse_shownotes_payload(payload)
+                except (urllib.error.URLError, ValueError, json.JSONDecodeError, OSError, PermissionError):
+                    pass
+                md = build_markdown_with_asr(track, ai_intro, chapters, asr_body)
+                cc = char_count(asr_body)
+                segs = max(1, asr_body.count("\n\n") + 1)
+                return md, "ok", "", cc, segs
+        except PermissionError as e:
+            notes_error = str(e)
+        except (urllib.error.URLError, json.JSONDecodeError, OSError, ValueError) as e:
+            notes_error = f"aiDoc: {e}"
+
+    # 2) Show Notes (+ optional aiDocUrl in same payload)
     try:
         payload = fetch_shownotes(track_id)
     except (urllib.error.URLError, ValueError, json.JSONDecodeError, OSError) as e:
         md = build_empty_markdown(track)
-        return md, "unavailable", str(e), 0, 0
+        err = notes_error or str(e)
+        return md, "unavailable", err, 0, 0
 
     data = payload.get("data") or {}
     ai_doc_url = data.get("aiDocUrl")
-    ai_intro: str | None = None
-    chapters: list[tuple[str, str]] = []
 
     try:
         ai_intro, chapters = parse_shownotes_payload(payload)
     except ValueError as e:
-        notes_error = str(e)
+        notes_error = notes_error or str(e)
 
     if ai_doc_url:
         try:
@@ -403,7 +427,16 @@ def fetch_transcript_md(track: dict) -> tuple[str, str, str, int, int]:
 
     md = build_empty_markdown(track)
     err = notes_error or "no shownotes or aiIntro"
+    if not get_cookie():
+        err = f"{err}; set XIMALAYA_COOKIE for aiDoc/原文文稿"
     return md, "unavailable", err, 0, 0
+
+
+def needs_refetch(md_path: Path) -> bool:
+    if not md_path.is_file():
+        return True
+    status, _, _ = analyze_md(md_path.read_text(encoding="utf-8"))
+    return status != "ok"
 
 
 def index_row_for_track(
@@ -483,6 +516,13 @@ def main() -> None:
         action="store_true",
         help="Use API orderNo as index (may break article links)",
     )
+    ap.add_argument(
+        "--refetch-incomplete",
+        action="store_true",
+        help="Re-fetch transcripts that are not status=ok (needs XIMALAYA_COOKIE for 原文文稿)",
+    )
+    ap.add_argument("--from-index", type=int, default=0, help="Only refetch tracks with index >= N")
+    ap.add_argument("--to-index", type=int, default=0, help="Only refetch tracks with index <= N")
     args = ap.parse_args()
 
     local = load_local_tracks()
@@ -518,13 +558,25 @@ def main() -> None:
         tracks = local
         new_ids = []
 
-    if not args.fetch_transcripts:
+    if not args.fetch_transcripts and not args.refetch_incomplete:
         print("Done (use --fetch-transcripts to generate new markdown files)")
         return
 
+    if args.refetch_incomplete and not args.fetch_transcripts:
+        args.fetch_transcripts = True
+
     missing = [t for t in tracks if not transcript_path(t).is_file()]
+    if args.refetch_incomplete:
+        for t in tracks:
+            idx = int(t["index"])
+            if args.from_index and idx < args.from_index:
+                continue
+            if args.to_index and idx > args.to_index:
+                continue
+            if needs_refetch(transcript_path(t)) and t not in missing:
+                missing.append(t)
     if not missing:
-        print("No missing transcript files.")
+        print("No missing or incomplete transcript files.")
         return
 
     print(f"Fetching {len(missing)} transcript(s) …")

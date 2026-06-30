@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import re
 import time
 import urllib.error
@@ -61,18 +62,20 @@ def normalize_chapter_time(ts: str) -> str:
     return ts
 
 
-def fetch_shownotes(track_id: int, retries: int = 3) -> dict:
+def fetch_shownotes(track_id: int, retries: int = 3, cookie: str | None = None) -> dict:
     url = SHOWNOTES_API.format(track_id=track_id)
-    req = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
-                "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
-            ),
-            "Accept": "application/json",
-        },
-    )
+    cookie = cookie or os.environ.get("XIMALAYA_COOKIE", "").strip() or None
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
+            "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+        ),
+        "Accept": "application/json",
+    }
+    if cookie:
+        headers["Cookie"] = cookie
+        headers["Referer"] = f"https://www.ximalaya.com/sound/{track_id}"
+    req = urllib.request.Request(url, headers=headers)
     last_err: Exception | None = None
     for attempt in range(retries):
         try:

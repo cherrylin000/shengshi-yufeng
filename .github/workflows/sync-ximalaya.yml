@@ -30,10 +30,23 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Verify XIMALAYA_COOKIE (track 377)
+        env:
+          XIMALAYA_COOKIE: ${{ secrets.XIMALAYA_COOKIE }}
+        run: |
+          if [ -z "$XIMALAYA_COOKIE" ]; then
+            echo "Warning: XIMALAYA_COOKIE secret not set; aiDoc/原文文稿 will be skipped."
+          else
+            python scripts/transcripts/fetch_aidoc.py 980020064 --debug
+          fi
+
       - name: Sync album list and fetch new transcripts
+        env:
+          XIMALAYA_COOKIE: ${{ secrets.XIMALAYA_COOKIE }}
         run: |
           python scripts/transcripts/sync_album_from_api.py \
             --fetch-transcripts \
+            --refetch-incomplete \
             --delay 1.5 \
             --timeout 90
 

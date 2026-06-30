@@ -1,0 +1,61 @@
+# 每周从喜马拉雅专辑 API 检查更新，抓取新文稿并重建站点数据，有变更则自动提交到 main。
+# 手动触发：GitHub → Actions → Sync Ximalaya album → Run workflow
+
+name: Sync Ximalaya album
+
+on:
+  schedule:
+    # 每周一 02:00 UTC = 北京时间周一 10:00
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-ximalaya
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sync album list and fetch new transcripts
+        run: |
+          python scripts/transcripts/sync_album_from_api.py \
+            --fetch-transcripts \
+            --delay 1.5 \
+            --timeout 90
+
+      - name: Rebuild data-index.js and articles
+        run: python scripts/site/rebuild_data_js.py
+
+      - name: Update library updated date
+        run: python scripts/site/update_library_date.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content data-index.js content/articles index.html
+          if git diff --staged --quiet; then
+            echo "No changes — album already up to date."
+          else
+            git commit -m "$(cat <<'EOF'
+chore: sync Ximalaya album and rebuild site data
+
+Automated weekly sync: tracks.json, transcripts, data-index.js, articles.
+EOF
+)"
+            git push
+          fi

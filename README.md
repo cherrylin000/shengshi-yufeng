@@ -32,6 +32,9 @@ python -m http.server 8080
 ## 维护命令
 
 ```bash
+# 喜马拉雅专辑有更新：刷新 tracks.json / index.csv，并为新音频生成 md 文稿
+python scripts/transcripts/sync_album_from_api.py --fetch-transcripts --delay 2
+
 # 从 content/transcripts 全量同步到 data-index.js + content/articles/（按篇 JSON）
 python scripts/site/sync_data_from_content.py
 
@@ -59,3 +62,11 @@ python scripts/site/split_system_sections.py
 # 文稿 ASR 规范化（术语表在 scripts/transcripts/）
 python scripts/transcripts/normalize_transcripts.py
 ```
+
+## 自动同步（GitHub Actions）
+
+仓库含 [`.github/workflows/sync-ximalaya.yml`](.github/workflows/sync-ximalaya.yml)：默认**每周一 10:00（北京时间）**检查喜马拉雅专辑是否有新音频，若有则抓取文稿、重建 `data-index.js` / `content/articles/` 并提交到 `main`（GitHub Pages 会随之更新）。
+
+手动触发：GitHub 仓库 → **Actions** → **Sync Ximalaya album** → **Run workflow**。
+
+首次启用需在仓库 **Settings → Actions → General → Workflow permissions** 中选择 **Read and write permissions**。

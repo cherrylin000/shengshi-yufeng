@@ -155,35 +155,44 @@ def fetch_aidoc_payload(track_id: int, cookie: str | None = None) -> dict:
         url = api_tpl.format(track_id=track_id)
         for profile_name, headers in _request_profiles(track_id, cookie):
             status, payload, raw = _http_json(url, headers)
+            snippet = re.sub(r"\s+", " ", raw or "")[:160]
             if payload is not None:
                 ret = payload.get("ret")
-                msg = payload.get("msg") or ""
-                ok_ret = ret in (0, None, "0", 200) or str(payload.get("code")) in ("0", "200")
-                if (status == 200 and ok_ret) or (
+                msg = payload.get("msg") or payload.get("message") or ""
+                code = payload.get("code")
+                keys = list(payload.keys())[:12] if isinstance(payload, dict) else []
+                ok_ret = ret in (0, None, "0", 200) or str(code) in ("0", "200")
+                if (status == 200 and ok_ret and payload.get("data") is not None) or (
                     payload.get("success") is True and payload.get("data") is not None
                 ):
                     # Still reject explicit login failures even if success field is weird
                     if ret == 50 or "登录" in str(msg):
-                        errors.append(f"{profile_name} ret=50 请登录")
+                        errors.append(f"{profile_name} HTTP{status} ret=50 请登录")
                         continue
                     payload["_source"] = f"{profile_name}:{url}"
                     return payload
-                if ret == 50 or "登录" in str(msg):
-                    errors.append(f"{profile_name} ret=50 请登录")
+                # Empty 200 JSON without data is not success (was previously misread as ok)
+                if status == 200 and ok_ret and payload.get("data") is None:
+                    errors.append(
+                        f"{profile_name} HTTP{status} empty-data keys={keys} body={snippet}"
+                    )
                     continue
-                if payload.get("data") is not None and ok_ret:
-                    payload["_source"] = f"{profile_name}:{url}"
-                    return payload
-                errors.append(f"{profile_name} ret={ret} msg={msg}")
+                if ret == 50 or "登录" in str(msg):
+                    errors.append(f"{profile_name} HTTP{status} ret=50 请登录")
+                    continue
+                errors.append(
+                    f"{profile_name} HTTP{status} ret={ret} code={code} msg={msg} keys={keys} body={snippet}"
+                )
             else:
-                snippet = re.sub(r"\s+", " ", raw)[:120]
-                errors.append(f"{profile_name} HTTP {status} non-JSON: {snippet}")
+                errors.append(f"{profile_name} HTTP{status} non-JSON: {snippet}")
 
     # Authenticated Show Notes may expose aiDocUrl even when aiDoc/page fails
     shownotes_url = SHOWNOTES_API.format(track_id=track_id)
     for profile_name, headers in _request_profiles(track_id, cookie)[:2]:
-        status, payload, _ = _http_json(shownotes_url, headers)
+        status, payload, raw = _http_json(shownotes_url, headers)
         if not payload:
+            snippet = re.sub(r"\s+", " ", raw or "")[:120]
+            errors.append(f"{profile_name}:shownotes HTTP{status} non-JSON: {snippet}")
             continue
         data = payload.get("data") or {}
         ai_doc_url = data.get("aiDocUrl")
@@ -195,8 +204,12 @@ def fetch_aidoc_payload(track_id: int, cookie: str | None = None) -> dict:
                     "data": {"docContent": doc_text, "aiDocUrl": ai_doc_url},
                     "_source": f"{profile_name}:shownotes",
                 }
+        errors.append(
+            f"{profile_name}:shownotes HTTP{status} aiDocUrl={bool(ai_doc_url)} "
+            f"notes={len(data.get('shownotes') or [])}"
+        )
 
-    detail = "; ".join(errors[:4])
+    detail = "; ".join(errors[:6])
     raise PermissionError(f"aiDoc unavailable for track {track_id}: {detail}")
 
 

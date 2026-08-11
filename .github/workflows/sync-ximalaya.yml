@@ -42,7 +42,21 @@ jobs:
             exit 0
           fi
           echo "Cookie secret length (chars): ${#XIMALAYA_COOKIE}"
-          python scripts/transcripts/fetch_aidoc.py 980020064 --debug
+          set +e
+          python scripts/transcripts/fetch_aidoc.py 980020064 --debug 2>&1 | tee aidoc-verify.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "fetch_aidoc exit code: $code"
+          exit "$code"
+
+      - name: Upload aiDoc verify log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aidoc-verify-log
+          path: aidoc-verify.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Sync album list and fetch new transcripts
         env:

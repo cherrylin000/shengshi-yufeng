@@ -91,6 +91,8 @@ python scripts/transcripts/normalize_transcripts.py
    - 失败：`ret=50 请登录` 或 `share_or_waf_only: true` → 重新按上面步骤复制
 6. 补抓：`python scripts/transcripts/sync_album_from_api.py --skip-tracks-json --refetch-incomplete --from-index 373 --delay 2`
 
-若本地公司网络拦截 `m.ximalaya.com`（Fortinet 等），请在 GitHub Actions 手动运行 workflow 测试；或手机热点后再跑本地命令。
+若本地公司网络拦截 `m.ximalaya.com`（Fortinet 等），请用**手机热点**后再跑本地命令。
+
+**注意**：GitHub Actions 跑在海外 IP 上时，`aiDoc/page` 常返回 **HTTP 404**（国内同地址无 Cookie 时是 401「请登录」）。Cookie 本身可能是对的，但 Actions 仍拉不到原文文稿。此时请在国内网络本地执行补抓，再 commit 推送；或使用国内自托管 runner。
 
 Cookie 仅用于抓取您有权访问的专辑文稿，**不要**粘贴到 Issue/聊天；过期后重新复制更新 Secret。

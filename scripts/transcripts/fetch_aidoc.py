@@ -19,6 +19,9 @@ from typing import Any
 AIDOC_ENDPOINTS = (
     "https://m.ximalaya.com/anchor-works-web/aiDoc/page?trackId={track_id}",
     "https://www.ximalaya.com/anchor-works-web/aiDoc/page?trackId={track_id}",
+    # Some gateway clusters expose lowercase path only
+    "https://m.ximalaya.com/anchor-works-web/aidoc/page?trackId={track_id}",
+    "https://www.ximalaya.com/anchor-works-web/aidoc/page?trackId={track_id}",
 )
 SHOWNOTES_API = "https://m.ximalaya.com/anchor-works-web/shownotes/page?trackId={track_id}"
 MOBILE_UA = (
@@ -210,6 +213,12 @@ def fetch_aidoc_payload(track_id: int, cookie: str | None = None) -> dict:
         )
 
     detail = "; ".join(errors[:6])
+    if any("HTTP404" in e for e in errors) and not any("HTTP401" in e or "ret=50" in e for e in errors):
+        detail += (
+            " | HINT: aiDoc endpoint returned 404 from this network "
+            "(common on GitHub Actions overseas IPs). "
+            "Run fetch_aidoc.py on a China network/hotspot with the same Cookie."
+        )
     raise PermissionError(f"aiDoc unavailable for track {track_id}: {detail}")
 
 

@@ -31,9 +31,58 @@ WEB_UA = (
 )
 
 
+def sanitize_cookie(raw: str) -> str:
+    """Normalize pasted Cookie headers for env/Secrets use."""
+    text = raw.strip().strip('"').strip("'")
+    # Allow pasting the whole "Cookie: a=b; c=d" header line
+    if text.lower().startswith("cookie:"):
+        text = text.split(":", 1)[1].strip()
+    # Secrets / editors sometimes introduce newlines or CR
+    text = re.sub(r"[\r\n\t]+", " ", text)
+    text = re.sub(r"\s*;\s*", "; ", text)
+    text = re.sub(r"\s+", " ", text).strip().strip(";")
+    return text
+
+
 def get_cookie() -> str | None:
-    raw = os.environ.get("XIMALAYA_COOKIE", "").strip()
-    return raw or None
+    raw = os.environ.get("XIMALAYA_COOKIE", "")
+    cleaned = sanitize_cookie(raw)
+    return cleaned or None
+
+
+def cookie_diagnostics(cookie: str | None = None) -> dict[str, Any]:
+    """Safe (no secret values) summary of whether Cookie looks logged-in."""
+    cookie = cookie or get_cookie() or ""
+    pairs = [p.strip() for p in cookie.split(";") if p.strip() and "=" in p]
+    names: list[str] = []
+    for p in pairs:
+        name = p.split("=", 1)[0].strip().strip('"').strip("'")
+        if name:
+            names.append(name)
+    lower_blob = ";".join(names).lower()
+    # Real login sessions usually include token-like keys; share/WAF cookies do not.
+    login_markers = [
+        n
+        for n in names
+        if "_token" in n.lower()
+        or n.lower() in {"login_type", "login_system", "remember_me", "c-oper", "uid", "measurekey"}
+        or "xm_portal" in n.lower()
+    ]
+    share_or_waf = [
+        n
+        for n in names
+        if n.upper().startswith("HWWAF")
+        or "cps_promote" in n.lower()
+        or n.lower() in {"row_key", "x_xmly_row_key", "h5_channel", "isdistributor", "x_xmly_isdistributor"}
+    ]
+    return {
+        "length": len(cookie),
+        "pair_count": len(pairs),
+        "has_login_markers": bool(login_markers),
+        "login_marker_names": sorted(set(login_markers))[:12],
+        "share_or_waf_only": bool(share_or_waf) and not login_markers,
+        "has_www_impl": "impl=www.ximalaya.com" in cookie.lower() or "ximalaya-web" in lower_blob,
+    }
 
 
 def _ssl_context() -> ssl.SSLContext:
@@ -109,13 +158,20 @@ def fetch_aidoc_payload(track_id: int, cookie: str | None = None) -> dict:
             if payload is not None:
                 ret = payload.get("ret")
                 msg = payload.get("msg") or ""
-                if status == 200 and ret in (0, None, "0", 200) or payload.get("success"):
+                ok_ret = ret in (0, None, "0", 200) or str(payload.get("code")) in ("0", "200")
+                if (status == 200 and ok_ret) or (
+                    payload.get("success") is True and payload.get("data") is not None
+                ):
+                    # Still reject explicit login failures even if success field is weird
+                    if ret == 50 or "登录" in str(msg):
+                        errors.append(f"{profile_name} ret=50 请登录")
+                        continue
                     payload["_source"] = f"{profile_name}:{url}"
                     return payload
                 if ret == 50 or "登录" in str(msg):
                     errors.append(f"{profile_name} ret=50 请登录")
                     continue
-                if payload.get("data") is not None:
+                if payload.get("data") is not None and ok_ret:
                     payload["_source"] = f"{profile_name}:{url}"
                     return payload
                 errors.append(f"{profile_name} ret={ret} msg={msg}")
@@ -267,14 +323,35 @@ def main() -> None:
     ap.add_argument("--debug", action="store_true", help="Print API diagnostics, not full text")
     args = ap.parse_args()
 
-    if not get_cookie():
+    cookie = get_cookie()
+    diag = cookie_diagnostics(cookie)
+    if args.debug:
+        print("cookie_diagnostics:", json.dumps(diag, ensure_ascii=False))
+        if diag.get("share_or_waf_only"):
+            print(
+                "HINT: Cookie looks like WAF/share-only (no login token). "
+                "Copy Cookie from a logged-in sound page Network request "
+                "that contains *_token / login_type — not from xima.tv share links.",
+                file=sys.stderr,
+            )
+
+    if not cookie:
         print("XIMALAYA_COOKIE not set", file=sys.stderr)
         raise SystemExit(1)
 
     try:
-        payload = fetch_aidoc_payload(args.track_id)
+        payload = fetch_aidoc_payload(args.track_id, cookie=cookie)
     except PermissionError as e:
         print(f"FAIL: {e}", file=sys.stderr)
+        if diag.get("share_or_waf_only") or not diag.get("has_login_markers"):
+            print(
+                "HINT: Secret likely missing login tokens. "
+                "Re-copy Cookie while logged in on www.ximalaya.com/sound/<id>.",
+                file=sys.stderr,
+            )
+        raise SystemExit(2) from e
+    except Exception as e:
+        print(f"FAIL: unexpected {type(e).__name__}: {e}", file=sys.stderr)
         raise SystemExit(2) from e
 
     if args.debug:

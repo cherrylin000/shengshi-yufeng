@@ -83,10 +83,13 @@ python scripts/transcripts/normalize_transcripts.py
 手机 App 里的「原文文稿」来自 `anchor-works-web/aiDoc/page`，**需要登录 Cookie**，公开 Show Notes API 往往没有 `aiDocUrl`。
 
 1. 浏览器登录 [喜马拉雅](https://www.ximalaya.com)，打开**有「原文文稿」的音频页**（如 [第 377 集](https://www.ximalaya.com/sound/980020064)）。
-2. F12 → **Network** → 刷新 → 任选同域请求 → 复制请求头整段 **Cookie**（需含登录态；仅首页 Cookie 可能不够）。
-3. 本地：`$env:XIMALAYA_COOKIE="..."`；GitHub：**Settings → Secrets → Actions** → `XIMALAYA_COOKIE`。
-4. 验证：`python scripts/transcripts/fetch_aidoc.py 980020064 --debug`（应看到 `chars:` 与正文预览）。
-5. 补抓：`python scripts/transcripts/sync_album_from_api.py --skip-tracks-json --refetch-incomplete --from-index 373 --delay 2`
+2. F12 → **Network** → 刷新 → 点开一条发往 `ximalaya.com` 的请求（优先 `aiDoc` / `shownotes` / `sound`）→ 复制请求头整段 **Cookie**。
+3. **自检**：Cookie 里应能搜到类似 `_token` / `login_type` 的登录字段。只有 `HWWAFSESID`、`cps_promote_info`、`row_key` 的分享/WAF Cookie **不够**，接口会仍返回「请登录」。
+4. 粘贴时不要带 `Cookie:` 前缀；不要换行。本地：`$env:XIMALAYA_COOKIE="..."`；GitHub：**Settings → Secrets → Actions** → `XIMALAYA_COOKIE`（更新后重新 Run workflow）。
+5. 验证：`python scripts/transcripts/fetch_aidoc.py 980020064 --debug`  
+   - 成功：`has_login_markers: true`，且有 `chars:` + 正文预览  
+   - 失败：`ret=50 请登录` 或 `share_or_waf_only: true` → 重新按上面步骤复制
+6. 补抓：`python scripts/transcripts/sync_album_from_api.py --skip-tracks-json --refetch-incomplete --from-index 373 --delay 2`
 
 若本地公司网络拦截 `m.ximalaya.com`（Fortinet 等），请在 GitHub Actions 手动运行 workflow 测试；或手机热点后再跑本地命令。
 

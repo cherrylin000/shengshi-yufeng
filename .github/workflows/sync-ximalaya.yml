@@ -30,20 +30,27 @@ jobs:
         with:
           python-version: "3.11"
 
+      # Soft-check only: a bad Cookie must not skip album sync / site rebuild.
       - name: Verify XIMALAYA_COOKIE (track 377)
+        id: verify_cookie
+        continue-on-error: true
         env:
           XIMALAYA_COOKIE: ${{ secrets.XIMALAYA_COOKIE }}
         run: |
           if [ -z "$XIMALAYA_COOKIE" ]; then
-            echo "Warning: XIMALAYA_COOKIE secret not set; aiDoc/原文文稿 will be skipped."
-          else
-            python scripts/transcripts/fetch_aidoc.py 980020064 --debug
+            echo "::warning::XIMALAYA_COOKIE secret not set; aiDoc/原文文稿 will be skipped."
+            exit 0
           fi
+          echo "Cookie secret length (chars): ${#XIMALAYA_COOKIE}"
+          python scripts/transcripts/fetch_aidoc.py 980020064 --debug
 
       - name: Sync album list and fetch new transcripts
         env:
           XIMALAYA_COOKIE: ${{ secrets.XIMALAYA_COOKIE }}
         run: |
+          if [ "${{ steps.verify_cookie.outcome }}" != "success" ]; then
+            echo "::warning::Cookie verify failed; sync continues, but full transcripts may stay unavailable."
+          fi
           python scripts/transcripts/sync_album_from_api.py \
             --fetch-transcripts \
             --refetch-incomplete \

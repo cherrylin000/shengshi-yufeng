@@ -36,7 +36,16 @@ app = Flask(
     template_folder=str(Path(__file__).resolve().parent / "templates"),
     static_folder=str(Path(__file__).resolve().parent / "static"),
 )
-app.secret_key = secrets.token_hex(16)
+app.secret_key = (
+    Path(__file__).resolve().parent.joinpath("data", "secret.key").read_text().strip()
+    if Path(__file__).resolve().parent.joinpath("data", "secret.key").is_file()
+    else None
+)
+if not app.secret_key:
+    key_path = Path(__file__).resolve().parent / "data" / "secret.key"
+    key_path.parent.mkdir(parents=True, exist_ok=True)
+    app.secret_key = secrets.token_hex(24)
+    key_path.write_text(app.secret_key, encoding="utf-8")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 

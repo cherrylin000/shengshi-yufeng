@@ -405,6 +405,114 @@
       margin: 0 0 12px;
     }
 
+    /* 账号 / 已读 / 高亮笔记 */
+    .account-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 18px;
+      font-size: 14px;
+      color: var(--ink-muted-80);
+    }
+    .account-bar a { font-weight: 600; }
+    .read-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 6px 12px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      background: var(--canvas);
+      cursor: pointer;
+      user-select: none;
+    }
+    .read-toggle input { width: 16px; height: 16px; accent-color: var(--primary); }
+    .transcript mark.user-hl {
+      background: #fff3a3;
+      color: inherit;
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+    .note-popover {
+      position: fixed;
+      z-index: 80;
+      width: min(320px, calc(100vw - 24px));
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--hairline);
+      border-radius: 14px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+      display: none;
+    }
+    .note-popover.is-open { display: block; }
+    .note-popover p {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--ink-muted-48);
+    }
+    .note-popover .sel {
+      margin: 0 0 10px;
+      padding: 8px 10px;
+      background: #f5f5f7;
+      border-radius: 8px;
+      font-size: 14px;
+      max-height: 6em;
+      overflow: auto;
+    }
+    .note-popover textarea {
+      width: 100%;
+      min-height: 72px;
+      resize: vertical;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font: inherit;
+      margin: 0 0 10px;
+    }
+    .note-popover .row {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .note-popover button {
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--hairline);
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+    }
+    .note-popover button.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .article-notes {
+      margin-top: 28px;
+      padding: 16px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      background: var(--canvas-parchment);
+    }
+    .article-notes h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+    .article-notes li {
+      margin: 0 0 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .article-notes blockquote {
+      margin: 4px 0;
+      padding-left: 10px;
+      border-left: 3px solid var(--primary);
+      color: var(--ink-muted-80);
+    }
+
     @media (max-width: 900px) {
       .shell {
         grid-template-columns: 1fr;
@@ -446,6 +554,7 @@
     <div class="topbar-inner">
       <a class="back" href="../index.html#library">← 文稿库</a>
       <div class="topbar-actions">
+        <div id="accountLinks" class="account-links" style="display:flex;gap:10px;align-items:center;margin-right:8px;font-size:13px;"></div>
         <button type="button" class="paddlenav-arrow paddlenav-arrow-previous" id="prevBtn" aria-label="上一篇" title="上一篇">
           <svg viewBox="0 0 36 36" aria-hidden="true" focusable="false">
             <path d="M21.2 23.4l-5.2-5.4 5.2-5.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -464,6 +573,16 @@
     <p class="state">正在加载文稿…</p>
   </main>
 
+  <div class="note-popover" id="notePopover" role="dialog" aria-label="添加笔记">
+    <p>已选文字（可添加想法，将进入个人笔记）</p>
+    <div class="sel" id="noteSelText"></div>
+    <textarea id="noteThought" placeholder="写下你的想法（可选）"></textarea>
+    <div class="row">
+      <button type="button" id="noteCancel">取消</button>
+      <button type="button" class="primary" id="noteSave">保存笔记</button>
+    </div>
+  </div>
+
   <script src="../data-index.js"></script>
   <script>
     const data = window.SHENGSHI_INDEX;
@@ -475,6 +594,169 @@
     const fmt = new Intl.NumberFormat('zh-CN');
     let currentTrack = null;
     let tocObserver = null;
+    let authUser = null;
+    let pendingSelection = '';
+    let longPressTimer = null;
+
+    const notePopover = document.getElementById('notePopover');
+    const noteSelText = document.getElementById('noteSelText');
+    const noteThought = document.getElementById('noteThought');
+    const accountLinks = document.getElementById('accountLinks');
+
+    function apiUrl(path) {
+      // When served by Flask webapp, APIs are on same origin.
+      // When opened via static server, APIs are unavailable.
+      return path;
+    }
+
+    async function refreshAuth() {
+      try {
+        const res = await fetch(apiUrl('/api/me'), { credentials: 'same-origin' });
+        if (!res.ok) throw new Error('no api');
+        const dataMe = await res.json();
+        authUser = dataMe.loggedIn ? dataMe : null;
+      } catch (_) {
+        authUser = null;
+      }
+      if (!accountLinks) return;
+      if (authUser && authUser.loggedIn) {
+        accountLinks.innerHTML = `<span>${escapeHtml(authUser.username)}</span><a href="/notes">我的笔记</a><a href="/logout">退出</a>`;
+      } else {
+        accountLinks.innerHTML = `<a href="/register">注册</a><a href="/login">登录</a>`;
+      }
+    }
+
+    async function postJson(path, body) {
+      const res = await fetch(apiUrl(path), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (res.status === 401) {
+        if (confirm('需要登录后才能使用该功能，前往注册/登录？')) {
+          location.href = '/register';
+        }
+        return null;
+      }
+      return res.json();
+    }
+
+    function closeNotePopover() {
+      notePopover.classList.remove('is-open');
+      pendingSelection = '';
+      noteThought.value = '';
+    }
+
+    function openNotePopover(text, clientX, clientY) {
+      pendingSelection = text;
+      noteSelText.textContent = text;
+      noteThought.value = '';
+      const pad = 12;
+      const w = Math.min(320, window.innerWidth - 24);
+      let left = Math.min(Math.max(pad, clientX - w / 2), window.innerWidth - w - pad);
+      let top = Math.min(Math.max(pad, clientY + 12), window.innerHeight - 220);
+      notePopover.style.left = left + 'px';
+      notePopover.style.top = top + 'px';
+      notePopover.classList.add('is-open');
+    }
+
+    function bindHighlightInteractions(track) {
+      const root = document.getElementById('transcript');
+      if (!root) return;
+
+      const openFromSelection = (x, y) => {
+        const sel = window.getSelection();
+        const text = sel ? String(sel.toString() || '').trim() : '';
+        if (!text || text.length < 2) return;
+        if (!root.contains(sel.anchorNode)) return;
+        openNotePopover(text, x, y);
+      };
+
+      root.addEventListener('mouseup', (e) => {
+        setTimeout(() => openFromSelection(e.clientX, e.clientY), 0);
+      });
+
+      root.addEventListener('touchstart', (e) => {
+        if (!e.touches[0]) return;
+        const t = e.touches[0];
+        longPressTimer = setTimeout(() => openFromSelection(t.clientX, t.clientY), 550);
+      }, { passive: true });
+      const clearLp = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+      root.addEventListener('touchend', clearLp);
+      root.addEventListener('touchmove', clearLp);
+
+      document.getElementById('noteCancel').onclick = closeNotePopover;
+      document.getElementById('noteSave').onclick = async () => {
+        if (!pendingSelection) return;
+        const payload = {
+          articleIndex: track.index,
+          trackId: track.trackId,
+          articleTitle: track.title,
+          selectedText: pendingSelection,
+          thought: noteThought.value.trim()
+        };
+        const dataSave = await postJson('/api/notes', payload);
+        if (!dataSave) return;
+        if (dataSave.ok) {
+          // visual highlight
+          try {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount && !sel.isCollapsed) {
+              const range = sel.getRangeAt(0);
+              const mark = document.createElement('mark');
+              mark.className = 'user-hl';
+              range.surroundContents(mark);
+              sel.removeAllRanges();
+            }
+          } catch (_) {}
+          closeNotePopover();
+          await renderArticleNotes(track);
+          alert('已保存到个人笔记');
+        } else {
+          alert(dataSave.error || '保存失败');
+        }
+      };
+    }
+
+    async function renderArticleNotes(track) {
+      const box = document.getElementById('articleNotes');
+      if (!box) return;
+      if (!authUser || !authUser.loggedIn) {
+        box.innerHTML = `<h3>本篇笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">登录后可在此查看高亮想法。<a href="/register">注册</a></p>`;
+        return;
+      }
+      try {
+        const res = await fetch(apiUrl(`/api/notes?articleIndex=${track.index}`), { credentials: 'same-origin' });
+        const dataNotes = await res.json();
+        const items = (dataNotes.items || []);
+        if (!items.length) {
+          box.innerHTML = `<h3>本篇笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">选中文字并保存想法后，会出现在这里与“我的笔记”页。</p>`;
+          return;
+        }
+        box.innerHTML = `<h3>本篇笔记（${items.length}）</h3><ul style="margin:0;padding-left:18px;">${
+          items.map(n => `<li><blockquote>${escapeHtml(n.selectedText)}</blockquote>${n.thought ? `<div>${escapeHtml(n.thought)}</div>` : ''}</li>`).join('')
+        }</ul>`;
+      } catch (_) {
+        box.innerHTML = '';
+      }
+    }
+
+    async function syncReadAndHistory(track) {
+      if (!authUser || !authUser.loggedIn) return;
+      await postJson('/api/history', {
+        articleIndex: track.index,
+        trackId: track.trackId,
+        title: track.title
+      });
+      try {
+        const res = await fetch(apiUrl('/api/read-state'), { credentials: 'same-origin' });
+        const dataState = await res.json();
+        const checked = !!(dataState.states && dataState.states[track.index]);
+        const input = document.getElementById('readToggle');
+        if (input) input.checked = checked;
+      } catch (_) {}
+    }
 
     function escapeHtml(value) {
       return String(value || '').replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
@@ -658,6 +940,11 @@
       app.innerHTML = `
         <article class="shell${outlineToc ? '' : ' shell--no-aside'}">
           <header class="article-intro">
+            <div class="account-bar">
+              <label class="read-toggle"><input type="checkbox" id="readToggle" /> 标记为已读</label>
+              <span>选中文字可添加高亮笔记</span>
+              <a href="/notes">我的笔记</a>
+            </div>
             <span class="badge">${track.status === 'ok' ? '已生成文稿' : '预览 / 无全文'}</span>
             <h1>${escapeHtml(track.title)}</h1>
             ${renderMetaCard(track)}
@@ -673,15 +960,18 @@
               ${renderTranscript(track)}
             </section>
 
+            <section class="article-notes" id="articleNotes" aria-label="本篇笔记"></section>
+
             ${renderPager(track)}
 
-            <p class="colophon">说明：文字稿来自公开页面，可能存在错字与断句问题；本页为学习整理，不构成投资建议。</p>
+            <p class="colophon">说明：文字稿来自公开页面或本地 ASR，可能存在错字与断句问题；本页为学习整理，不构成投资建议。</p>
           </div>
         </article>
       `;
 
       bindToc();
       bindProgress();
+      bindHighlightInteractions(track);
       const outlineToggle = document.getElementById('outlineToggle');
       const outlineAside = document.getElementById('outlineAside');
       if (outlineToggle && outlineAside) {
@@ -690,21 +980,37 @@
           outlineToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
       }
+      const readToggle = document.getElementById('readToggle');
+      if (readToggle) {
+        readToggle.addEventListener('change', async () => {
+          const dataRead = await postJson('/api/read-state', {
+            articleIndex: track.index,
+            trackId: track.trackId,
+            isRead: !!readToggle.checked
+          });
+          if (!dataRead) readToggle.checked = !readToggle.checked;
+        });
+      }
+      renderArticleNotes(track);
+      syncReadAndHistory(track);
     }
 
     window.addEventListener('popstate', () => showTrack(resolveTrackMeta()));
 
-    if (!data || !Array.isArray(data.tracks)) {
-      app.innerHTML = `
-        <div class="state">
-          <h2>索引未能加载</h2>
-          <p>请用本地 HTTP 服务打开（<code>python -m http.server</code>），并确认 <code>data-index.js</code> 在站点根目录。</p>
-          <p><a href="../index.html#library">返回文稿库</a></p>
-        </div>
-      `;
-    } else {
-      showTrack(resolveTrackMeta());
-    }
+    (async () => {
+      await refreshAuth();
+      if (!data || !Array.isArray(data.tracks)) {
+        app.innerHTML = `
+          <div class="state">
+            <h2>索引未能加载</h2>
+            <p>请用本地 HTTP 服务打开（<code>python -m http.server</code>），并确认 <code>data-index.js</code> 在站点根目录。</p>
+            <p><a href="../index.html#library">返回文稿库</a></p>
+          </div>
+        `;
+      } else {
+        showTrack(resolveTrackMeta());
+      }
+    })();
   </script>
 </body>
 </html>

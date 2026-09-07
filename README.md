@@ -10,16 +10,33 @@
 
 启用 Pages 后的典型地址：<https://cherrylin000.github.io/shengshi-yufeng/>
 
+### 账号 / 笔记（本地 Web DB）
+
+交互功能（注册、已读、浏览记录、高亮笔记）需要启动 Flask + SQLite：
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python webapp/app.py
+```
+
+- 注册：<http://127.0.0.1:8765/register>
+- 我的笔记：<http://127.0.0.1:8765/notes>
+- 文稿阅读（含已读勾选 / 划线笔记）：<http://127.0.0.1:8765/content/article.html?index=392>
+
 ## 目录结构
 
 ```
 ├── index.html / data-index.js            # 首页（轻量索引，不含全文稿）
 ├── content/article.html                  # 单篇阅读页（按篇加载 articles/*.json）
 ├── content/articles/                     # 单篇文稿 JSON（构建生成）
+├── content/polished/                     # 润色后文字稿 + 章节目录
+├── content/diagrams/                     # SmartArt 流程图 / 脑图 SVG
 ├── content/                              # 专辑文稿与 investment_system.md
+├── webapp/                               # 注册登录 / SQLite 笔记后端
 └── scripts/
     ├── site/                             # 构建 data-index.js、体系链接
-    └── transcripts/                      # 文稿规范化与 Show Notes 回退
+    └── transcripts/                      # 同步、本地 ASR、润色、SmartArt
 ```
 
 ## 本地预览
@@ -27,6 +44,7 @@
 ```bash
 python -m http.server 8080
 # 浏览器打开 http://localhost:8080/index.html
+# 账号功能请改用：.venv/bin/python webapp/app.py
 ```
 
 ## 维护命令
@@ -35,7 +53,16 @@ python -m http.server 8080
 # 喜马拉雅专辑有更新：刷新 tracks.json / index.csv，并为新音频生成 md 文稿
 python scripts/transcripts/sync_album_from_api.py --fetch-transcripts --delay 2
 
-# 补抓未拿到全文的文稿（373+ 等需登录 Cookie 才能拉「原文文稿」）
+# 一键周更：专辑同步 → 无全文则下载音频本地 ASR → 润色 + SmartArt → 重建站点
+.venv/bin/python scripts/transcripts/weekly_sync.py --asr-limit 1 --asr-model tiny
+
+# 仅本地 ASR 某一集
+.venv/bin/python scripts/transcripts/download_audio.py 1011618233 --index 392 --prefer ytdlp
+.venv/bin/python scripts/transcripts/asr_local.py content/audio/392_1011618233.m4a --model tiny \
+  --out content/asr_raw/392_1011618233.json --txt-out content/asr_raw/392_1011618233.txt
+.venv/bin/python scripts/transcripts/polish_transcript.py --file content/transcripts/392_1011618233.md
+
+# 补抓未拿到全文的文稿（373+ 等需登录 Cookie 才能拉“原文文稿”）
 # 先设置环境变量 XIMALAYA_COOKIE（见下方说明），再执行：
 python scripts/transcripts/sync_album_from_api.py --skip-tracks-json --refetch-incomplete --from-index 373 --delay 2
 
@@ -72,7 +99,7 @@ python scripts/transcripts/normalize_transcripts.py
 
 ## 自动同步（GitHub Actions）
 
-仓库含 [`.github/workflows/sync-ximalaya.yml`](.github/workflows/sync-ximalaya.yml)：默认**每周一 10:00（北京时间）**检查喜马拉雅专辑是否有新音频，若有则抓取文稿、重建 `data-index.js` / `content/articles/` 并提交到 `main`（GitHub Pages 会随之更新）。
+仓库含 [`.github/workflows/sync-ximalaya.yml`](.github/workflows/sync-ximalaya.yml)：默认**每周一 10:00（北京时间）**检查喜马拉雅专辑是否有新音频；优先抓取原文文稿，否则在虚拟环境中下载音频并用 faster-whisper 本地识别，再润色生成章节目录与 SmartArt，并提交到 `main`（GitHub Pages 会随之更新）。
 
 手动触发：GitHub 仓库 → **Actions** → **Sync Ximalaya album** → **Run workflow**。
 
@@ -80,11 +107,11 @@ python scripts/transcripts/normalize_transcripts.py
 
 ### 原文文稿（373 集及以后）
 
-手机 App 里的「原文文稿」来自 `anchor-works-web/aiDoc/page`，**需要登录 Cookie**，公开 Show Notes API 往往没有 `aiDocUrl`。
+手机 App 里的“原文文稿”来自 `anchor-works-web/aiDoc/page`，**需要登录 Cookie**，公开 Show Notes API 往往没有 `aiDocUrl`。
 
-1. 浏览器登录 [喜马拉雅](https://www.ximalaya.com)，打开**有「原文文稿」的音频页**（如 [第 377 集](https://www.ximalaya.com/sound/980020064)）。
+1. 浏览器登录 [喜马拉雅](https://www.ximalaya.com)，打开**有“原文文稿”的音频页**（如 [第 377 集](https://www.ximalaya.com/sound/980020064)）。
 2. F12 → **Network** → 刷新 → 点开一条发往 `ximalaya.com` 的请求（优先 `aiDoc` / `shownotes` / `sound`）→ 复制请求头整段 **Cookie**。
-3. **自检**：Cookie 里应能搜到类似 `_token` / `login_type` 的登录字段。只有 `HWWAFSESID`、`cps_promote_info`、`row_key` 的分享/WAF Cookie **不够**，接口会仍返回「请登录」。
+3. **自检**：Cookie 里应能搜到类似 `_token` / `login_type` 的登录字段。只有 `HWWAFSESID`、`cps_promote_info`、`row_key` 的分享/WAF Cookie **不够**，接口会仍返回“请登录”。
 4. 粘贴时不要带 `Cookie:` 前缀；不要换行。本地：`$env:XIMALAYA_COOKIE="..."`；GitHub：**Settings → Secrets → Actions** → `XIMALAYA_COOKIE`（更新后重新 Run workflow）。
 5. 验证：`python scripts/transcripts/fetch_aidoc.py 980020064 --debug`  
    - 成功：`has_login_markers: true`，且有 `chars:` + 正文预览  
@@ -93,6 +120,6 @@ python scripts/transcripts/normalize_transcripts.py
 
 若本地公司网络拦截 `m.ximalaya.com`（Fortinet 等），请用**手机热点**后再跑本地命令。
 
-**注意**：GitHub Actions 跑在海外 IP 上时，`aiDoc/page` 常返回 **HTTP 404**（国内同地址无 Cookie 时是 401「请登录」）。Cookie 本身可能是对的，但 Actions 仍拉不到原文文稿。此时请在国内网络本地执行补抓，再 commit 推送；或使用国内自托管 runner。
+**注意**：GitHub Actions 跑在海外 IP 上时，`aiDoc/page` 常返回 **HTTP 404**（国内同地址无 Cookie 时是 401“请登录”）。Cookie 本身可能是对的，但 Actions 仍拉不到原文文稿。此时流水线会回退到 **yt-dlp 下载 + 本地 Whisper ASR**；也可在国内网络本地执行补抓后 commit 推送。
 
 Cookie 仅用于抓取您有权访问的专辑文稿，**不要**粘贴到 Issue/聊天；过期后重新复制更新 Secret。

@@ -1,5 +1,8 @@
-# 每周从喜马拉雅专辑 API 检查更新，抓取新文稿并重建站点数据，有变更则自动提交到 main。
-# 手动触发：GitHub → Actions → Sync Ximalaya album → Run workflow
+# 每周从喜马拉雅专辑 API 检查更新：
+# 1) 抓取 aiDoc / Show Notes 文稿
+# 2) 对仍无全文的新集：venv 内下载音频 + faster-whisper 本地 ASR
+# 3) 润色文字稿、生成章节目录与 SmartArt 流程图
+# 4) 重建站点数据并提交
 
 name: Sync Ximalaya album
 
@@ -19,7 +22,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
@@ -29,6 +32,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - name: Install Python deps (venv)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -U pip
+          .venv/bin/pip install -r requirements.txt
 
       # Soft-check only: a bad Cookie must not skip album sync / site rebuild.
       - name: Verify XIMALAYA_COOKIE (track 377)
@@ -43,7 +57,7 @@ jobs:
           fi
           echo "Cookie secret length (chars): ${#XIMALAYA_COOKIE}"
           set +e
-          python scripts/transcripts/fetch_aidoc.py 980020064 --debug 2>&1 | tee aidoc-verify.log
+          .venv/bin/python scripts/transcripts/fetch_aidoc.py 980020064 --debug 2>&1 | tee aidoc-verify.log
           code=${PIPESTATUS[0]}
           set -e
           echo "fetch_aidoc exit code: $code"
@@ -58,33 +72,28 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Sync album list and fetch new transcripts
+      - name: Sync album + local ASR fallback + polish
         env:
           XIMALAYA_COOKIE: ${{ secrets.XIMALAYA_COOKIE }}
         run: |
           if [ "${{ steps.verify_cookie.outcome }}" != "success" ]; then
-            echo "::warning::Cookie verify failed; sync continues, but full transcripts may stay unavailable."
+            echo "::warning::Cookie verify failed; sync continues with shownotes / local ASR fallback."
           fi
-          python scripts/transcripts/sync_album_from_api.py \
-            --fetch-transcripts \
-            --refetch-incomplete \
-            --delay 1.5 \
-            --timeout 90
-
-      - name: Rebuild data-index.js and articles
-        run: python scripts/site/rebuild_data_js.py
-
-      - name: Update index.html and corpus counts from meta
-        run: python scripts/site/update_library_date.py
+          .venv/bin/python scripts/transcripts/weekly_sync.py \
+            --asr-limit 2 \
+            --asr-from-index 370 \
+            --asr-model tiny
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add content data-index.js content/articles index.html
+          git add content data-index.js index.html requirements.txt scripts webapp || true
+          # ignore large raw audio in commits by default
+          git reset content/audio || true
           if git diff --staged --quiet; then
             echo "No changes — album already up to date."
           else
-            git commit -m "chore: sync Ximalaya album and rebuild site data"
+            git commit -m "chore: sync Ximalaya album, local ASR fallback, polish transcripts"
             git push
           fi

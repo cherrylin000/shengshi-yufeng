@@ -1,3 +1,10 @@
 .migration-tmp/
 __pycache__/
 *.pyc
+.venv/
+webapp/data/
+content/audio/
+*.m4a
+*.mp3
+__pycache__/
+.pytest_cache/

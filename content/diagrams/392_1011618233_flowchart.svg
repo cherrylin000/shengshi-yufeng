@@ -1,85 +1,85 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="1120" viewBox="0 0 720 1120">
 <defs>
 <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0%" stop-color="#f7faf8"/>
-<stop offset="100%" stop-color="#e8f1ef"/>
+<stop offset="0%" stop-color="#ffffff"/>
+<stop offset="100%" stop-color="#f5f5f7"/>
 </linearGradient>
 <filter id="shadow" x="-5%" y="-5%" width="110%" height="120%">
 <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.12"/>
-<marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5C4B51"/></marker>
+<marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7a7a7a"/></marker>
 </filter>
 </defs>
 <rect width="100%" height="100%" fill="url(#bg)"/>
 <text x="360.0" y="36" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="20" font-weight="600" fill="#1d1d1f">20260905分享给新股民的话</text>
 <text x="360.0" y="58" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">章节流程 · SmartArt</text>
-<rect x="80.0" y="72" width="560" height="56" rx="10" fill="#fff" stroke="#0B6E4F" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="100.0" r="14" fill="#0B6E4F"/>
+<rect x="80.0" y="72" width="560" height="56" rx="10" fill="#fff" stroke="#0066cc" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="100.0" r="14" fill="#0066cc"/>
 <text x="108.0" y="105.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">1</text>
 <text x="136.0" y="96" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">02:11</text>
 <text x="136.0" y="116" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">理解财富的本质：长期通胀与货币贬值的关系</text>
-<line x1="360.0" y1="128" x2="360.0" y2="156" stroke="#0B6E4F" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="156" width="560" height="56" rx="10" fill="#fff" stroke="#146C94" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="184.0" r="14" fill="#146C94"/>
+<line x1="360.0" y1="128" x2="360.0" y2="156" stroke="#0066cc" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="156" width="560" height="56" rx="10" fill="#fff" stroke="#0071e3" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="184.0" r="14" fill="#0071e3"/>
 <text x="108.0" y="189.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">2</text>
 <text x="136.0" y="180" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">06:30</text>
 <text x="136.0" y="200" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">资产配置的重要性：货币类资产的变迁与通胀的关系</text>
-<line x1="360.0" y1="212" x2="360.0" y2="240" stroke="#146C94" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="240" width="560" height="56" rx="10" fill="#fff" stroke="#1B4965" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="268.0" r="14" fill="#1B4965"/>
+<line x1="360.0" y1="212" x2="360.0" y2="240" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="240" width="560" height="56" rx="10" fill="#fff" stroke="#1d1d1f" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="268.0" r="14" fill="#1d1d1f"/>
 <text x="108.0" y="273.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">3</text>
 <text x="136.0" y="264" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">13:15</text>
 <text x="136.0" y="284" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">货币的时代变迁：从毛货币到信用货币，你该如何处置手中的…</text>
-<line x1="360.0" y1="296" x2="360.0" y2="324" stroke="#1B4965" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="324" width="560" height="56" rx="10" fill="#fff" stroke="#5C4B51" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="352.0" r="14" fill="#5C4B51"/>
+<line x1="360.0" y1="296" x2="360.0" y2="324" stroke="#1d1d1f" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="324" width="560" height="56" rx="10" fill="#fff" stroke="#333333" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="352.0" r="14" fill="#333333"/>
 <text x="108.0" y="357.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">4</text>
 <text x="136.0" y="348" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">19:59</text>
 <text x="136.0" y="368" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">揭秘美元的背后故事：美国经济的命运与全球储备货币！</text>
-<line x1="360.0" y1="380" x2="360.0" y2="408" stroke="#5C4B51" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="408" width="560" height="56" rx="10" fill="#fff" stroke="#8B5E34" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="436.0" r="14" fill="#8B5E34"/>
+<line x1="360.0" y1="380" x2="360.0" y2="408" stroke="#333333" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="408" width="560" height="56" rx="10" fill="#fff" stroke="#7a7a7a" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="436.0" r="14" fill="#7a7a7a"/>
 <text x="108.0" y="441.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">5</text>
 <text x="136.0" y="432" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">26:32</text>
 <text x="136.0" y="452" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">理解负复利的奥秘：财富积累的神奇公式！</text>
-<line x1="360.0" y1="464" x2="360.0" y2="492" stroke="#8B5E34" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="492" width="560" height="56" rx="10" fill="#fff" stroke="#0B6E4F" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="520.0" r="14" fill="#0B6E4F"/>
+<line x1="360.0" y1="464" x2="360.0" y2="492" stroke="#7a7a7a" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="492" width="560" height="56" rx="10" fill="#fff" stroke="#0066cc" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="520.0" r="14" fill="#0066cc"/>
 <text x="108.0" y="525.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">6</text>
 <text x="136.0" y="516" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">33:17</text>
 <text x="136.0" y="536" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">解读长江电力：自然垄断与稳定盈利的商业模式</text>
-<line x1="360.0" y1="548" x2="360.0" y2="576" stroke="#0B6E4F" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="576" width="560" height="56" rx="10" fill="#fff" stroke="#146C94" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="604.0" r="14" fill="#146C94"/>
+<line x1="360.0" y1="548" x2="360.0" y2="576" stroke="#0066cc" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="576" width="560" height="56" rx="10" fill="#fff" stroke="#0071e3" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="604.0" r="14" fill="#0071e3"/>
 <text x="108.0" y="609.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">7</text>
 <text x="136.0" y="600" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">39:54</text>
 <text x="136.0" y="620" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">股市赔钱易，赚钱难，风险与机遇并存，理性投资才是关键！</text>
-<line x1="360.0" y1="632" x2="360.0" y2="660" stroke="#146C94" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="660" width="560" height="56" rx="10" fill="#fff" stroke="#1B4965" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="688.0" r="14" fill="#1B4965"/>
+<line x1="360.0" y1="632" x2="360.0" y2="660" stroke="#0071e3" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="660" width="560" height="56" rx="10" fill="#fff" stroke="#1d1d1f" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="688.0" r="14" fill="#1d1d1f"/>
 <text x="108.0" y="693.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">8</text>
 <text x="136.0" y="684" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">46:31</text>
 <text x="136.0" y="704" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">股票投资：均值回归的规律与长期持有的策略抉择</text>
-<line x1="360.0" y1="716" x2="360.0" y2="744" stroke="#1B4965" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="744" width="560" height="56" rx="10" fill="#fff" stroke="#5C4B51" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="772.0" r="14" fill="#5C4B51"/>
+<line x1="360.0" y1="716" x2="360.0" y2="744" stroke="#1d1d1f" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="744" width="560" height="56" rx="10" fill="#fff" stroke="#333333" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="772.0" r="14" fill="#333333"/>
 <text x="108.0" y="777.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">9</text>
 <text x="136.0" y="768" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">53:12</text>
 <text x="136.0" y="788" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">股票投资之道：透视泡泡玛特、长江电力和信达资产的故事！</text>
-<line x1="360.0" y1="800" x2="360.0" y2="828" stroke="#5C4B51" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="828" width="560" height="56" rx="10" fill="#fff" stroke="#8B5E34" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="856.0" r="14" fill="#8B5E34"/>
+<line x1="360.0" y1="800" x2="360.0" y2="828" stroke="#333333" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="828" width="560" height="56" rx="10" fill="#fff" stroke="#7a7a7a" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="856.0" r="14" fill="#7a7a7a"/>
 <text x="108.0" y="861.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">10</text>
 <text x="136.0" y="852" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">59:40</text>
 <text x="136.0" y="872" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">金融债、银行贷款和优先股：信达资产的融资渠道与成本分析</text>
-<line x1="360.0" y1="884" x2="360.0" y2="912" stroke="#8B5E34" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="912" width="560" height="56" rx="10" fill="#fff" stroke="#0B6E4F" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="940.0" r="14" fill="#0B6E4F"/>
+<line x1="360.0" y1="884" x2="360.0" y2="912" stroke="#7a7a7a" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="912" width="560" height="56" rx="10" fill="#fff" stroke="#0066cc" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="940.0" r="14" fill="#0066cc"/>
 <text x="108.0" y="945.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">11</text>
 <text x="136.0" y="936" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">66:35</text>
 <text x="136.0" y="956" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">金融类企业占核心一级资本比例分析：中信金融资产与信达情…</text>
-<line x1="360.0" y1="968" x2="360.0" y2="996" stroke="#0B6E4F" stroke-width="2" marker-end="url(#arrow)"/>
-<rect x="80.0" y="996" width="560" height="56" rx="10" fill="#fff" stroke="#146C94" stroke-width="2" filter="url(#shadow)"/>
-<circle cx="108.0" cy="1024.0" r="14" fill="#146C94"/>
+<line x1="360.0" y1="968" x2="360.0" y2="996" stroke="#0066cc" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="80.0" y="996" width="560" height="56" rx="10" fill="#fff" stroke="#0071e3" stroke-width="2" filter="url(#shadow)"/>
+<circle cx="108.0" cy="1024.0" r="14" fill="#0071e3"/>
 <text x="108.0" y="1029.0" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">12</text>
 <text x="136.0" y="1020" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">73:05</text>
 <text x="136.0" y="1040" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">中信金融资产与中国信达：谁才是更好的投资选择？</text>

@@ -512,6 +512,64 @@
       border-left: 3px solid var(--primary);
       color: var(--ink-muted-80);
     }
+    .transcript h3.section-heading {
+      margin: 1.6em 0 0.7em;
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+      text-indent: 0;
+    }
+    .transcript h3.section-heading .ts {
+      display: inline-block;
+      margin-right: 8px;
+      color: var(--ink-muted-48);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.12px;
+    }
+    .smartart {
+      margin-top: 40px;
+      scroll-margin-top: calc(var(--nav-h) + 24px);
+    }
+    .smartart .section-title { margin-bottom: 16px; }
+    .smartart-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .smartart figure {
+      margin: 0;
+      padding: 16px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      background: var(--canvas-parchment);
+    }
+    .smartart figcaption {
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing: -0.224px;
+      color: var(--ink-muted-48);
+    }
+    .smartart img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius-sm);
+      background: var(--canvas);
+    }
+    .source-badge {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 12px;
+      letter-spacing: -0.12px;
+      padding: 4px 10px;
+      background: var(--surface-pearl);
+      color: var(--ink-muted-80);
+      border-radius: var(--radius-sm);
+      vertical-align: middle;
+    }
 
     @media (max-width: 900px) {
       .shell {
@@ -832,7 +890,7 @@
       return `
         <div class="meta-card" role="group" aria-label="本篇元信息">
           <div><span class="meta-label">序号</span><span class="meta-value">${String(track.index).padStart(3, '0')} / ${data.meta.trackCount}</span></div>
-          <div><span class="meta-label">字数</span><span class="meta-value">${track.status === 'ok' ? fmt.format(track.charCount) + ' 字' : '—'}</span></div>
+          <div><span class="meta-label">字数</span><span class="meta-value">${track.content ? fmt.format(track.charCount) + ' 字' : '—'}</span></div>
           <div><span class="meta-label">时长</span><span class="meta-value">${duration(track.duration)}</span></div>
           <div><span class="meta-label">音频 ID</span><span class="meta-value">${track.trackId}</span></div>
         </div>
@@ -840,14 +898,71 @@
     }
 
     function renderTranscript(track) {
-      if (track.status !== 'ok' || !track.content) {
+      if (!track.content) {
         const hint = (track.outline || []).length
           ? '本篇暂无可用全文逐字稿；上方章节速览来自喜马拉雅AI速览，仅供检索与粗对齐。'
           : (track.error || '本篇暂无可用全文文字稿，请收听原音频。');
         return `<div class="transcript"><p class="notice">${escapeHtml(hint)}</p></div>`;
       }
-      const paras = splitParagraphs(track.content);
-      return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;
+      const lines = String(track.content).split(/\n/);
+      const blocks = [];
+      let paraBuf = [];
+      const flushPara = () => {
+        const text = paraBuf.join('').trim();
+        paraBuf = [];
+        if (text) blocks.push(`<p>${escapeHtml(text)}</p>`);
+      };
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line) {
+          flushPara();
+          continue;
+        }
+        const hm = line.match(/^###\s+(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)$/);
+        if (hm) {
+          flushPara();
+          blocks.push(
+            `<h3 class="section-heading"><span class="ts">${escapeHtml(hm[1])}</span>${escapeHtml(hm[2])}</h3>`
+          );
+          continue;
+        }
+        const hm2 = line.match(/^###\s+(.+)$/);
+        if (hm2) {
+          flushPara();
+          blocks.push(`<h3 class="section-heading">${escapeHtml(hm2[1])}</h3>`);
+          continue;
+        }
+        paraBuf.push(line);
+      }
+      flushPara();
+      if (!blocks.length) {
+        const paras = splitParagraphs(track.content);
+        return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;
+      }
+      return `<div class="transcript" id="transcript">${blocks.join('')}</div>`;
+    }
+
+    function renderSmartArt(track) {
+      const diagrams = track.diagrams || [];
+      if (!diagrams.length) return '';
+      const figures = diagrams.map(d => `
+        <figure>
+          <figcaption>${escapeHtml(d.title || '结构图')}</figcaption>
+          <img src="${escapeHtml(d.src)}" alt="${escapeHtml(d.title || 'SmartArt')}" loading="lazy" />
+        </figure>
+      `).join('');
+      return `
+        <section class="smartart section" id="smartart">
+          <h2 class="section-title">结构图（SmartArt）</h2>
+          <div class="smartart-grid">${figures}</div>
+        </section>
+      `;
+    }
+
+    function sourceBadge(track) {
+      if (track.contentSource === 'polished') return '<span class="source-badge">润色结构化文稿</span>';
+      if (track.contentSource === 'raw' || track.content) return '<span class="source-badge">默认文稿</span>';
+      return '';
     }
 
     function renderOutline(track) {
@@ -945,7 +1060,7 @@
               <span>选中文字可添加高亮笔记</span>
               <a href="/notes">我的笔记</a>
             </div>
-            <span class="badge">${track.status === 'ok' ? '已生成文稿' : '预览 / 无全文'}</span>
+            <span class="badge">${track.content ? '已生成文稿' : '预览 / 无全文'}</span>${sourceBadge(track)}
             <h1>${escapeHtml(track.title)}</h1>
             ${renderMetaCard(track)}
             ${renderByline(track, bylineEnd)}
@@ -959,6 +1074,8 @@
               <h2 class="section-title">全文文字稿</h2>
               ${renderTranscript(track)}
             </section>
+
+            ${renderSmartArt(track)}
 
             <section class="article-notes" id="articleNotes" aria-label="本篇笔记"></section>
 

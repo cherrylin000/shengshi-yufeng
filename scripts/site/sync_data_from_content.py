@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Rebuild data.js track fields from content/transcripts/*.md and content/index.csv.
+Rebuild data-index.js + content/articles from transcripts.
 
-Syncs: intro, outline, content (ASR), charCount, status, publishedAt, playCount;
-merges new rows from index.csv and recomputes meta.trackCount / okCount / charTotal.
+Content priority for each track:
+  1) content/polished/{index}_{trackId}.md（润色结构化文稿）
+  2) content/transcripts/*.md（默认 ASR / 原文文稿）
+  3) 空（无正文）
+
+Also attaches SmartArt diagram URLs when polished diagrams exist.
 """
 
 from __future__ import annotations
@@ -19,10 +23,16 @@ CONTENT = REPO / "content"
 INDEX_PATH = CONTENT / "index.csv"
 TRACKS_PATH = CONTENT / "tracks.json"
 TRANSCRIPTS_DIR = CONTENT / "transcripts"
+POLISHED_DIR = CONTENT / "polished"
+DIAGRAMS_DIR = CONTENT / "diagrams"
 
 CHAPTER_LINE = re.compile(r"^- (\d{1,2}:\d{2}(?::\d{2})?)\s+(.+?)\s*$")
+CHAPTER_NUM_LINE = re.compile(
+    r"^\d+\.\s+\*\*(\d{1,2}:\d{2}(?::\d{2})?)\*\*\s+(.+?)\s*$"
+)
 META_PUBLISHED = re.compile(r"^- 发布时间：(.+)$")
 META_PLAY = re.compile(r"^- 播放量：(\d+)$")
+MD_IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 PLACEHOLDER_MARKERS = (
     "暂未抓取",
     "未能提取",
@@ -118,11 +128,69 @@ def resolve_md_path(track: dict) -> Path | None:
     return None
 
 
+def resolve_polished_path(track: dict) -> Path | None:
+    index = track.get("index")
+    track_id = track.get("trackId")
+    if index is None or not track_id:
+        return None
+    path = POLISHED_DIR / f"{int(index):03d}_{int(track_id)}.md"
+    return path if path.is_file() else None
+
+
+def discover_diagrams(track: dict, polished_text: str | None = None) -> list[dict[str, str]]:
+    """Return diagram payloads with web-relative src under content/."""
+    diagrams: list[dict[str, str]] = []
+    seen: set[str] = set()
+
+    def add(src: str, title: str = "") -> None:
+        src = src.replace("\\", "/")
+        if src.startswith("../"):
+            src = src[3:]
+        if src.startswith("./"):
+            src = src[2:]
+        if src.startswith("diagrams/"):
+            web_src = src
+            disk = CONTENT / src
+        elif "/" not in src:
+            web_src = f"diagrams/{src}"
+            disk = DIAGRAMS_DIR / src
+        else:
+            web_src = src
+            disk = CONTENT / src
+        if not disk.is_file() or web_src in seen:
+            return
+        seen.add(web_src)
+        kind = "flowchart" if "flow" in disk.name else ("mindmap" if "mind" in disk.name else "diagram")
+        diagrams.append(
+            {
+                "id": kind,
+                "src": web_src,
+                "title": title or ("章节流程图" if kind == "flowchart" else "章节脑图" if kind == "mindmap" else disk.stem),
+            }
+        )
+
+    if polished_text:
+        for m in MD_IMAGE.finditer(polished_text):
+            add(m.group(2).strip(), m.group(1).strip())
+
+    index = track.get("index")
+    track_id = track.get("trackId")
+    if index is not None and track_id:
+        stem = f"{int(index):03d}_{int(track_id)}"
+        for name, title in (
+            (f"{stem}_flowchart.svg", "章节流程图"),
+            (f"{stem}_mindmap.svg", "章节脑图"),
+        ):
+            add(f"diagrams/{name}", title)
+    return diagrams
+
+
 def char_count(text: str) -> int:
     return len(re.sub(r"\s+", "", text))
 
 
 def parse_markdown(text: str) -> dict:
+    """Parse default transcript markdown (AI 简介 / 章节速览 / 全文文字稿)."""
     intro: str | None = None
     outline: list[dict[str, str]] = []
     content: str | None = None
@@ -145,14 +213,18 @@ def parse_markdown(text: str) -> dict:
         if stripped.startswith("## "):
             current = stripped[3:].strip()
             continue
-        if current == "AI 简介":
+        if current in ("AI 简介", "AI 简介（润色）"):
             if stripped and not stripped.startswith(">"):
                 intro_lines.append(line.rstrip())
-        elif current == "章节速览":
-            m = CHAPTER_LINE.match(stripped)
+        elif current in ("章节速览", "章节目录"):
+            m = CHAPTER_LINE.match(stripped) or CHAPTER_NUM_LINE.match(stripped)
             if m:
                 outline.append({"time": m.group(1), "title": m.group(2)})
-        elif current and current.startswith("全文文字稿"):
+        elif current and (
+            current.startswith("全文文字稿")
+            or current.startswith("整理后正文")
+            or current.startswith("要点提纲")
+        ):
             if stripped.startswith(">"):
                 continue
             content_lines.append(line.rstrip())
@@ -172,7 +244,71 @@ def parse_markdown(text: str) -> dict:
     }
 
 
-def apply_parsed(track: dict, parsed: dict, index_row: dict[str, str] | None, tj: dict | None) -> None:
+def parse_polished_markdown(text: str) -> dict:
+    """Parse polished markdown; keep structured ### headings inside content."""
+    intro: str | None = None
+    outline: list[dict[str, str]] = []
+    content: str | None = None
+    published_at: str | None = None
+    play_count: int | None = None
+    current: str | None = None
+    intro_lines: list[str] = []
+    content_lines: list[str] = []
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        m = META_PUBLISHED.match(stripped)
+        if m:
+            published_at = m.group(1).strip()
+            continue
+        m = META_PLAY.match(stripped)
+        if m:
+            play_count = int(m.group(1))
+            continue
+        if stripped.startswith("## "):
+            current = stripped[3:].strip()
+            continue
+        if current in ("AI 简介", "AI 简介（润色）"):
+            if stripped and not stripped.startswith(">"):
+                intro_lines.append(line.rstrip())
+        elif current in ("章节目录", "章节速览"):
+            m = CHAPTER_NUM_LINE.match(stripped) or CHAPTER_LINE.match(stripped)
+            if m:
+                outline.append({"time": m.group(1), "title": m.group(2)})
+        elif current and (
+            current.startswith("整理后正文")
+            or current.startswith("全文文字稿")
+            or current.startswith("要点提纲")
+        ):
+            if stripped.startswith(">"):
+                continue
+            content_lines.append(line.rstrip())
+        # skip 结构图（SmartArt） body; diagrams discovered separately
+
+    if intro_lines:
+        intro = "\n".join(intro_lines).strip() or None
+    if content_lines:
+        body = "\n".join(content_lines).strip()
+        if body and not any(m in body for m in PLACEHOLDER_MARKERS):
+            content = body
+    return {
+        "intro": intro,
+        "outline": outline or None,
+        "content": content,
+        "publishedAt": published_at,
+        "playCount": play_count,
+    }
+
+
+def apply_parsed(
+    track: dict,
+    parsed: dict,
+    index_row: dict[str, str] | None,
+    tj: dict | None,
+    *,
+    content_source: str | None = None,
+    diagrams: list[dict[str, str]] | None = None,
+) -> None:
     if parsed.get("intro"):
         track["intro"] = parsed["intro"]
     else:
@@ -192,8 +328,13 @@ def apply_parsed(track: dict, parsed: dict, index_row: dict[str, str] | None, tj
         track["status"] = "ok"
         track["segments"] = max(1, content.count("\n\n") + 1)
         track.pop("error", None)
+        if content_source:
+            track["contentSource"] = content_source
+        else:
+            track.pop("contentSource", None)
     else:
         track.pop("content", None)
+        track.pop("contentSource", None)
         track["status"] = status
         if index_row:
             track["charCount"] = int(index_row.get("charCount") or 0)
@@ -203,6 +344,11 @@ def apply_parsed(track: dict, parsed: dict, index_row: dict[str, str] | None, tj
                 track["error"] = err
             else:
                 track.pop("error", None)
+
+    if diagrams:
+        track["diagrams"] = diagrams
+    else:
+        track.pop("diagrams", None)
 
     published = parsed.get("publishedAt")
     if not published and tj:
@@ -221,6 +367,53 @@ def apply_parsed(track: dict, parsed: dict, index_row: dict[str, str] | None, tj
         del track["playCount"]
 
 
+def load_track_content(track: dict, index_row: dict[str, str] | None) -> tuple[dict, str | None, list[dict[str, str]]]:
+    """
+    Prefer polished structured transcript, else default transcript, else empty.
+    Returns (parsed, content_source, diagrams).
+    """
+    polished = resolve_polished_path(track)
+    if polished:
+        text = polished.read_text(encoding="utf-8")
+        parsed = parse_polished_markdown(text)
+        diagrams = discover_diagrams(track, text)
+        if parsed.get("content") or diagrams:
+            # If polished has outline/intro/diagrams but empty body, still prefer it
+            # and only fall back body from raw when needed.
+            if not parsed.get("content"):
+                raw_path = resolve_md_path(track)
+                if not raw_path and index_row and index_row.get("transcriptFile"):
+                    raw_path = CONTENT / index_row["transcriptFile"].replace("\\", "/")
+                if raw_path and raw_path.is_file():
+                    raw = parse_markdown(raw_path.read_text(encoding="utf-8"))
+                    if raw.get("content"):
+                        parsed["content"] = raw["content"]
+                    if not parsed.get("intro") and raw.get("intro"):
+                        parsed["intro"] = raw["intro"]
+                    if not parsed.get("outline") and raw.get("outline"):
+                        parsed["outline"] = raw["outline"]
+                    if not parsed.get("publishedAt") and raw.get("publishedAt"):
+                        parsed["publishedAt"] = raw["publishedAt"]
+                    if parsed.get("playCount") is None and raw.get("playCount") is not None:
+                        parsed["playCount"] = raw["playCount"]
+            return parsed, "polished", diagrams
+
+    raw_path = resolve_md_path(track)
+    if not raw_path and index_row and index_row.get("transcriptFile"):
+        raw_path = CONTENT / index_row["transcriptFile"].replace("\\", "/")
+    if raw_path and raw_path.is_file():
+        parsed = parse_markdown(raw_path.read_text(encoding="utf-8"))
+        return parsed, ("raw" if parsed.get("content") else None), []
+
+    return {
+        "intro": None,
+        "outline": None,
+        "content": None,
+        "publishedAt": None,
+        "playCount": None,
+    }, None, []
+
+
 def main() -> None:
     data = load_data()
     index_rows = load_index_rows()
@@ -230,34 +423,41 @@ def main() -> None:
     updated_content = 0
     updated_intro = 0
     updated_outline = 0
+    polished_count = 0
 
     for track in data.get("tracks", []):
         tid = int(track["trackId"])
-        md_path = resolve_md_path(track)
-        if not md_path and index_by_id.get(tid, {}).get("transcriptFile"):
-            rel = index_by_id[tid]["transcriptFile"]
-            md_path = CONTENT / rel.replace("\\", "/")
-        if not md_path:
-            continue
-        parsed = parse_markdown(md_path.read_text(encoding="utf-8"))
+        index_row = index_by_id.get(tid)
+        parsed, source, diagrams = load_track_content(track, index_row)
         before = track.get("content")
-        apply_parsed(track, parsed, index_by_id.get(tid), tracks_json.get(tid))
+        apply_parsed(
+            track,
+            parsed,
+            index_row,
+            tracks_json.get(tid),
+            content_source=source,
+            diagrams=diagrams,
+        )
         if track.get("content") and track.get("content") != before:
             updated_content += 1
         if track.get("intro"):
             updated_intro += 1
         if track.get("outline"):
             updated_outline += 1
+        if track.get("contentSource") == "polished":
+            polished_count += 1
 
     stats = recompute_meta(data)
     save_data(data)
     with_pub = sum(1 for t in data["tracks"] if t.get("publishedAt"))
     with_play = sum(1 for t in data["tracks"] if t.get("playCount") is not None)
+    with_diagrams = sum(1 for t in data["tracks"] if t.get("diagrams"))
     print("Saved data-index.js + content/articles/")
     print(
         f"tracks: {stats['trackCount']} (+{added} new), ok: {stats['okCount']}, "
         f"missing: {stats['missingCount']}, chars: {stats['charTotal']}, "
         f"intro: {updated_intro}, outline: {updated_outline}, content updated: {updated_content}, "
+        f"polished: {polished_count}, diagrams: {with_diagrams}, "
         f"publishedAt: {with_pub}, playCount: {with_play}"
     )
 

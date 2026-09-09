@@ -13,8 +13,8 @@ INDEX_JS = REPO / "data-index.js"
 LEGACY_JS = REPO / "data.js"
 ARTICLES_DIR = REPO / "content" / "articles"
 
-# 仅全文进单篇 JSON；简介与章节速览留在索引供列表筛选与预览
-ARTICLE_KEYS = frozenset({"content"})
+# 全文 / 来源 / SmartArt 进单篇 JSON；简介与章节速览留在索引供列表筛选与预览
+ARTICLE_KEYS = frozenset({"content", "contentSource", "diagrams"})
 
 
 def _read_js_payload(path: Path, global_name: str) -> dict:

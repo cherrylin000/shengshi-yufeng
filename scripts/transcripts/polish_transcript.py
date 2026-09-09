@@ -198,7 +198,8 @@ def generate_flowchart_svg(chapters: list[tuple[str, str]], title: str, out_path
     width = 720
     top = 72
     height = top + len(items) * (box_h + gap) + 40
-    colors = ["#0B6E4F", "#146C94", "#1B4965", "#5C4B51", "#8B5E34"]
+    # Align with site DESIGN.md Action Blue / ink grayscale
+    colors = ["#0066cc", "#0071e3", "#1d1d1f", "#333333", "#7a7a7a"]
 
     def esc(s: str) -> str:
         return html.escape(s)
@@ -207,8 +208,8 @@ def generate_flowchart_svg(chapters: list[tuple[str, str]], title: str, out_path
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<defs>',
         '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">',
-        '<stop offset="0%" stop-color="#f7faf8"/>',
-        '<stop offset="100%" stop-color="#e8f1ef"/>',
+        '<stop offset="0%" stop-color="#ffffff"/>',
+        '<stop offset="100%" stop-color="#f5f5f7"/>',
         '</linearGradient>',
         '<filter id="shadow" x="-5%" y="-5%" width="110%" height="120%">',
         '<feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.12"/>',
@@ -249,7 +250,7 @@ def generate_flowchart_svg(chapters: list[tuple[str, str]], title: str, out_path
     parts.insert(
         8,
         '<marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
-        '<path d="M 0 0 L 10 5 L 0 10 z" fill="#5C4B51"/></marker>',
+        '<path d="M 0 0 L 10 5 L 0 10 z" fill="#7a7a7a"/></marker>',
     )
     parts.append("</svg>")
     out_path.write_text("\n".join(parts) + "\n", encoding="utf-8")
@@ -264,16 +265,16 @@ def generate_mindmap_svg(chapters: list[tuple[str, str]], title: str, out_path: 
     items = chapters[:10] or [("00:00", "暂无章节")]
     w, h = 900, 640
     cx, cy = w / 2, h / 2 + 10
-    colors = ["#0B6E4F", "#146C94", "#1B4965", "#8B5E34", "#5C4B51"]
+    colors = ["#0066cc", "#0071e3", "#1d1d1f", "#333333", "#7a7a7a"]
 
     def esc(s: str) -> str:
         return html.escape(s)
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">',
-        '<rect width="100%" height="100%" fill="#f8fafb"/>',
+        '<rect width="100%" height="100%" fill="#f5f5f7"/>',
         f'<text x="{cx}" y="28" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="18" font-weight="600" fill="#1d1d1f">{esc(title[:40])}</text>',
-        f'<circle cx="{cx}" cy="{cy}" r="54" fill="#0B6E4F"/>',
+        f'<circle cx="{cx}" cy="{cy}" r="54" fill="#0066cc"/>',
         f'<text x="{cx}" y="{cy + 5}" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="14" fill="#fff">核心脉络</text>',
     ]
     n = len(items)

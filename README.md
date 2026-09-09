@@ -96,3 +96,52 @@ python scripts/transcripts/normalize_transcripts.py
 **注意**：GitHub Actions 跑在海外 IP 上时，`aiDoc/page` 常返回 **HTTP 404**（国内同地址无 Cookie 时是 401「请登录」）。Cookie 本身可能是对的，但 Actions 仍拉不到原文文稿。此时请在国内网络本地执行补抓，再 commit 推送；或使用国内自托管 runner。
 
 Cookie 仅用于抓取您有权访问的专辑文稿，**不要**粘贴到 Issue/聊天；过期后重新复制更新 Secret。
+
+## Windows 后台全自动同步（推荐）
+
+若不想手动复制 Cookie、且需要国内 IP 抓 `aiDoc` 全文 + 本地 Whisper 补无文稿集数，可用本机计划任务每周后台跑一遍。
+
+### 一次性安装
+
+在仓库根目录打开 PowerShell：
+
+```powershell
+python -m venv .venv
+.venv\Scripts\pip install -r requirements-local.txt
+.venv\Scripts\playwright install chromium
+```
+
+在 **Chrome 或 Edge** 登录 [喜马拉雅](https://www.ximalaya.com)（保持登录即可，无需再开 F12 复制 Cookie）。
+
+注册计划任务（每周一 10:30 自动跑，日志在 `_agent/logs/`）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\install-scheduled-task.ps1
+```
+
+立即试跑：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\run-sync.ps1
+```
+
+### 自动流程说明
+
+`scripts/transcripts/sync_local.py` 依次执行：
+
+1. 从本机浏览器读取 Cookie（`rookiepy` / `browser-cookie3`）
+2. 探针验证 `aiDoc` 是否可用
+3. `sync_album_from_api.py --fetch-transcripts --refetch-incomplete` 抓官方文稿
+4. 对仍缺全文的集数：下载音频 → **faster-whisper** 本地转写 → 写入 `content/transcripts/`
+5. 规范化术语、`rebuild_data_js.py`、自动 `git commit` + `push`
+
+可选环境变量：`WHISPER_MODEL=small`（默认）、`WHISPER_DEVICE=auto`、`WHISPER_COMPUTE=int8`。
+
+### 与 GitHub Actions 的分工
+
+| 位置 | 作用 |
+|------|------|
+| GitHub Actions（海外） | 检查新集、Show Notes 预览、站点重建 |
+| **本机计划任务（国内）** | **Cookie 自动读取、aiDoc 全文、Whisper 兜底、推送仓库** |
+
+浏览器登出后，任务会在日志里报错；重新登录喜马拉雅即可，无需改 Secret。

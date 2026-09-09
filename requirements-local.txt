@@ -1,0 +1,10 @@
+# Optional dependencies for Windows local background sync (sync_local.py).
+# Install once in repo venv:
+#   python -m venv .venv
+#   .venv\Scripts\pip install -r requirements-local.txt
+#   .venv\Scripts\playwright install chromium   # only if audio download needs xm-sign refresh
+
+rookiepy>=0.5.0
+browser-cookie3>=0.19.1
+faster-whisper>=1.0.0
+playwright>=1.40.0

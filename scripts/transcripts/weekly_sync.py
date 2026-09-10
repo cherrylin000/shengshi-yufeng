@@ -4,7 +4,7 @@
 Weekly sync orchestrator:
 1) Refresh album list / fetch aiDoc or shownotes transcripts
 2) For incomplete tracks: download audio in .venv and run local ASR
-3) Polish text + generate chapter TOC + SmartArt diagrams
+3) Polish text + generate chapter TOC
 4) Rebuild site data
 """
 

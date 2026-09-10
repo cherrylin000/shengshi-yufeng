@@ -13,8 +13,7 @@
 - `errors.json`：未生成文稿的音频及错误原因。
 - `investment_system.md`：基于可用文稿整理出的盛世裕丰投资体系。
 - `transcripts/`：逐条音频 Markdown 文稿。
-- `polished/`：润色后的结构化文字稿与章节目录。
-- `diagrams/`：章节流程图 / 脑图（SmartArt SVG）。
+- `polished/`：润色后的结构化文字稿与章节目录（按文意分段，单段一般不超过 160 字）。
 - `asr_raw/`：本地 Whisper ASR 原始结果。
 - `../index.html`：可对外分享的静态网页（仓库根），含投资体系与文稿检索。
 - `article.html`：单篇文稿阅读页（`../data-index.js` + `articles/{序号}.json`）。

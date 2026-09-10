@@ -464,10 +464,6 @@
       box-decoration-break: clone;
       -webkit-box-decoration-break: clone;
     }
-    .transcript mark.user-hl.is-active {
-      outline: 2px solid var(--primary);
-      outline-offset: 1px;
-    }
     .note-popover {
       position: fixed;
       z-index: 80;
@@ -516,13 +512,6 @@
     .note-popover .row[hidden] {
       display: none !important;
     }
-    .note-popover .row.actions-extra {
-      justify-content: flex-start;
-      margin-bottom: 8px;
-    }
-    .note-popover .hint[hidden] {
-      display: none !important;
-    }
     .note-popover button {
       min-height: 36px;
       padding: 0 14px;
@@ -541,11 +530,6 @@
     .note-popover button.danger {
       color: #b42318;
       border-color: #e0e0e0;
-    }
-    .note-popover .hint {
-      margin: 0 0 10px;
-      font-size: 12px;
-      color: var(--ink-muted-48);
     }
     .article-notes {
       margin-top: 28px;
@@ -710,15 +694,14 @@
   <div class="note-popover" id="notePopover" role="dialog" aria-label="添加笔记">
     <p id="notePopoverTitle">已选文字（可添加想法，将进入个人笔记）</p>
     <div class="sel" id="noteSelText"></div>
-    <p class="hint" id="noteAdjustHint" hidden>请在正文中重新勾选文字范围，再点“确认调整范围”。</p>
     <textarea id="noteThought" placeholder="写下你的想法（可选）"></textarea>
-    <div class="row actions-extra" id="noteExtraActions" hidden>
-      <button type="button" id="noteAdjustRange">调整高亮范围</button>
-      <button type="button" class="danger" id="noteRemoveHighlight">取消高亮</button>
-    </div>
-    <div class="row">
+    <div class="row" id="noteCreateActions">
       <button type="button" id="noteCancel">取消</button>
       <button type="button" class="primary" id="noteSave">保存</button>
+    </div>
+    <div class="row" id="noteEditActions" hidden>
+      <button type="button" class="danger" id="noteRemoveHighlight">取消高亮</button>
+      <button type="button" class="primary" id="noteConfirm">确认</button>
     </div>
   </div>
 
@@ -738,14 +721,13 @@
     let longPressTimer = null;
     let activeMark = null;
     let editingNoteId = null;
-    let adjustMode = false;
 
     const notePopover = document.getElementById('notePopover');
     const notePopoverTitle = document.getElementById('notePopoverTitle');
     const noteSelText = document.getElementById('noteSelText');
     const noteThought = document.getElementById('noteThought');
-    const noteExtraActions = document.getElementById('noteExtraActions');
-    const noteAdjustHint = document.getElementById('noteAdjustHint');
+    const noteCreateActions = document.getElementById('noteCreateActions');
+    const noteEditActions = document.getElementById('noteEditActions');
     const accountLinks = document.getElementById('accountLinks');
 
     function apiUrl(path) {
@@ -802,7 +784,6 @@
     }
 
     function clearActiveMark() {
-      document.querySelectorAll('mark.user-hl.is-active').forEach(el => el.classList.remove('is-active'));
       activeMark = null;
     }
 
@@ -810,12 +791,10 @@
       notePopover.classList.remove('is-open');
       pendingSelection = '';
       editingNoteId = null;
-      adjustMode = false;
       noteThought.value = '';
-      noteExtraActions.hidden = true;
-      noteAdjustHint.hidden = true;
+      noteCreateActions.hidden = false;
+      noteEditActions.hidden = true;
       notePopoverTitle.textContent = '已选文字（可添加想法，将进入个人笔记）';
-      document.getElementById('noteSave').textContent = '保存';
       clearActiveMark();
     }
 
@@ -844,30 +823,25 @@
     function openCreatePopover(text, clientX, clientY) {
       clearActiveMark();
       editingNoteId = null;
-      adjustMode = false;
       pendingSelection = text;
       noteSelText.textContent = text;
       noteThought.value = '';
-      noteExtraActions.hidden = true;
-      noteAdjustHint.hidden = true;
+      noteCreateActions.hidden = false;
+      noteEditActions.hidden = true;
       notePopoverTitle.textContent = '已选文字（可添加想法，将进入个人笔记）';
-      document.getElementById('noteSave').textContent = '保存';
       placeNotePopover(clientX, clientY);
     }
 
     function openEditPopover(mark, clientX, clientY) {
       clearActiveMark();
       activeMark = mark;
-      mark.classList.add('is-active');
       editingNoteId = mark.dataset.noteId ? Number(mark.dataset.noteId) : null;
-      adjustMode = false;
       pendingSelection = mark.textContent || '';
       noteSelText.textContent = pendingSelection;
       noteThought.value = mark.dataset.thought || '';
-      noteExtraActions.hidden = false;
-      noteAdjustHint.hidden = true;
+      noteCreateActions.hidden = true;
+      noteEditActions.hidden = false;
       notePopoverTitle.textContent = '高亮笔记';
-      document.getElementById('noteSave').textContent = '保存';
       placeNotePopover(clientX, clientY);
     }
 
@@ -888,27 +862,17 @@
         const text = sel ? String(sel.toString() || '').trim() : '';
         if (!text || text.length < 2) return;
         if (!root.contains(sel.anchorNode)) return;
-        if (adjustMode && activeMark) {
-          pendingSelection = text;
-          noteSelText.textContent = text;
-          noteAdjustHint.hidden = true;
-          notePopoverTitle.textContent = '确认新的高亮范围';
-          document.getElementById('noteSave').textContent = '确认调整范围';
-          placeNotePopover(x, y);
-          return;
-        }
         openCreatePopover(text, x, y);
       };
 
       root.addEventListener('mouseup', (e) => {
-        if (e.target.closest && e.target.closest('mark.user-hl') && !adjustMode) return;
+        if (e.target.closest && e.target.closest('mark.user-hl')) return;
         setTimeout(() => openFromSelection(e.clientX, e.clientY), 0);
       });
 
       root.addEventListener('click', (e) => {
         const mark = e.target.closest && e.target.closest('mark.user-hl');
         if (!mark || !root.contains(mark)) return;
-        if (adjustMode) return;
         e.preventDefault();
         e.stopPropagation();
         openEditPopover(mark, e.clientX, e.clientY);
@@ -923,19 +887,7 @@
       root.addEventListener('touchend', clearLp);
       root.addEventListener('touchmove', clearLp);
 
-      document.getElementById('noteCancel').onclick = () => {
-        adjustMode = false;
-        closeNotePopover();
-      };
-
-      document.getElementById('noteAdjustRange').onclick = () => {
-        if (!activeMark) return;
-        adjustMode = true;
-        noteAdjustHint.hidden = false;
-        notePopoverTitle.textContent = '调整高亮范围';
-        document.getElementById('noteSave').textContent = '确认调整范围';
-        noteThought.focus();
-      };
+      document.getElementById('noteCancel').onclick = closeNotePopover;
 
       document.getElementById('noteRemoveHighlight').onclick = async () => {
         if (!activeMark) return;
@@ -955,67 +907,42 @@
         await renderArticleNotes(track);
       };
 
-      document.getElementById('noteSave').onclick = async () => {
+      document.getElementById('noteConfirm').onclick = async () => {
         const thought = noteThought.value.trim();
         const selectedText = pendingSelection || (activeMark ? activeMark.textContent : '');
-        if (!selectedText) return;
-
-        if (editingNoteId || activeMark) {
-          const payload = { selectedText, thought };
-          if (editingNoteId) {
-            const dataSave = await patchJson('/api/notes/' + editingNoteId, payload);
-            if (!dataSave) return;
-            if (!dataSave.ok) {
-              alert(dataSave.error || '保存失败');
-              return;
-            }
-          } else if (thought || selectedText) {
-            const dataSave = await postJson('/api/notes', {
-              articleIndex: track.index,
-              trackId: track.trackId,
-              articleTitle: track.title,
-              selectedText,
-              thought
-            });
-            if (!dataSave) return;
-            if (!dataSave.ok) {
-              alert(dataSave.error || '保存失败');
-              return;
-            }
-            editingNoteId = dataSave.id;
-            if (activeMark) activeMark.dataset.noteId = String(dataSave.id);
+        if (!selectedText || !activeMark) return;
+        if (editingNoteId) {
+          const dataSave = await patchJson('/api/notes/' + editingNoteId, { selectedText, thought });
+          if (!dataSave) return;
+          if (!dataSave.ok) {
+            alert(dataSave.error || '保存失败');
+            return;
           }
-          if (activeMark) {
-            if (adjustMode && selectedText && selectedText !== activeMark.textContent) {
-              // Replace mark text by wrapping the new selection if possible
-              try {
-                const sel = window.getSelection();
-                if (sel && sel.rangeCount && !sel.isCollapsed && root.contains(sel.anchorNode)) {
-                  unwrapMark(activeMark);
-                  const range = sel.getRangeAt(0);
-                  const mark = document.createElement('mark');
-                  mark.className = 'user-hl';
-                  if (editingNoteId) mark.dataset.noteId = String(editingNoteId);
-                  mark.dataset.thought = thought;
-                  range.surroundContents(mark);
-                  sel.removeAllRanges();
-                  activeMark = mark;
-                } else {
-                  activeMark.textContent = selectedText;
-                  activeMark.dataset.thought = thought;
-                }
-              } catch (_) {
-                activeMark.dataset.thought = thought;
-              }
-            } else {
-              activeMark.dataset.thought = thought;
-            }
+        } else {
+          const dataSave = await postJson('/api/notes', {
+            articleIndex: track.index,
+            trackId: track.trackId,
+            articleTitle: track.title,
+            selectedText,
+            thought
+          });
+          if (!dataSave) return;
+          if (!dataSave.ok) {
+            alert(dataSave.error || '保存失败');
+            return;
           }
-          closeNotePopover();
-          await renderArticleNotes(track);
-          return;
+          editingNoteId = dataSave.id;
+          activeMark.dataset.noteId = String(dataSave.id);
         }
+        activeMark.dataset.thought = thought;
+        closeNotePopover();
+        await renderArticleNotes(track);
+      };
 
+      document.getElementById('noteSave').onclick = async () => {
+        const thought = noteThought.value.trim();
+        const selectedText = pendingSelection;
+        if (!selectedText) return;
         const payload = {
           articleIndex: track.index,
           trackId: track.trackId,

@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Polish ASR transcripts: glossary/fillers/repeats, structured sections,
-and SmartArt-style flowchart SVGs from chapter outlines.
+Polish ASR transcripts: glossary/fillers/repeats and structured sections.
+Mind maps / structure diagrams are not generated here — users upload them in notes.
 """
 
 from __future__ import annotations
 
 import argparse
-import html
 import re
 from pathlib import Path
 
@@ -312,115 +311,6 @@ def build_polished_markdown(
     return "\n".join(lines).rstrip() + "\n", chapters
 
 
-def generate_flowchart_svg(chapters: list[tuple[str, str]], title: str, out_path: Path) -> Path:
-    """Generate a vertical SmartArt-like process flowchart SVG."""
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    items = chapters[:12] or [("00:00", "暂无章节")]
-    box_h = 56
-    gap = 28
-    width = 720
-    top = 72
-    height = top + len(items) * (box_h + gap) + 40
-    # Align with site DESIGN.md Action Blue / ink grayscale
-    colors = ["#0066cc", "#0071e3", "#1d1d1f", "#333333", "#7a7a7a"]
-
-    def esc(s: str) -> str:
-        return html.escape(s)
-
-    parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-        '<defs>',
-        '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">',
-        '<stop offset="0%" stop-color="#ffffff"/>',
-        '<stop offset="100%" stop-color="#f5f5f7"/>',
-        '</linearGradient>',
-        '<filter id="shadow" x="-5%" y="-5%" width="110%" height="120%">',
-        '<feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.12"/>',
-        '</filter>',
-        '</defs>',
-        f'<rect width="100%" height="100%" fill="url(#bg)"/>',
-        f'<text x="{width/2}" y="36" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="20" font-weight="600" fill="#1d1d1f">{esc(title[:36])}</text>',
-        f'<text x="{width/2}" y="58" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">章节流程 · SmartArt</text>',
-    ]
-    cx = width / 2
-    box_w = 560
-    for i, (ts, chap_title) in enumerate(items):
-        y = top + i * (box_h + gap)
-        x = (width - box_w) / 2
-        color = colors[i % len(colors)]
-        label = chap_title if len(chap_title) <= 28 else chap_title[:27] + "…"
-        parts.append(
-            f'<rect x="{x}" y="{y}" width="{box_w}" height="{box_h}" rx="10" fill="#fff" stroke="{color}" stroke-width="2" filter="url(#shadow)"/>'
-        )
-        parts.append(
-            f'<circle cx="{x + 28}" cy="{y + box_h/2}" r="14" fill="{color}"/>'
-        )
-        parts.append(
-            f'<text x="{x + 28}" y="{y + box_h/2 + 5}" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#fff">{i+1}</text>'
-        )
-        parts.append(
-            f'<text x="{x + 56}" y="{y + 24}" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="12" fill="#7a7a7a">{esc(ts)}</text>'
-        )
-        parts.append(
-            f'<text x="{x + 56}" y="{y + 44}" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="15" font-weight="600" fill="#1d1d1f">{esc(label)}</text>'
-        )
-        if i < len(items) - 1:
-            y2 = y + box_h
-            parts.append(
-                f'<line x1="{cx}" y1="{y2}" x2="{cx}" y2="{y2 + gap}" stroke="{color}" stroke-width="2" marker-end="url(#arrow)"/>'
-            )
-    # arrow marker
-    parts.insert(
-        8,
-        '<marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
-        '<path d="M 0 0 L 10 5 L 0 10 z" fill="#7a7a7a"/></marker>',
-    )
-    parts.append("</svg>")
-    out_path.write_text("\n".join(parts) + "\n", encoding="utf-8")
-    return out_path
-
-
-def generate_mindmap_svg(chapters: list[tuple[str, str]], title: str, out_path: Path) -> Path:
-    """Generate a radial mind-map style SmartArt SVG."""
-    import math
-
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    items = chapters[:10] or [("00:00", "暂无章节")]
-    w, h = 900, 640
-    cx, cy = w / 2, h / 2 + 10
-    colors = ["#0066cc", "#0071e3", "#1d1d1f", "#333333", "#7a7a7a"]
-
-    def esc(s: str) -> str:
-        return html.escape(s)
-
-    parts = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">',
-        '<rect width="100%" height="100%" fill="#f5f5f7"/>',
-        f'<text x="{cx}" y="28" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="18" font-weight="600" fill="#1d1d1f">{esc(title[:40])}</text>',
-        f'<circle cx="{cx}" cy="{cy}" r="54" fill="#0066cc"/>',
-        f'<text x="{cx}" y="{cy + 5}" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="14" fill="#fff">核心脉络</text>',
-    ]
-    n = len(items)
-    radius = 210
-    for i, (ts, chap_title) in enumerate(items):
-        ang = -math.pi / 2 + (2 * math.pi * i / n)
-        x = cx + radius * math.cos(ang)
-        y = cy + radius * math.sin(ang)
-        color = colors[i % len(colors)]
-        label = chap_title if len(chap_title) <= 16 else chap_title[:15] + "…"
-        parts.append(f'<line x1="{cx}" y1="{cy}" x2="{x}" y2="{y}" stroke="{color}" stroke-width="2" opacity="0.55"/>')
-        parts.append(f'<rect x="{x - 90}" y="{y - 24}" width="180" height="48" rx="10" fill="#fff" stroke="{color}" stroke-width="2"/>')
-        parts.append(
-            f'<text x="{x}" y="{y - 4}" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="11" fill="#7a7a7a">{esc(ts)}</text>'
-        )
-        parts.append(
-            f'<text x="{x}" y="{y + 14}" text-anchor="middle" font-family="PingFang SC, Noto Sans SC, sans-serif" font-size="13" font-weight="600" fill="#1d1d1f">{esc(label)}</text>'
-        )
-    parts.append("</svg>")
-    out_path.write_text("\n".join(parts) + "\n", encoding="utf-8")
-    return out_path
-
-
 def polish_file(src: Path, *, write: bool = True) -> dict:
     raw = src.read_text(encoding="utf-8")
     title_m = re.match(r"^#\s+(.+)$", raw.strip().splitlines()[0] if raw.strip() else "")
@@ -434,28 +324,23 @@ def polish_file(src: Path, *, write: bool = True) -> dict:
 
     if write:
         POLISHED_DIR.mkdir(parents=True, exist_ok=True)
-        # Only keep flowchart SmartArt (mindmap removed: redundant with chapter nav)
-        rel_flow = f"../diagrams/{flow_path.name}"
-        polished += (
-            "\n## 结构图（流程图）\n\n"
-            f"![章节流程图]({rel_flow})\n"
-        )
         polished_path.write_text(polished, encoding="utf-8", newline="\n")
-        generate_flowchart_svg(chapters, title, flow_path)
-        if mind_path.is_file():
-            mind_path.unlink()
+        # Structure diagrams / mindmaps are no longer auto-generated.
+        for stale in (flow_path, mind_path):
+            if stale.is_file():
+                stale.unlink()
 
     return {
         "source": str(src),
         "polished": str(polished_path),
-        "flowchart": str(flow_path),
+        "title": title,
         "chapters": len(chapters),
         "chars": len(re.sub(r"\s+", "", polished)),
     }
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Polish transcripts and generate SmartArt diagrams")
+    ap = argparse.ArgumentParser(description="Polish transcripts into structured markdown")
     ap.add_argument("--file", type=str, required=True, help="Transcript md path")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()

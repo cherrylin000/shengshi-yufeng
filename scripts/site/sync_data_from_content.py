@@ -8,7 +8,7 @@ Content priority for each track:
   2) content/transcripts/*.md（默认 ASR / 原文文稿）
   3) 空（无正文）
 
-Also attaches SmartArt diagram URLs when polished diagrams exist.
+Diagrams are not attached; users upload mind maps in article notes.
 """
 
 from __future__ import annotations
@@ -138,52 +138,8 @@ def resolve_polished_path(track: dict) -> Path | None:
 
 
 def discover_diagrams(track: dict, polished_text: str | None = None) -> list[dict[str, str]]:
-    """Return diagram payloads with web-relative src under content/."""
-    diagrams: list[dict[str, str]] = []
-    seen: set[str] = set()
-
-    def add(src: str, title: str = "") -> None:
-        src = src.replace("\\", "/")
-        if src.startswith("../"):
-            src = src[3:]
-        if src.startswith("./"):
-            src = src[2:]
-        if src.startswith("diagrams/"):
-            web_src = src
-            disk = CONTENT / src
-        elif "/" not in src:
-            web_src = f"diagrams/{src}"
-            disk = DIAGRAMS_DIR / src
-        else:
-            web_src = src
-            disk = CONTENT / src
-        if not disk.is_file() or web_src in seen:
-            return
-        seen.add(web_src)
-        kind = "flowchart" if "flow" in disk.name else ("mindmap" if "mind" in disk.name else "diagram")
-        if kind == "mindmap":
-            return
-        diagrams.append(
-            {
-                "id": kind,
-                "src": web_src,
-                "title": title or ("章节流程图" if kind == "flowchart" else "章节脑图" if kind == "mindmap" else disk.stem),
-            }
-        )
-
-    if polished_text:
-        for m in MD_IMAGE.finditer(polished_text):
-            add(m.group(2).strip(), m.group(1).strip())
-
-    index = track.get("index")
-    track_id = track.get("trackId")
-    if index is not None and track_id:
-        stem = f"{int(index):03d}_{int(track_id)}"
-        for name, title in (
-            (f"{stem}_flowchart.svg", "章节流程图"),
-        ):
-            add(f"diagrams/{name}", title)
-    return diagrams
+    """Diagrams are no longer attached to articles; users upload mind maps in notes."""
+    return []
 
 
 def char_count(text: str) -> int:

@@ -173,6 +173,7 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
+      overflow: hidden;
     }
     .outline-label {
       font-size: 12px;
@@ -192,6 +193,15 @@
       overscroll-behavior: contain;
       max-height: calc(100vh - 120px - env(safe-area-inset-top, 0px));
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none;
+    }
+    .toc::-webkit-scrollbar {
+      -webkit-appearance: none;
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      background: transparent;
     }
     .toc li { border-bottom: 1px solid var(--hairline); }
     .toc li:last-child { border-bottom: 0; }
@@ -446,7 +456,7 @@
       color: #1d1d1f;
     }
     .transcript mark.user-hl {
-      background: #d6e8ff;
+      background: #fff3a3;
       color: #1d1d1f;
       padding: 0 2px;
       border-radius: 2px;
@@ -503,9 +513,15 @@
       gap: 8px;
       justify-content: flex-end;
     }
+    .note-popover .row[hidden] {
+      display: none !important;
+    }
     .note-popover .row.actions-extra {
       justify-content: flex-start;
       margin-bottom: 8px;
+    }
+    .note-popover .hint[hidden] {
+      display: none !important;
     }
     .note-popover button {
       min-height: 36px;
@@ -542,16 +558,64 @@
       margin: 0 0 12px;
       font-size: 16px;
     }
+    .article-notes .article-note-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
     .article-notes li {
-      margin: 0 0 12px;
+      margin: 0 0 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--hairline);
       font-size: 14px;
       line-height: 1.5;
     }
+    .article-notes li:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
     .article-notes blockquote {
-      margin: 4px 0;
+      margin: 4px 0 8px;
       padding-left: 10px;
       border-left: 3px solid var(--primary);
       color: var(--ink-muted-80);
+    }
+    .article-notes .thought { margin: 0 0 8px; color: var(--ink); }
+    .article-notes .note-image { margin: 8px 0; }
+    .article-notes .note-image img {
+      display: block;
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--hairline);
+      background: var(--canvas);
+    }
+    .article-notes .upload-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .article-notes .upload-label {
+      font-size: 13px;
+      color: var(--ink-muted-80);
+    }
+    .article-notes .upload-form button {
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--hairline);
+      background: #fff;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .article-notes .upload-form button.linkish {
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+      padding: 0 4px;
     }
     .transcript h3.section-heading {
       margin: 1.6em 0 0.7em;
@@ -570,35 +634,6 @@
       font-size: 14px;
       font-weight: 500;
       letter-spacing: -0.12px;
-    }
-    .smartart {
-      margin-top: 40px;
-      scroll-margin-top: calc(var(--nav-h) + 24px);
-    }
-    .smartart .section-title { margin-bottom: 16px; }
-    .smartart-grid {
-      display: grid;
-      gap: 16px;
-    }
-    .smartart figure {
-      margin: 0;
-      padding: 16px;
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-lg);
-      background: var(--canvas-parchment);
-    }
-    .smartart figcaption {
-      margin: 0 0 10px;
-      font-size: 14px;
-      letter-spacing: -0.224px;
-      color: var(--ink-muted-48);
-    }
-    .smartart img {
-      display: block;
-      width: 100%;
-      height: auto;
-      border-radius: var(--radius-sm);
-      background: var(--canvas);
     }
     .source-badge {
       display: inline-block;
@@ -672,7 +707,7 @@
     <p class="state">正在加载文稿…</p>
   </main>
 
-  <div class="note-popover" id="notePopover" role="dialog" aria-label="高亮笔记面板">
+  <div class="note-popover" id="notePopover" role="dialog" aria-label="添加笔记">
     <p id="notePopoverTitle">已选文字（可添加想法，将进入个人笔记）</p>
     <div class="sel" id="noteSelText"></div>
     <p class="hint" id="noteAdjustHint" hidden>请在正文中重新勾选文字范围，再点“确认调整范围”。</p>
@@ -683,7 +718,7 @@
     </div>
     <div class="row">
       <button type="button" id="noteCancel">取消</button>
-      <button type="button" class="primary" id="noteSave">保存想法</button>
+      <button type="button" class="primary" id="noteSave">保存</button>
     </div>
   </div>
 
@@ -780,7 +815,7 @@
       noteExtraActions.hidden = true;
       noteAdjustHint.hidden = true;
       notePopoverTitle.textContent = '已选文字（可添加想法，将进入个人笔记）';
-      document.getElementById('noteSave').textContent = '保存想法';
+      document.getElementById('noteSave').textContent = '保存';
       clearActiveMark();
     }
 
@@ -815,8 +850,8 @@
       noteThought.value = '';
       noteExtraActions.hidden = true;
       noteAdjustHint.hidden = true;
-      notePopoverTitle.textContent = '新建高亮笔记';
-      document.getElementById('noteSave').textContent = '保存想法';
+      notePopoverTitle.textContent = '已选文字（可添加想法，将进入个人笔记）';
+      document.getElementById('noteSave').textContent = '保存';
       placeNotePopover(clientX, clientY);
     }
 
@@ -831,8 +866,8 @@
       noteThought.value = mark.dataset.thought || '';
       noteExtraActions.hidden = false;
       noteAdjustHint.hidden = true;
-      notePopoverTitle.textContent = '高亮笔记面板';
-      document.getElementById('noteSave').textContent = '保存想法';
+      notePopoverTitle.textContent = '高亮笔记';
+      document.getElementById('noteSave').textContent = '保存';
       placeNotePopover(clientX, clientY);
     }
 
@@ -1042,11 +1077,57 @@
       } catch (_) {}
     }
 
+    function bindArticleNoteUploads(track) {
+      const box = document.getElementById('articleNotes');
+      if (!box) return;
+      box.querySelectorAll('.upload-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = form.getAttribute('data-note-id');
+          const fileInput = form.querySelector('input[type="file"]');
+          if (!fileInput || !fileInput.files.length) {
+            alert('请先选择图片');
+            return;
+          }
+          const fd = new FormData();
+          fd.append('image', fileInput.files[0]);
+          const res = await fetch(apiUrl('/api/notes/' + id + '/image'), {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: fd
+          });
+          if (res.status === 401) {
+            location.href = '/register';
+            return;
+          }
+          const dataUp = await res.json();
+          if (dataUp.ok) await renderArticleNotes(track);
+          else alert(dataUp.error || '上传失败');
+        });
+      });
+      box.querySelectorAll('[data-clear-img]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-clear-img');
+          const res = await fetch(apiUrl('/api/notes/' + id + '/image'), {
+            method: 'DELETE',
+            credentials: 'same-origin'
+          });
+          if (res.status === 401) {
+            location.href = '/register';
+            return;
+          }
+          const dataDel = await res.json();
+          if (dataDel.ok) await renderArticleNotes(track);
+          else alert(dataDel.error || '移除失败');
+        });
+      });
+    }
+
     async function renderArticleNotes(track) {
       const box = document.getElementById('articleNotes');
       if (!box) return;
       if (!authUser || !authUser.loggedIn) {
-        box.innerHTML = `<h3>本篇笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">登录后可在此查看高亮想法。<a href="/register">注册</a></p>`;
+        box.innerHTML = `<h3>我的笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">登录后可在此查看高亮想法，并上传脑图。<a href="/register">注册</a></p>`;
         return;
       }
       try {
@@ -1054,12 +1135,24 @@
         const dataNotes = await res.json();
         const items = (dataNotes.items || []);
         if (!items.length) {
-          box.innerHTML = `<h3>本篇笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">选中文字并保存想法后，会出现在这里与“我的笔记”页。也可在笔记页上传自己的脑图图片。</p>`;
+          box.innerHTML = `<h3>我的笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">选中文字并保存后，会出现在这里。可在此为笔记上传脑图图片。</p>`;
           return;
         }
-        box.innerHTML = `<h3>本篇笔记（${items.length}）</h3><ul style="margin:0;padding-left:18px;">${
-          items.map(n => `<li><blockquote>${escapeHtml(n.selectedText)}</blockquote>${n.thought ? `<div>${escapeHtml(n.thought)}</div>` : ''}${n.imageUrl ? `<div style="margin-top:8px;"><img src="${escapeHtml(n.imageUrl)}" alt="笔记配图" style="max-width:100%;border-radius:8px;border:1px solid var(--hairline);" /></div>` : ''}</li>`).join('')
+        box.innerHTML = `<h3>我的笔记（${items.length}）</h3><ul class="article-note-list">${
+          items.map(n => `<li>
+            <blockquote>${escapeHtml(n.selectedText)}</blockquote>
+            ${n.thought ? `<div class="thought">${escapeHtml(n.thought)}</div>` : ''}
+            ${n.imageUrl ? `<div class="note-image"><img src="${escapeHtml(n.imageUrl)}" alt="脑图 / 笔记配图" /></div>` : ''}
+            <form class="upload-form" data-note-id="${n.id}" enctype="multipart/form-data">
+              <label class="upload-label">上传脑图/配图
+                <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" />
+              </label>
+              <button type="submit">上传图片</button>
+              ${n.imageUrl ? `<button type="button" class="linkish" data-clear-img="${n.id}">移除图片</button>` : ''}
+            </form>
+          </li>`).join('')
         }</ul>`;
+        bindArticleNoteUploads(track);
       } catch (_) {
         box.innerHTML = '';
       }
@@ -1207,23 +1300,6 @@
       return `<div class="transcript" id="transcript">${blocks.join('')}</div>`;
     }
 
-    function renderSmartArt(track) {
-      const diagrams = (track.diagrams || []).filter(d => d && d.id !== 'mindmap' && !String(d.src || '').includes('mindmap'));
-      if (!diagrams.length) return '';
-      const figures = diagrams.map(d => `
-        <figure>
-          <figcaption>${escapeHtml(d.title || '章节流程图')}</figcaption>
-          <img src="${escapeHtml(d.src)}" alt="${escapeHtml(d.title || 'SmartArt')}" loading="lazy" />
-        </figure>
-      `).join('');
-      return `
-        <section class="smartart section" id="smartart">
-          <h2 class="section-title">结构图（流程图）</h2>
-          <div class="smartart-grid">${figures}</div>
-        </section>
-      `;
-    }
-
     function sourceBadge(track) {
       if (track.contentSource === 'polished') return '<span class="source-badge">润色结构化文稿</span>';
       if (track.contentSource === 'raw' || track.content) return '<span class="source-badge">默认文稿</span>';
@@ -1340,9 +1416,7 @@
               ${renderTranscript(track)}
             </section>
 
-            ${renderSmartArt(track)}
-
-            <section class="article-notes" id="articleNotes" aria-label="本篇笔记"></section>
+            <section class="article-notes" id="articleNotes" aria-label="我的笔记"></section>
 
             ${renderPager(track)}
 

@@ -174,4 +174,31 @@ blockquote {
   font: inherit;
   font-size: 13px;
 }
-.linkish:hover { color: var(--danger); }
+.note-image { margin: 10px 0; }
+.note-image img {
+  display: block;
+  max-width: min(100%, 520px);
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background: var(--canvas);
+}
+.upload-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 8px 0 4px;
+  font-size: 13px;
+  color: var(--ink-muted-48);
+}
+.upload-label input { display: inline-block; max-width: 220px; }
+.upload-form button[type="submit"] {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--canvas);
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+}

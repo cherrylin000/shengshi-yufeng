@@ -83,6 +83,12 @@ jobs:
             --asr-limit 2 \
             --asr-from-index 370 \
             --asr-model tiny
+          # Always re-polish newest ok transcript so Actions absorb filler/punctuation/glossary upgrades
+          newest=$(ls -1 content/transcripts/*.md | sort | tail -1)
+          if [ -n "$newest" ]; then
+            .venv/bin/python scripts/transcripts/polish_transcript.py --file "$newest"
+            .venv/bin/python scripts/site/rebuild_data_js.py
+          fi
 
       - name: Commit and push changes
         run: |

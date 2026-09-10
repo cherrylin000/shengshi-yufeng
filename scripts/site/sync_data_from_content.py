@@ -161,6 +161,8 @@ def discover_diagrams(track: dict, polished_text: str | None = None) -> list[dic
             return
         seen.add(web_src)
         kind = "flowchart" if "flow" in disk.name else ("mindmap" if "mind" in disk.name else "diagram")
+        if kind == "mindmap":
+            return
         diagrams.append(
             {
                 "id": kind,
@@ -179,7 +181,6 @@ def discover_diagrams(track: dict, polished_text: str | None = None) -> list[dic
         stem = f"{int(index):03d}_{int(track_id)}"
         for name, title in (
             (f"{stem}_flowchart.svg", "章节流程图"),
-            (f"{stem}_mindmap.svg", "章节脑图"),
         ):
             add(f"diagrams/{name}", title)
     return diagrams

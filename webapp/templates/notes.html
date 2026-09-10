@@ -25,7 +25,7 @@
     <section class="panel">
       <h2>高亮与想法</h2>
       {% if not notes %}
-        <p class="empty">还没有笔记。打开任意文稿，选中文字后添加想法。</p>
+        <p class="empty">还没有笔记。打开任意文稿，选中文字后添加想法；也可在此上传自己的脑图图片。</p>
       {% else %}
         <ul class="note-list">
           {% for n in notes %}
@@ -35,6 +35,20 @@
             </a>
             <blockquote>{{ n.selected_text }}</blockquote>
             {% if n.thought %}<p class="thought">{{ n.thought }}</p>{% endif %}
+            {% if n['image_path'] %}
+              <p class="note-image">
+                <img src="{{ url_for('uploaded_file', filename=n['image_path']) }}" alt="笔记配图 / 脑图" />
+              </p>
+            {% endif %}
+            <form class="upload-form" data-note-id="{{ n.id }}" enctype="multipart/form-data">
+              <label class="upload-label">上传脑图/配图
+                <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" />
+              </label>
+              <button type="submit">上传图片</button>
+              {% if n['image_path'] %}
+              <button type="button" class="linkish" data-clear-img="{{ n.id }}">移除图片</button>
+              {% endif %}
+            </form>
             <div class="meta-row">
               <time>{{ n.updated_at }}</time>
               <button type="button" class="linkish" data-del="{{ n.id }}">删除</button>
@@ -73,6 +87,32 @@
         const data = await res.json();
         if (data.ok) location.reload();
         else alert(data.error || '删除失败');
+      });
+    });
+    document.querySelectorAll('.upload-form').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = form.getAttribute('data-note-id');
+        const fileInput = form.querySelector('input[type="file"]');
+        if (!fileInput.files.length) {
+          alert('请先选择图片');
+          return;
+        }
+        const fd = new FormData();
+        fd.append('image', fileInput.files[0]);
+        const res = await fetch('/api/notes/' + id + '/image', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) location.reload();
+        else alert(data.error || '上传失败');
+      });
+    });
+    document.querySelectorAll('[data-clear-img]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-clear-img');
+        const res = await fetch('/api/notes/' + id + '/image', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) location.reload();
+        else alert(data.error || '移除失败');
       });
     });
   </script>

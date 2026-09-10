@@ -63,30 +63,143 @@ def clean_spoken_body(text: str, glossary: list[tuple[str, str]]) -> str:
             continue
         lines.append(ln)
     text = "\n".join(lines)
-    # Spoken noise phrases
+
+    # Spoken noise / filler phrases (conservative but broader)
     noise = [
-        r"这个这个",
-        r"那个那个",
+        r"这个这个+",
+        r"那个那个+",
+        r"就是就是+",
+        r"然后然后+",
         r"就是说白了[，,]?",
         r"说白了[，,]?",
         r"你比如说[，,]?",
         r"比如说这个[，,]?",
         r"这个呢[，,]?",
         r"那么呢[，,]?",
+        r"然后呢[，,]?",
         r"啊[，、]\s*",
         r"哎呀[，、]\s*",
         r"对吧[？?]?",
         r"是不是[？?]?",
         r"大家知道[，,]?",
+        r"我跟你讲[，,]?",
+        r"你想想[，,]?",
+        r"你看吧[，,]?",
+        r"怎么说呢[，,]?",
+        r"什么意思呢[，,]?",
+        r"基本上基本上",
+        r"其实其实",
+        r"所以所以",
     ]
     for pat in noise:
         text = re.sub(pat, "", text)
+
+    # Common ASR confusions beyond glossary (high-confidence only)
+    replacements = [
+        ("超股", "炒股"),
+        ("正钱", "挣钱"),
+        ("发佳", "发家"),
+        ("血力", "学历"),
+        ("货币金融血", "货币金融学"),
+        ("比曾逻辑", "底层逻辑"),
+        ("归拿法", "归纳法"),
+        ("演谊法", "演绎法"),
+        ("凯信图", "K线图"),
+        ("金庸行业", "金融行业"),
+        ("金庸模型", "金融模型"),
+        ("古友", "股友"),
+        ("谷友", "股友"),
+        ("信答", "信达"),
+        ("中心金融资产", "中信金融资产"),
+        ("长相电力", "长江电力"),
+        ("负负力", "负复利"),
+        ("毛货币", "锚货币"),
+        ("均治回归", "均值回归"),
+        ("军之回归", "均值回归"),
+        ("归律", "规律"),
+        ("规骂法", "归纳法"),
+        ("底层老记", "底层逻辑"),
+        ("泡泡马特", "泡泡玛特"),
+        ("朝股", "炒股"),
+    ]
+    for fr, to in replacements:
+        text = text.replace(fr, to)
+
     text = collapse_near_duplicate_sentences(text)
+    text = normalize_punctuation(text)
+    text = reflow_paragraphs(text)
     text = re.sub(r"[ \t]{2,}", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def normalize_punctuation(text: str) -> str:
+    """Fix common ASR punctuation noise and add basic sentence ends."""
+    text = text.replace(",", "，").replace(";", "；").replace("?", "？").replace("!", "！")
     text = re.sub(r"[，,]{2,}", "，", text)
     text = re.sub(r"。{2,}", "。", text)
-    return text.strip()
+    text = re.sub(r"，+。", "。", text)
+    text = re.sub(r"。，", "。", text)
+    # Drop dangling commas before newlines
+    text = re.sub(r"，\s*\n", "。\n", text)
+    # Ensure sentences often end with period when next clause starts with connective
+    text = re.sub(
+        r"([^\n。！？])\s*(但是|可是|所以|因此|另外|其实|那么|然后|总之)",
+        r"\1。\2",
+        text,
+    )
+    # If a long chunk has no period, insert periods around ~60-90 chars at commas
+    chunks = []
+    for para in re.split(r"\n{2,}", text):
+        para = para.strip()
+        if not para:
+            continue
+        if "。" not in para and "！" not in para and "？" not in para and len(para) > 80:
+            parts = para.split("，")
+            buf = ""
+            rebuilt = []
+            for part in parts:
+                if not buf:
+                    buf = part
+                elif len(buf) + len(part) < 42:
+                    buf += "，" + part
+                else:
+                    rebuilt.append(buf + "。")
+                    buf = part
+            if buf:
+                rebuilt.append(buf if buf.endswith(("。", "！", "？")) else buf + "。")
+            para = "".join(rebuilt)
+        chunks.append(para)
+    return "\n\n".join(chunks)
+
+
+def reflow_paragraphs(text: str) -> str:
+    """Split long walls of text into readable paragraphs."""
+    paras_out: list[str] = []
+    for block in re.split(r"\n{2,}", text):
+        block = block.strip()
+        if not block:
+            continue
+        # If already short, keep
+        if len(re.sub(r"\s+", "", block)) <= 160:
+            paras_out.append(block)
+            continue
+        sentences = re.split(r"(?<=[。！？])", block)
+        buf = ""
+        for sent in sentences:
+            s = sent.strip()
+            if not s:
+                continue
+            if not buf:
+                buf = s
+            elif len(re.sub(r"\s+", "", buf + s)) <= 120:
+                buf += s
+            else:
+                paras_out.append(buf)
+                buf = s
+        if buf:
+            paras_out.append(buf)
+    return "\n\n".join(paras_out)
 
 
 def collapse_near_duplicate_sentences(text: str) -> str:
@@ -110,32 +223,42 @@ def collapse_near_duplicate_sentences(text: str) -> str:
 
 def structure_by_chapters(body: str, chapters: list[tuple[str, str]]) -> str:
     """Wrap body into chapter sections when chapters exist."""
+    paras = [p.strip() for p in re.split(r"\n{2,}", body) if p.strip()]
     if not chapters:
-        paras = [p.strip() for p in re.split(r"\n{2,}", body) if p.strip()]
         return "\n\n".join(paras)
 
-    paras = [p.strip() for p in re.split(r"\n{2,}", body) if p.strip()]
-    if len(paras) < len(chapters):
-        # Keep as continuous polished body under chapter TOC only
-        blocks = ["## 整理后正文", ""]
+    blocks: list[str] = ["## 整理后正文", ""]
+    if not paras:
         for ts, title in chapters:
             blocks.append(f"### {ts} {title}")
             blocks.append("")
-        blocks.append(body)
-        blocks.append("")
+            blocks.append("（本章暂无可用正文）")
+            blocks.append("")
         return "\n".join(blocks)
 
-    # Distribute paragraphs roughly across chapters
     n = len(chapters)
-    chunk = max(1, len(paras) // n)
-    blocks: list[str] = ["## 整理后正文", ""]
+    # Prefer balanced distribution, but keep at least one paragraph per chapter when possible
+    if len(paras) < n:
+        for i, (ts, title) in enumerate(chapters):
+            blocks.append(f"### {ts} {title}")
+            blocks.append("")
+            if i < len(paras):
+                blocks.append(paras[i])
+            else:
+                blocks.append("（本章内容见相邻章节上下文）")
+            blocks.append("")
+        return "\n".join(blocks).strip() + "\n"
+
+    base = len(paras) // n
+    rem = len(paras) % n
+    cursor = 0
     for i, (ts, title) in enumerate(chapters):
-        start = i * chunk
-        end = (i + 1) * chunk if i < n - 1 else len(paras)
+        take = base + (1 if i < rem else 0)
+        section = paras[cursor : cursor + take]
+        cursor += take
         blocks.append(f"### {ts} {title}")
         blocks.append("")
-        section = paras[start:end] or [""]
-        blocks.extend(section)
+        blocks.extend(section or ["（本章暂无可用正文）"])
         blocks.append("")
     return "\n".join(blocks).strip() + "\n"
 
@@ -311,24 +434,21 @@ def polish_file(src: Path, *, write: bool = True) -> dict:
 
     if write:
         POLISHED_DIR.mkdir(parents=True, exist_ok=True)
-        polished_path.write_text(polished, encoding="utf-8", newline="\n")
-        # embed relative diagram refs
+        # Only keep flowchart SmartArt (mindmap removed: redundant with chapter nav)
         rel_flow = f"../diagrams/{flow_path.name}"
-        rel_mind = f"../diagrams/{mind_path.name}"
         polished += (
-            "\n## 结构图（SmartArt）\n\n"
-            f"![章节流程图]({rel_flow})\n\n"
-            f"![章节脑图]({rel_mind})\n"
+            "\n## 结构图（流程图）\n\n"
+            f"![章节流程图]({rel_flow})\n"
         )
         polished_path.write_text(polished, encoding="utf-8", newline="\n")
         generate_flowchart_svg(chapters, title, flow_path)
-        generate_mindmap_svg(chapters, title, mind_path)
+        if mind_path.is_file():
+            mind_path.unlink()
 
     return {
         "source": str(src),
         "polished": str(polished_path),
         "flowchart": str(flow_path),
-        "mindmap": str(mind_path),
         "chapters": len(chapters),
         "chars": len(re.sub(r"\s+", "", polished)),
     }

@@ -194,6 +194,7 @@ def create_note(
 
 
 def list_notes(conn: sqlite3.Connection, user_id: int) -> list[sqlite3.Row]:
+    ensure_notes_image_column(conn)
     return conn.execute(
         """
         SELECT * FROM notes WHERE user_id = ?
@@ -210,6 +211,7 @@ def delete_note(conn: sqlite3.Connection, user_id: int, note_id: int) -> bool:
 
 
 def notes_for_article(conn: sqlite3.Connection, user_id: int, article_index: int) -> list[sqlite3.Row]:
+    ensure_notes_image_column(conn)
     return conn.execute(
         """
         SELECT * FROM notes
@@ -218,3 +220,47 @@ def notes_for_article(conn: sqlite3.Connection, user_id: int, article_index: int
         """,
         (user_id, article_index),
     ).fetchall()
+
+
+def ensure_notes_image_column(conn: sqlite3.Connection) -> None:
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(notes)").fetchall()}
+    if "image_path" not in cols:
+        conn.execute("ALTER TABLE notes ADD COLUMN image_path TEXT")
+        conn.commit()
+
+
+def update_note(
+    conn: sqlite3.Connection,
+    user_id: int,
+    note_id: int,
+    *,
+    selected_text: str | None = None,
+    thought: str | None = None,
+    image_path: str | None = None,
+    clear_image: bool = False,
+) -> bool:
+    ensure_notes_image_column(conn)
+    row = conn.execute(
+        "SELECT * FROM notes WHERE id = ? AND user_id = ?",
+        (note_id, user_id),
+    ).fetchone()
+    if not row:
+        return False
+    new_selected = row["selected_text"] if selected_text is None else selected_text
+    new_thought = row["thought"] if thought is None else thought
+    if clear_image:
+        new_image = None
+    elif image_path is not None:
+        new_image = image_path
+    else:
+        new_image = row["image_path"] if "image_path" in row.keys() else None
+    conn.execute(
+        """
+        UPDATE notes
+        SET selected_text = ?, thought = ?, image_path = ?, updated_at = ?
+        WHERE id = ? AND user_id = ?
+        """,
+        (new_selected, new_thought, new_image, utcnow(), note_id, user_id),
+    )
+    conn.commit()
+    return True

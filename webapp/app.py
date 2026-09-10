@@ -251,6 +251,11 @@ def api_notes():
                         "articleTitle": r["article_title"],
                         "selectedText": r["selected_text"],
                         "thought": r["thought"],
+                        "imageUrl": (
+                            url_for("uploaded_file", filename=r["image_path"])
+                            if ("image_path" in r.keys() and r["image_path"])
+                            else None
+                        ),
                         "createdAt": r["created_at"],
                         "updatedAt": r["updated_at"],
                     }
@@ -277,13 +282,67 @@ def api_notes():
     return jsonify({"ok": True, "id": note_id})
 
 
-@app.route("/api/notes/<int:note_id>", methods=["DELETE"])
-def api_delete_note(note_id: int):
+@app.route("/api/notes/<int:note_id>", methods=["PATCH", "DELETE"])
+def api_note_item(note_id: int):
     user, err = require_user_api()
     if err:
         return err
-    ok = store.delete_note(get_db(), int(user["id"]), note_id)
+    conn = get_db()
+    if request.method == "DELETE":
+        ok = store.delete_note(conn, int(user["id"]), note_id)
+        return jsonify({"ok": ok})
+    data = request.get_json(force=True, silent=True) or {}
+    ok = store.update_note(
+        conn,
+        int(user["id"]),
+        note_id,
+        selected_text=(str(data["selectedText"]).strip() if "selectedText" in data else None),
+        thought=(str(data.get("thought") or "") if "thought" in data else None),
+    )
     return jsonify({"ok": ok})
+
+
+@app.route("/api/notes/<int:note_id>/image", methods=["POST", "DELETE"])
+def api_note_image(note_id: int):
+    user, err = require_user_api()
+    if err:
+        return err
+    conn = get_db()
+    upload_dir = Path(__file__).resolve().parent / "data" / "uploads"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    if request.method == "DELETE":
+        ok = store.update_note(conn, int(user["id"]), note_id, clear_image=True)
+        return jsonify({"ok": ok})
+
+    file = request.files.get("image")
+    if not file or not file.filename:
+        return jsonify({"ok": False, "error": "请选择图片"}), 400
+    ext = Path(file.filename).suffix.lower()
+    if ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+        return jsonify({"ok": False, "error": "仅支持 png/jpg/webp/gif"}), 400
+    # ownership check
+    rows = [r for r in store.list_notes(conn, int(user["id"])) if int(r["id"]) == note_id]
+    if not rows:
+        return jsonify({"ok": False, "error": "笔记不存在"}), 404
+    filename = f"u{user['id']}_n{note_id}{ext}"
+    dest = upload_dir / filename
+    file.save(dest)
+    ok = store.update_note(conn, int(user["id"]), note_id, image_path=filename)
+    return jsonify(
+        {
+            "ok": ok,
+            "imageUrl": url_for("uploaded_file", filename=filename),
+        }
+    )
+
+
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename: str):
+    user = current_user()
+    if not user:
+        return redirect(url_for("login"))
+    upload_dir = Path(__file__).resolve().parent / "data" / "uploads"
+    return send_from_directory(upload_dir, filename)
 
 
 def main():

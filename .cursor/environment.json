@@ -1,0 +1,18 @@
+{
+  "name": "shengshi-yufeng",
+  "user": "ubuntu",
+  "install": "sudo apt-get update -qq && sudo apt-get install -y -qq python3.12-venv ffmpeg && python3 -m venv .venv && .venv/bin/pip install -U pip -q && .venv/bin/pip install -r requirements.txt",
+  "terminals": [
+    {
+      "name": "webapp",
+      "command": ".venv/bin/python webapp/app.py",
+      "description": "Flask + SQLite 站点/账号后端：提供首页、文稿阅读页与注册/已读/浏览记录/高亮笔记 API（http://127.0.0.1:8765）。"
+    }
+  ],
+  "ports": [
+    {
+      "name": "webapp",
+      "port": 8765
+    }
+  ]
+}

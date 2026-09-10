@@ -1189,37 +1189,26 @@
           : (track.error || '本篇暂无可用全文文字稿，请收听原音频。');
         return `<div class="transcript"><p class="notice">${escapeHtml(hint)}</p></div>`;
       }
-      const lines = String(track.content).split(/\n/);
+      const raw = String(track.content);
       const blocks = [];
-      let paraBuf = [];
-      const flushPara = () => {
-        const text = paraBuf.join('').trim();
-        paraBuf = [];
-        if (text) blocks.push(`<p>${escapeHtml(text)}</p>`);
-      };
-      for (const rawLine of lines) {
-        const line = rawLine.trim();
-        if (!line) {
-          flushPara();
-          continue;
-        }
-        const hm = line.match(/^###\s+(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)$/);
+      const chunks = raw.split(/\n{2,}/);
+      for (const chunk of chunks) {
+        const text = chunk.trim();
+        if (!text) continue;
+        const hm = text.match(/^###\s+(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)$/);
         if (hm) {
-          flushPara();
           blocks.push(
             `<h3 class="section-heading"><span class="ts">${escapeHtml(hm[1])}</span>${escapeHtml(hm[2])}</h3>`
           );
           continue;
         }
-        const hm2 = line.match(/^###\s+(.+)$/);
+        const hm2 = text.match(/^###\s+(.+)$/);
         if (hm2) {
-          flushPara();
           blocks.push(`<h3 class="section-heading">${escapeHtml(hm2[1])}</h3>`);
           continue;
         }
-        paraBuf.push(line);
+        blocks.push(`<p>${escapeHtml(text)}</p>`);
       }
-      flushPara();
       if (!blocks.length) {
         const paras = splitParagraphs(track.content);
         return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;

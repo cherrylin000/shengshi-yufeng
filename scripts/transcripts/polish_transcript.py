@@ -173,7 +173,7 @@ def normalize_punctuation(text: str) -> str:
 
 
 def reflow_paragraphs(text: str) -> str:
-    """Split long walls of text into readable paragraphs."""
+    """Split long walls of text into readable paragraphs (target <=160 chars)."""
     paras_out: list[str] = []
     for block in re.split(r"\n{2,}", text):
         block = block.strip()
@@ -183,7 +183,7 @@ def reflow_paragraphs(text: str) -> str:
         if len(re.sub(r"\s+", "", block)) <= 160:
             paras_out.append(block)
             continue
-        sentences = re.split(r"(?<=[。！？])", block)
+        sentences = re.split(r"(?<=[。！？；])", block)
         buf = ""
         for sent in sentences:
             s = sent.strip()
@@ -191,7 +191,7 @@ def reflow_paragraphs(text: str) -> str:
                 continue
             if not buf:
                 buf = s
-            elif len(re.sub(r"\s+", "", buf + s)) <= 120:
+            elif len(re.sub(r"\s+", "", buf + s)) <= 160:
                 buf += s
             else:
                 paras_out.append(buf)

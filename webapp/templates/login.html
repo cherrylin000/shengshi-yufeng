@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>登录 · 盛世裕丰文稿</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}" />
+</head>
+<body>
+  <main class="auth-shell">
+    <a class="brand" href="/">盛世裕丰文稿库</a>
+    <h1>登录</h1>
+    <p class="lead">同步你的阅读进度与个人笔记。</p>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post" class="auth-form" autocomplete="on">
+      <label>用户名
+        <input name="username" required />
+      </label>
+      <label>密码
+        <input type="password" name="password" required />
+      </label>
+      <button type="submit">登录</button>
+    </form>
+    <p class="switch">还没有账号？<a href="{{ url_for('register') }}">注册</a></p>
+  </main>
+</body>
+</html>

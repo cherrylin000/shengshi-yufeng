@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>我的笔记 · 盛世裕丰</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}" />
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/">盛世裕丰文稿库</a>
+    <nav>
+      <a href="/content/article.html?index=1">去读文稿</a>
+      <span class="who">{{ user.username }}</span>
+      <a href="{{ url_for('logout') }}">退出</a>
+    </nav>
+  </header>
+
+  <main class="notes-shell">
+    <section class="hero-notes">
+      <h1>我的笔记</h1>
+      <p>共 {{ notes|length }} 条高亮想法 · 已读 {{ read_count }} 篇 · 最近浏览 {{ history|length }} 条</p>
+    </section>
+
+    <section class="panel">
+      <h2>高亮与想法</h2>
+      {% if not notes %}
+        <p class="empty">还没有笔记。打开任意文稿，选中文字后添加想法；也可在此上传自己的脑图图片。</p>
+      {% else %}
+        <ul class="note-list">
+          {% for n in notes %}
+          <li>
+            <a class="note-src" href="/content/article.html?index={{ n.article_index }}">
+              {{ '%03d'|format(n.article_index) }} · {{ n.article_title or '未命名文稿' }}
+            </a>
+            <blockquote>{{ n.selected_text }}</blockquote>
+            {% if n.thought %}<p class="thought">{{ n.thought }}</p>{% endif %}
+            {% if n['image_path'] %}
+              <p class="note-image">
+                <img src="{{ url_for('uploaded_file', filename=n['image_path']) }}" alt="笔记配图 / 脑图" />
+              </p>
+            {% endif %}
+            <form class="upload-form" data-note-id="{{ n.id }}" enctype="multipart/form-data">
+              <label class="upload-label">上传脑图/配图
+                <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" />
+              </label>
+              <button type="submit">上传图片</button>
+              {% if n['image_path'] %}
+              <button type="button" class="linkish" data-clear-img="{{ n.id }}">移除图片</button>
+              {% endif %}
+            </form>
+            <div class="meta-row">
+              <time>{{ n.updated_at }}</time>
+              <button type="button" class="linkish" data-del="{{ n.id }}">删除</button>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      <h2>浏览记录</h2>
+      {% if not history %}
+        <p class="empty">暂无浏览记录。</p>
+      {% else %}
+        <ol class="history-list">
+          {% for h in history %}
+          <li>
+            <a href="/content/article.html?index={{ h.article_index }}">
+              {{ '%03d'|format(h.article_index) }} · {{ h.title or '文稿' }}
+            </a>
+            <time>{{ h.visited_at }}</time>
+          </li>
+          {% endfor %}
+        </ol>
+      {% endif %}
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll('[data-del]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-del');
+        if (!confirm('删除这条笔记？')) return;
+        const res = await fetch('/api/notes/' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) location.reload();
+        else alert(data.error || '删除失败');
+      });
+    });
+    document.querySelectorAll('.upload-form').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = form.getAttribute('data-note-id');
+        const fileInput = form.querySelector('input[type="file"]');
+        if (!fileInput.files.length) {
+          alert('请先选择图片');
+          return;
+        }
+        const fd = new FormData();
+        fd.append('image', fileInput.files[0]);
+        const res = await fetch('/api/notes/' + id + '/image', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) location.reload();
+        else alert(data.error || '上传失败');
+      });
+    });
+    document.querySelectorAll('[data-clear-img]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-clear-img');
+        const res = await fetch('/api/notes/' + id + '/image', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.ok) location.reload();
+        else alert(data.error || '移除失败');
+      });
+    });
+  </script>
+</body>
+</html>

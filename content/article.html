@@ -169,6 +169,11 @@
       top: calc(52px + env(safe-area-inset-top, 0px));
       padding-top: 40px;
       align-self: start;
+      max-height: calc(100vh - 64px - env(safe-area-inset-top, 0px));
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
     .outline-label {
       font-size: 12px;
@@ -176,6 +181,7 @@
       letter-spacing: -0.12px;
       color: var(--ink-muted-48);
       margin: 0 0 12px;
+      flex: 0 0 auto;
     }
     .toc {
       list-style: none;
@@ -183,7 +189,19 @@
       padding: 0;
       border: 1px solid var(--hairline);
       border-radius: var(--radius-lg);
-      overflow: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      max-height: calc(100vh - 120px - env(safe-area-inset-top, 0px));
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none;
+    }
+    .toc::-webkit-scrollbar {
+      -webkit-appearance: none;
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      background: transparent;
     }
     .toc li { border-bottom: 1px solid var(--hairline); }
     .toc li:last-child { border-bottom: 0; }
@@ -405,6 +423,214 @@
       margin: 0 0 12px;
     }
 
+    /* 账号 / 已读 / 高亮笔记 */
+    .account-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 18px;
+      font-size: 14px;
+      color: var(--ink-muted-80);
+    }
+    .account-bar a { font-weight: 600; }
+    .read-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 6px 12px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm);
+      background: var(--canvas);
+      cursor: pointer;
+      user-select: none;
+    }
+    .read-toggle input { width: 16px; height: 16px; accent-color: var(--primary); }
+    .transcript ::selection {
+      background: #d6e8ff;
+      color: #1d1d1f;
+    }
+    .transcript ::-moz-selection {
+      background: #d6e8ff;
+      color: #1d1d1f;
+    }
+    .transcript mark.user-hl {
+      background: #fff3a3;
+      color: #1d1d1f;
+      padding: 0 2px;
+      border-radius: 2px;
+      cursor: pointer;
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+    }
+    .note-popover {
+      position: fixed;
+      z-index: 80;
+      width: min(340px, calc(100vw - 24px));
+      max-height: min(70vh, 520px);
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--hairline);
+      border-radius: 14px;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+      display: none;
+      overflow: auto;
+    }
+    .note-popover.is-open { display: block; }
+    .note-popover p {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--ink-muted-48);
+    }
+    .note-popover .sel {
+      margin: 0 0 10px;
+      padding: 8px 10px;
+      background: #f5f5f7;
+      border-radius: 8px;
+      font-size: 14px;
+      max-height: 6em;
+      overflow: auto;
+      color: var(--ink);
+    }
+    .note-popover textarea {
+      width: 100%;
+      min-height: 72px;
+      resize: vertical;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font: inherit;
+      margin: 0 0 10px;
+    }
+    .note-popover .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .note-popover .row[hidden] {
+      display: none !important;
+    }
+    .note-popover button {
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--hairline);
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+      color: var(--ink);
+    }
+    .note-popover button.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .note-popover button.danger {
+      color: #b42318;
+      border-color: #e0e0e0;
+    }
+    .article-notes {
+      margin-top: 28px;
+      padding: 16px;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-lg);
+      background: var(--canvas-parchment);
+    }
+    .article-notes h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+    .article-notes .article-note-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .article-notes li {
+      margin: 0 0 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--hairline);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .article-notes li:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+    .article-notes blockquote {
+      margin: 4px 0 8px;
+      padding-left: 10px;
+      border-left: 3px solid var(--primary);
+      color: var(--ink-muted-80);
+    }
+    .article-notes .thought { margin: 0 0 8px; color: var(--ink); }
+    .article-notes .note-image { margin: 8px 0; }
+    .article-notes .note-image img {
+      display: block;
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--hairline);
+      background: var(--canvas);
+    }
+    .article-notes .upload-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .article-notes .upload-label {
+      font-size: 13px;
+      color: var(--ink-muted-80);
+    }
+    .article-notes .upload-form button {
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--hairline);
+      background: #fff;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .article-notes .upload-form button.linkish {
+      border: 0;
+      background: transparent;
+      color: var(--primary);
+      padding: 0 4px;
+    }
+    .transcript h3.section-heading {
+      margin: 1.6em 0 0.7em;
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+      text-indent: 0;
+    }
+    .transcript h3.section-heading .ts {
+      display: inline-block;
+      margin-right: 8px;
+      color: var(--ink-muted-48);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.12px;
+    }
+    .source-badge {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 12px;
+      letter-spacing: -0.12px;
+      padding: 4px 10px;
+      background: var(--surface-pearl);
+      color: var(--ink-muted-80);
+      border-radius: var(--radius-sm);
+      vertical-align: middle;
+    }
+
     @media (max-width: 900px) {
       .shell {
         grid-template-columns: 1fr;
@@ -446,6 +672,7 @@
     <div class="topbar-inner">
       <a class="back" href="../index.html#library">← 文稿库</a>
       <div class="topbar-actions">
+        <div id="accountLinks" class="account-links" style="display:flex;gap:10px;align-items:center;margin-right:8px;font-size:13px;"></div>
         <button type="button" class="paddlenav-arrow paddlenav-arrow-previous" id="prevBtn" aria-label="上一篇" title="上一篇">
           <svg viewBox="0 0 36 36" aria-hidden="true" focusable="false">
             <path d="M21.2 23.4l-5.2-5.4 5.2-5.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -464,6 +691,20 @@
     <p class="state">正在加载文稿…</p>
   </main>
 
+  <div class="note-popover" id="notePopover" role="dialog" aria-label="添加笔记">
+    <p id="notePopoverTitle">已选文字（可添加想法，将进入个人笔记）</p>
+    <div class="sel" id="noteSelText"></div>
+    <textarea id="noteThought" placeholder="写下你的想法（可选）"></textarea>
+    <div class="row" id="noteCreateActions">
+      <button type="button" id="noteCancel">取消</button>
+      <button type="button" class="primary" id="noteSave">保存</button>
+    </div>
+    <div class="row" id="noteEditActions" hidden>
+      <button type="button" class="danger" id="noteRemoveHighlight">取消高亮</button>
+      <button type="button" class="primary" id="noteConfirm">确认</button>
+    </div>
+  </div>
+
   <script src="../data-index.js"></script>
   <script>
     const data = window.SHENGSHI_INDEX;
@@ -475,6 +716,390 @@
     const fmt = new Intl.NumberFormat('zh-CN');
     let currentTrack = null;
     let tocObserver = null;
+    let authUser = null;
+    let pendingSelection = '';
+    let longPressTimer = null;
+    let activeMark = null;
+    let editingNoteId = null;
+
+    const notePopover = document.getElementById('notePopover');
+    const notePopoverTitle = document.getElementById('notePopoverTitle');
+    const noteSelText = document.getElementById('noteSelText');
+    const noteThought = document.getElementById('noteThought');
+    const noteCreateActions = document.getElementById('noteCreateActions');
+    const noteEditActions = document.getElementById('noteEditActions');
+    const accountLinks = document.getElementById('accountLinks');
+
+    function apiUrl(path) {
+      return path;
+    }
+
+    async function refreshAuth() {
+      try {
+        const res = await fetch(apiUrl('/api/me'), { credentials: 'same-origin' });
+        if (!res.ok) throw new Error('no api');
+        const dataMe = await res.json();
+        authUser = dataMe.loggedIn ? dataMe : null;
+      } catch (_) {
+        authUser = null;
+      }
+      if (!accountLinks) return;
+      if (authUser && authUser.loggedIn) {
+        accountLinks.innerHTML = `<span>${escapeHtml(authUser.username)}</span><a href="/notes">我的笔记</a><a href="/logout">退出</a>`;
+      } else {
+        accountLinks.innerHTML = `<a href="/register">注册</a><a href="/login">登录</a>`;
+      }
+    }
+
+    async function postJson(path, body) {
+      const res = await fetch(apiUrl(path), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (res.status === 401) {
+        if (confirm('需要登录后才能使用该功能，前往注册/登录？')) {
+          location.href = '/register';
+        }
+        return null;
+      }
+      return res.json();
+    }
+
+    async function patchJson(path, body) {
+      const res = await fetch(apiUrl(path), {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (res.status === 401) {
+        if (confirm('需要登录后才能使用该功能，前往注册/登录？')) {
+          location.href = '/register';
+        }
+        return null;
+      }
+      return res.json();
+    }
+
+    function clearActiveMark() {
+      activeMark = null;
+    }
+
+    function closeNotePopover() {
+      notePopover.classList.remove('is-open');
+      pendingSelection = '';
+      editingNoteId = null;
+      noteThought.value = '';
+      noteCreateActions.hidden = false;
+      noteEditActions.hidden = true;
+      notePopoverTitle.textContent = '已选文字（可添加想法，将进入个人笔记）';
+      clearActiveMark();
+    }
+
+    function placeNotePopover(clientX, clientY) {
+      const pad = 12;
+      const w = Math.min(340, window.innerWidth - 24);
+      notePopover.style.width = w + 'px';
+      notePopover.style.visibility = 'hidden';
+      notePopover.classList.add('is-open');
+      const rect = notePopover.getBoundingClientRect();
+      const h = rect.height || 280;
+      let left = Math.min(Math.max(pad, clientX - w / 2), window.innerWidth - w - pad);
+      let top = clientY + 12;
+      if (top + h > window.innerHeight - pad) {
+        top = clientY - h - 12;
+      }
+      if (top < pad) top = pad;
+      if (top + h > window.innerHeight - pad) {
+        top = Math.max(pad, window.innerHeight - h - pad);
+      }
+      notePopover.style.left = left + 'px';
+      notePopover.style.top = top + 'px';
+      notePopover.style.visibility = 'visible';
+    }
+
+    function openCreatePopover(text, clientX, clientY) {
+      clearActiveMark();
+      editingNoteId = null;
+      pendingSelection = text;
+      noteSelText.textContent = text;
+      noteThought.value = '';
+      noteCreateActions.hidden = false;
+      noteEditActions.hidden = true;
+      notePopoverTitle.textContent = '已选文字（可添加想法，将进入个人笔记）';
+      placeNotePopover(clientX, clientY);
+    }
+
+    function openEditPopover(mark, clientX, clientY) {
+      clearActiveMark();
+      activeMark = mark;
+      editingNoteId = mark.dataset.noteId ? Number(mark.dataset.noteId) : null;
+      pendingSelection = mark.textContent || '';
+      noteSelText.textContent = pendingSelection;
+      noteThought.value = mark.dataset.thought || '';
+      noteCreateActions.hidden = true;
+      noteEditActions.hidden = false;
+      notePopoverTitle.textContent = '高亮笔记';
+      placeNotePopover(clientX, clientY);
+    }
+
+    function unwrapMark(mark) {
+      if (!mark || !mark.parentNode) return;
+      const parent = mark.parentNode;
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parent.normalize();
+    }
+
+    function bindHighlightInteractions(track) {
+      const root = document.getElementById('transcript');
+      if (!root) return;
+
+      const openFromSelection = (x, y) => {
+        const sel = window.getSelection();
+        const text = sel ? String(sel.toString() || '').trim() : '';
+        if (!text || text.length < 2) return;
+        if (!root.contains(sel.anchorNode)) return;
+        openCreatePopover(text, x, y);
+      };
+
+      root.addEventListener('mouseup', (e) => {
+        if (e.target.closest && e.target.closest('mark.user-hl')) return;
+        setTimeout(() => openFromSelection(e.clientX, e.clientY), 0);
+      });
+
+      root.addEventListener('click', (e) => {
+        const mark = e.target.closest && e.target.closest('mark.user-hl');
+        if (!mark || !root.contains(mark)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openEditPopover(mark, e.clientX, e.clientY);
+      });
+
+      root.addEventListener('touchstart', (e) => {
+        if (!e.touches[0]) return;
+        const t = e.touches[0];
+        longPressTimer = setTimeout(() => openFromSelection(t.clientX, t.clientY), 550);
+      }, { passive: true });
+      const clearLp = () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } };
+      root.addEventListener('touchend', clearLp);
+      root.addEventListener('touchmove', clearLp);
+
+      document.getElementById('noteCancel').onclick = closeNotePopover;
+
+      document.getElementById('noteRemoveHighlight').onclick = async () => {
+        if (!activeMark) return;
+        const noteId = activeMark.dataset.noteId;
+        if (noteId) {
+          const res = await fetch(apiUrl('/api/notes/' + noteId), {
+            method: 'DELETE',
+            credentials: 'same-origin'
+          });
+          if (res.status === 401) {
+            location.href = '/register';
+            return;
+          }
+        }
+        unwrapMark(activeMark);
+        closeNotePopover();
+        await renderArticleNotes(track);
+      };
+
+      document.getElementById('noteConfirm').onclick = async () => {
+        const thought = noteThought.value.trim();
+        const selectedText = pendingSelection || (activeMark ? activeMark.textContent : '');
+        if (!selectedText || !activeMark) return;
+        if (editingNoteId) {
+          const dataSave = await patchJson('/api/notes/' + editingNoteId, { selectedText, thought });
+          if (!dataSave) return;
+          if (!dataSave.ok) {
+            alert(dataSave.error || '保存失败');
+            return;
+          }
+        } else {
+          const dataSave = await postJson('/api/notes', {
+            articleIndex: track.index,
+            trackId: track.trackId,
+            articleTitle: track.title,
+            selectedText,
+            thought
+          });
+          if (!dataSave) return;
+          if (!dataSave.ok) {
+            alert(dataSave.error || '保存失败');
+            return;
+          }
+          editingNoteId = dataSave.id;
+          activeMark.dataset.noteId = String(dataSave.id);
+        }
+        activeMark.dataset.thought = thought;
+        closeNotePopover();
+        await renderArticleNotes(track);
+      };
+
+      document.getElementById('noteSave').onclick = async () => {
+        const thought = noteThought.value.trim();
+        const selectedText = pendingSelection;
+        if (!selectedText) return;
+        const payload = {
+          articleIndex: track.index,
+          trackId: track.trackId,
+          articleTitle: track.title,
+          selectedText,
+          thought
+        };
+        const dataSave = await postJson('/api/notes', payload);
+        if (!dataSave) return;
+        if (dataSave.ok) {
+          try {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount && !sel.isCollapsed) {
+              const range = sel.getRangeAt(0);
+              const mark = document.createElement('mark');
+              mark.className = 'user-hl';
+              mark.dataset.noteId = String(dataSave.id);
+              mark.dataset.thought = thought;
+              range.surroundContents(mark);
+              sel.removeAllRanges();
+            }
+          } catch (_) {}
+          closeNotePopover();
+          await renderArticleNotes(track);
+        } else {
+          alert(dataSave.error || '保存失败');
+        }
+      };
+    }
+
+    async function restoreHighlights(track) {
+      const root = document.getElementById('transcript');
+      if (!root || !authUser || !authUser.loggedIn) return;
+      try {
+        const res = await fetch(apiUrl(`/api/notes?articleIndex=${track.index}`), { credentials: 'same-origin' });
+        const dataNotes = await res.json();
+        const items = dataNotes.items || [];
+        // Best-effort restore: wrap first exact text match for each note
+        for (const n of items) {
+          const needle = String(n.selectedText || '').trim();
+          if (!needle || needle.length < 2) continue;
+          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.parentElement && node.parentElement.closest('mark.user-hl')) continue;
+            const idx = node.nodeValue.indexOf(needle);
+            if (idx < 0) continue;
+            const range = document.createRange();
+            range.setStart(node, idx);
+            range.setEnd(node, idx + needle.length);
+            const mark = document.createElement('mark');
+            mark.className = 'user-hl';
+            mark.dataset.noteId = String(n.id);
+            mark.dataset.thought = n.thought || '';
+            range.surroundContents(mark);
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+
+    function bindArticleNoteUploads(track) {
+      const box = document.getElementById('articleNotes');
+      if (!box) return;
+      box.querySelectorAll('.upload-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const id = form.getAttribute('data-note-id');
+          const fileInput = form.querySelector('input[type="file"]');
+          if (!fileInput || !fileInput.files.length) {
+            alert('请先选择图片');
+            return;
+          }
+          const fd = new FormData();
+          fd.append('image', fileInput.files[0]);
+          const res = await fetch(apiUrl('/api/notes/' + id + '/image'), {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: fd
+          });
+          if (res.status === 401) {
+            location.href = '/register';
+            return;
+          }
+          const dataUp = await res.json();
+          if (dataUp.ok) await renderArticleNotes(track);
+          else alert(dataUp.error || '上传失败');
+        });
+      });
+      box.querySelectorAll('[data-clear-img]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-clear-img');
+          const res = await fetch(apiUrl('/api/notes/' + id + '/image'), {
+            method: 'DELETE',
+            credentials: 'same-origin'
+          });
+          if (res.status === 401) {
+            location.href = '/register';
+            return;
+          }
+          const dataDel = await res.json();
+          if (dataDel.ok) await renderArticleNotes(track);
+          else alert(dataDel.error || '移除失败');
+        });
+      });
+    }
+
+    async function renderArticleNotes(track) {
+      const box = document.getElementById('articleNotes');
+      if (!box) return;
+      if (!authUser || !authUser.loggedIn) {
+        box.innerHTML = `<h3>我的笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">登录后可在此查看高亮想法，并上传脑图。<a href="/register">注册</a></p>`;
+        return;
+      }
+      try {
+        const res = await fetch(apiUrl(`/api/notes?articleIndex=${track.index}`), { credentials: 'same-origin' });
+        const dataNotes = await res.json();
+        const items = (dataNotes.items || []);
+        if (!items.length) {
+          box.innerHTML = `<h3>我的笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">选中文字并保存后，会出现在这里。可在此为笔记上传脑图图片。</p>`;
+          return;
+        }
+        box.innerHTML = `<h3>我的笔记（${items.length}）</h3><ul class="article-note-list">${
+          items.map(n => `<li>
+            <blockquote>${escapeHtml(n.selectedText)}</blockquote>
+            ${n.thought ? `<div class="thought">${escapeHtml(n.thought)}</div>` : ''}
+            ${n.imageUrl ? `<div class="note-image"><img src="${escapeHtml(n.imageUrl)}" alt="脑图 / 笔记配图" /></div>` : ''}
+            <form class="upload-form" data-note-id="${n.id}" enctype="multipart/form-data">
+              <label class="upload-label">上传脑图/配图
+                <input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" />
+              </label>
+              <button type="submit">上传图片</button>
+              ${n.imageUrl ? `<button type="button" class="linkish" data-clear-img="${n.id}">移除图片</button>` : ''}
+            </form>
+          </li>`).join('')
+        }</ul>`;
+        bindArticleNoteUploads(track);
+      } catch (_) {
+        box.innerHTML = '';
+      }
+    }
+
+    async function syncReadAndHistory(track) {
+      if (!authUser || !authUser.loggedIn) return;
+      await postJson('/api/history', {
+        articleIndex: track.index,
+        trackId: track.trackId,
+        title: track.title
+      });
+      try {
+        const res = await fetch(apiUrl('/api/read-state'), { credentials: 'same-origin' });
+        const dataState = await res.json();
+        const checked = !!(dataState.states && dataState.states[track.index]);
+        const input = document.getElementById('readToggle');
+        if (input) input.checked = checked;
+      } catch (_) {}
+    }
 
     function escapeHtml(value) {
       return String(value || '').replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
@@ -550,7 +1175,7 @@
       return `
         <div class="meta-card" role="group" aria-label="本篇元信息">
           <div><span class="meta-label">序号</span><span class="meta-value">${String(track.index).padStart(3, '0')} / ${data.meta.trackCount}</span></div>
-          <div><span class="meta-label">字数</span><span class="meta-value">${track.status === 'ok' ? fmt.format(track.charCount) + ' 字' : '—'}</span></div>
+          <div><span class="meta-label">字数</span><span class="meta-value">${track.content ? fmt.format(track.charCount) + ' 字' : '—'}</span></div>
           <div><span class="meta-label">时长</span><span class="meta-value">${duration(track.duration)}</span></div>
           <div><span class="meta-label">音频 ID</span><span class="meta-value">${track.trackId}</span></div>
         </div>
@@ -558,14 +1183,43 @@
     }
 
     function renderTranscript(track) {
-      if (track.status !== 'ok' || !track.content) {
+      if (!track.content) {
         const hint = (track.outline || []).length
           ? '本篇暂无可用全文逐字稿；上方章节速览来自喜马拉雅AI速览，仅供检索与粗对齐。'
           : (track.error || '本篇暂无可用全文文字稿，请收听原音频。');
         return `<div class="transcript"><p class="notice">${escapeHtml(hint)}</p></div>`;
       }
-      const paras = splitParagraphs(track.content);
-      return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;
+      const raw = String(track.content);
+      const blocks = [];
+      const chunks = raw.split(/\n{2,}/);
+      for (const chunk of chunks) {
+        const text = chunk.trim();
+        if (!text) continue;
+        const hm = text.match(/^###\s+(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)$/);
+        if (hm) {
+          blocks.push(
+            `<h3 class="section-heading"><span class="ts">${escapeHtml(hm[1])}</span>${escapeHtml(hm[2])}</h3>`
+          );
+          continue;
+        }
+        const hm2 = text.match(/^###\s+(.+)$/);
+        if (hm2) {
+          blocks.push(`<h3 class="section-heading">${escapeHtml(hm2[1])}</h3>`);
+          continue;
+        }
+        blocks.push(`<p>${escapeHtml(text)}</p>`);
+      }
+      if (!blocks.length) {
+        const paras = splitParagraphs(track.content);
+        return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;
+      }
+      return `<div class="transcript" id="transcript">${blocks.join('')}</div>`;
+    }
+
+    function sourceBadge(track) {
+      if (track.contentSource === 'polished') return '<span class="source-badge">润色结构化文稿</span>';
+      if (track.contentSource === 'raw' || track.content) return '<span class="source-badge">默认文稿</span>';
+      return '';
     }
 
     function renderOutline(track) {
@@ -658,7 +1312,12 @@
       app.innerHTML = `
         <article class="shell${outlineToc ? '' : ' shell--no-aside'}">
           <header class="article-intro">
-            <span class="badge">${track.status === 'ok' ? '已生成文稿' : '预览 / 无全文'}</span>
+            <div class="account-bar">
+              <label class="read-toggle"><input type="checkbox" id="readToggle" /> 标记为已读</label>
+              <span>选中文字可添加高亮笔记</span>
+              <a href="/notes">我的笔记</a>
+            </div>
+            <span class="badge">${track.content ? '已生成文稿' : '预览 / 无全文'}</span>${sourceBadge(track)}
             <h1>${escapeHtml(track.title)}</h1>
             ${renderMetaCard(track)}
             ${renderByline(track, bylineEnd)}
@@ -673,15 +1332,18 @@
               ${renderTranscript(track)}
             </section>
 
+            <section class="article-notes" id="articleNotes" aria-label="我的笔记"></section>
+
             ${renderPager(track)}
 
-            <p class="colophon">说明：文字稿来自公开页面，可能存在错字与断句问题；本页为学习整理，不构成投资建议。</p>
+            <p class="colophon">说明：文字稿来自公开页面或本地 ASR，可能存在错字与断句问题；本页为学习整理，不构成投资建议。</p>
           </div>
         </article>
       `;
 
       bindToc();
       bindProgress();
+      bindHighlightInteractions(track);
       const outlineToggle = document.getElementById('outlineToggle');
       const outlineAside = document.getElementById('outlineAside');
       if (outlineToggle && outlineAside) {
@@ -690,21 +1352,37 @@
           outlineToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
       }
+      const readToggle = document.getElementById('readToggle');
+      if (readToggle) {
+        readToggle.addEventListener('change', async () => {
+          const dataRead = await postJson('/api/read-state', {
+            articleIndex: track.index,
+            trackId: track.trackId,
+            isRead: !!readToggle.checked
+          });
+          if (!dataRead) readToggle.checked = !readToggle.checked;
+        });
+      }
+      renderArticleNotes(track).then(() => restoreHighlights(track));
+      syncReadAndHistory(track);
     }
 
     window.addEventListener('popstate', () => showTrack(resolveTrackMeta()));
 
-    if (!data || !Array.isArray(data.tracks)) {
-      app.innerHTML = `
-        <div class="state">
-          <h2>索引未能加载</h2>
-          <p>请用本地 HTTP 服务打开（<code>python -m http.server</code>），并确认 <code>data-index.js</code> 在站点根目录。</p>
-          <p><a href="../index.html#library">返回文稿库</a></p>
-        </div>
-      `;
-    } else {
-      showTrack(resolveTrackMeta());
-    }
+    (async () => {
+      await refreshAuth();
+      if (!data || !Array.isArray(data.tracks)) {
+        app.innerHTML = `
+          <div class="state">
+            <h2>索引未能加载</h2>
+            <p>请用本地 HTTP 服务打开（<code>python -m http.server</code>），并确认 <code>data-index.js</code> 在站点根目录。</p>
+            <p><a href="../index.html#library">返回文稿库</a></p>
+          </div>
+        `;
+      } else {
+        showTrack(resolveTrackMeta());
+      }
+    })();
   </script>
 </body>
 </html>

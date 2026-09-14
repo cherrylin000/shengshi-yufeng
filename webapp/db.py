@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""SQLite persistence for users, reading state, browse history, highlights/notes."""
+"""Users, reading state, browse history, notes — SQLite or Postgres."""
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
+HISTORY_KEEP = 50
 DB_PATH = Path(__file__).resolve().parent / "data" / "app.db"
 
 
@@ -15,92 +18,220 @@ def utcnow() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
 
-def connect(db_path: Path | None = None) -> sqlite3.Connection:
-    path = db_path or DB_PATH
+def is_postgres() -> bool:
+    url = (os.environ.get("DATABASE_URL") or "").strip()
+    return url.startswith("postgres://") or url.startswith("postgresql://")
+
+
+def _for_postgres(sql: str) -> str:
+    return sql.replace("?", "%s")
+
+
+class _Cursor:
+    def __init__(self, cur: Any, *, postgres: bool):
+        self._cur = cur
+        self._postgres = postgres
+
+    def fetchone(self):
+        row = self._cur.fetchone()
+        return _row(row)
+
+    def fetchall(self):
+        return [_row(r) for r in self._cur.fetchall()]
+
+    @property
+    def lastrowid(self) -> int | None:
+        if self._postgres:
+            return None
+        return int(self._cur.lastrowid) if self._cur.lastrowid is not None else None
+
+    @property
+    def rowcount(self) -> int:
+        return int(self._cur.rowcount or 0)
+
+
+class _Conn:
+    def __init__(self, raw: Any, *, postgres: bool):
+        self.raw = raw
+        self.postgres = postgres
+
+    def execute(self, sql: str, params: tuple | list = ()):
+        q = _for_postgres(sql) if self.postgres else sql
+        cur = self.raw.execute(q, tuple(params))
+        return _Cursor(cur, postgres=self.postgres)
+
+    def commit(self) -> None:
+        self.raw.commit()
+
+    def close(self) -> None:
+        self.raw.close()
+
+
+def _row(row: Any):
+    if row is None:
+        return None
+    if isinstance(row, dict):
+        return row
+    keys = row.keys()
+    return {k: row[k] for k in keys}
+
+
+def connect(db_path: Path | None = None) -> _Conn:
+    if is_postgres():
+        try:
+            import psycopg
+            from psycopg.rows import dict_row
+        except ImportError as exc:  # pragma: no cover
+            raise RuntimeError("psycopg is required when DATABASE_URL is set") from exc
+        url = os.environ["DATABASE_URL"].strip()
+        if url.startswith("postgres://"):
+            url = "postgresql://" + url[len("postgres://") :]
+        raw = psycopg.connect(url, row_factory=dict_row, autocommit=False)
+        return _Conn(raw, postgres=True)
+
+    if os.environ.get("VERCEL"):
+        raise RuntimeError("DATABASE_URL is required on Vercel")
+
+    path = Path(db_path or DB_PATH)
     path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(path), check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+    raw = sqlite3.connect(str(path), check_same_thread=False)
+    raw.row_factory = sqlite3.Row
+    raw.execute("PRAGMA foreign_keys = ON")
+    return _Conn(raw, postgres=False)
 
 
-def init_db(conn: sqlite3.Connection | None = None) -> None:
+def init_db(conn: _Conn | None = None) -> None:
     own = conn is None
     conn = conn or connect()
-    conn.executescript(
-        """
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT NOT NULL UNIQUE COLLATE NOCASE,
-          password_hash TEXT NOT NULL,
-          created_at TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS article_state (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          article_index INTEGER NOT NULL,
-          track_id INTEGER,
-          is_read INTEGER NOT NULL DEFAULT 0,
-          updated_at TEXT NOT NULL,
-          UNIQUE(user_id, article_index),
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS browse_history (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          article_index INTEGER NOT NULL,
-          track_id INTEGER,
-          title TEXT,
-          visited_at TEXT NOT NULL,
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS notes (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          article_index INTEGER NOT NULL,
-          track_id INTEGER,
-          article_title TEXT,
-          selected_text TEXT NOT NULL,
-          thought TEXT NOT NULL DEFAULT '',
-          created_at TEXT NOT NULL,
-          updated_at TEXT NOT NULL,
-          FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_history_user ON browse_history(user_id, visited_at DESC);
-        CREATE INDEX IF NOT EXISTS idx_notes_user ON notes(user_id, updated_at DESC);
-        CREATE INDEX IF NOT EXISTS idx_state_user ON article_state(user_id, article_index);
-        """
-    )
-    conn.commit()
+    if conn.postgres:
+        conn.raw.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+              id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+              username TEXT NOT NULL UNIQUE,
+              password_hash TEXT NOT NULL,
+              created_at TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower ON users (LOWER(username));
+            CREATE TABLE IF NOT EXISTS article_state (
+              id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+              user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+              article_index INTEGER NOT NULL,
+              track_id INTEGER,
+              is_read INTEGER NOT NULL DEFAULT 0,
+              updated_at TEXT NOT NULL,
+              UNIQUE(user_id, article_index)
+            );
+            CREATE TABLE IF NOT EXISTS browse_history (
+              id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+              user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+              article_index INTEGER NOT NULL,
+              track_id INTEGER,
+              title TEXT,
+              visited_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS notes (
+              id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+              user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+              article_index INTEGER NOT NULL,
+              track_id INTEGER,
+              article_title TEXT,
+              selected_text TEXT NOT NULL,
+              thought TEXT NOT NULL DEFAULT '',
+              image_path TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_history_user ON browse_history(user_id, visited_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_notes_user ON notes(user_id, updated_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_state_user ON article_state(user_id, article_index);
+            """
+        )
+        conn.commit()
+    else:
+        conn.raw.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+              password_hash TEXT NOT NULL,
+              created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS article_state (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER NOT NULL,
+              article_index INTEGER NOT NULL,
+              track_id INTEGER,
+              is_read INTEGER NOT NULL DEFAULT 0,
+              updated_at TEXT NOT NULL,
+              UNIQUE(user_id, article_index),
+              FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS browse_history (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER NOT NULL,
+              article_index INTEGER NOT NULL,
+              track_id INTEGER,
+              title TEXT,
+              visited_at TEXT NOT NULL,
+              FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS notes (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER NOT NULL,
+              article_index INTEGER NOT NULL,
+              track_id INTEGER,
+              article_title TEXT,
+              selected_text TEXT NOT NULL,
+              thought TEXT NOT NULL DEFAULT '',
+              image_path TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL,
+              FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS idx_history_user ON browse_history(user_id, visited_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_notes_user ON notes(user_id, updated_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_state_user ON article_state(user_id, article_index);
+            """
+        )
+        conn.commit()
+        ensure_notes_image_column(conn)
     if own:
         conn.close()
 
 
-def create_user(conn: sqlite3.Connection, username: str, password_hash: str) -> int:
-    cur = conn.execute(
-        "INSERT INTO users(username, password_hash, created_at) VALUES (?, ?, ?)",
-        (username.strip(), password_hash, utcnow()),
-    )
+def _insert_id(conn: _Conn, sql: str, params: tuple) -> int:
+    if conn.postgres:
+        cur = conn.execute(sql + " RETURNING id", params)
+        row = cur.fetchone()
+        conn.commit()
+        return int(row["id"])
+    cur = conn.execute(sql, params)
     conn.commit()
     return int(cur.lastrowid)
 
 
-def get_user_by_name(conn: sqlite3.Connection, username: str) -> sqlite3.Row | None:
+def create_user(conn: _Conn, username: str, password_hash: str) -> int:
+    return _insert_id(
+        conn,
+        "INSERT INTO users(username, password_hash, created_at) VALUES (?, ?, ?)",
+        (username.strip(), password_hash, utcnow()),
+    )
+
+
+def get_user_by_name(conn: _Conn, username: str):
     return conn.execute(
-        "SELECT * FROM users WHERE username = ? COLLATE NOCASE", (username.strip(),)
+        "SELECT * FROM users WHERE LOWER(username) = LOWER(?)",
+        (username.strip(),),
     ).fetchone()
 
 
-def get_user(conn: sqlite3.Connection, user_id: int) -> sqlite3.Row | None:
+def get_user(conn: _Conn, user_id: int):
     return conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
 
 def set_read_state(
-    conn: sqlite3.Connection,
+    conn: _Conn,
     user_id: int,
     article_index: int,
     *,
@@ -121,7 +252,7 @@ def set_read_state(
     conn.commit()
 
 
-def get_read_map(conn: sqlite3.Connection, user_id: int) -> dict[int, bool]:
+def get_read_map(conn: _Conn, user_id: int) -> dict[int, bool]:
     rows = conn.execute(
         "SELECT article_index, is_read FROM article_state WHERE user_id = ?",
         (user_id,),
@@ -130,7 +261,7 @@ def get_read_map(conn: sqlite3.Connection, user_id: int) -> dict[int, bool]:
 
 
 def add_history(
-    conn: sqlite3.Connection,
+    conn: _Conn,
     user_id: int,
     article_index: int,
     *,
@@ -144,27 +275,39 @@ def add_history(
         """,
         (user_id, article_index, track_id, title, utcnow()),
     )
-    # keep last 200
-    conn.execute(
-        """
-        DELETE FROM browse_history WHERE id IN (
-          SELECT id FROM browse_history
-          WHERE user_id = ?
-          ORDER BY visited_at DESC
-          LIMIT -1 OFFSET 200
+    if conn.postgres:
+        conn.execute(
+            """
+            DELETE FROM browse_history WHERE id IN (
+              SELECT id FROM browse_history
+              WHERE user_id = ?
+              ORDER BY visited_at DESC, id DESC
+              OFFSET ?
+            )
+            """,
+            (user_id, HISTORY_KEEP),
         )
-        """,
-        (user_id,),
-    )
+    else:
+        conn.execute(
+            """
+            DELETE FROM browse_history WHERE id IN (
+              SELECT id FROM browse_history
+              WHERE user_id = ?
+              ORDER BY visited_at DESC, id DESC
+              LIMIT -1 OFFSET ?
+            )
+            """,
+            (user_id, HISTORY_KEEP),
+        )
     conn.commit()
 
 
-def list_history(conn: sqlite3.Connection, user_id: int, limit: int = 50) -> list[sqlite3.Row]:
+def list_history(conn: _Conn, user_id: int, limit: int = 50):
     return conn.execute(
         """
         SELECT * FROM browse_history
         WHERE user_id = ?
-        ORDER BY visited_at DESC
+        ORDER BY visited_at DESC, id DESC
         LIMIT ?
         """,
         (user_id, limit),
@@ -172,7 +315,7 @@ def list_history(conn: sqlite3.Connection, user_id: int, limit: int = 50) -> lis
 
 
 def create_note(
-    conn: sqlite3.Connection,
+    conn: _Conn,
     user_id: int,
     *,
     article_index: int,
@@ -182,18 +325,19 @@ def create_note(
     article_title: str = "",
 ) -> int:
     now = utcnow()
-    cur = conn.execute(
+    return _insert_id(
+        conn,
         """
-        INSERT INTO notes(user_id, article_index, track_id, article_title, selected_text, thought, created_at, updated_at)
+        INSERT INTO notes(
+          user_id, article_index, track_id, article_title, selected_text, thought, created_at, updated_at
+        )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (user_id, article_index, track_id, article_title, selected_text, thought, now, now),
     )
-    conn.commit()
-    return int(cur.lastrowid)
 
 
-def list_notes(conn: sqlite3.Connection, user_id: int) -> list[sqlite3.Row]:
+def list_notes(conn: _Conn, user_id: int):
     ensure_notes_image_column(conn)
     return conn.execute(
         """
@@ -204,13 +348,13 @@ def list_notes(conn: sqlite3.Connection, user_id: int) -> list[sqlite3.Row]:
     ).fetchall()
 
 
-def delete_note(conn: sqlite3.Connection, user_id: int, note_id: int) -> bool:
+def delete_note(conn: _Conn, user_id: int, note_id: int) -> bool:
     cur = conn.execute("DELETE FROM notes WHERE id = ? AND user_id = ?", (note_id, user_id))
     conn.commit()
     return cur.rowcount > 0
 
 
-def notes_for_article(conn: sqlite3.Connection, user_id: int, article_index: int) -> list[sqlite3.Row]:
+def notes_for_article(conn: _Conn, user_id: int, article_index: int):
     ensure_notes_image_column(conn)
     return conn.execute(
         """
@@ -222,15 +366,17 @@ def notes_for_article(conn: sqlite3.Connection, user_id: int, article_index: int
     ).fetchall()
 
 
-def ensure_notes_image_column(conn: sqlite3.Connection) -> None:
-    cols = {r[1] for r in conn.execute("PRAGMA table_info(notes)").fetchall()}
+def ensure_notes_image_column(conn: _Conn) -> None:
+    if conn.postgres:
+        return
+    cols = {r[1] for r in conn.raw.execute("PRAGMA table_info(notes)").fetchall()}
     if "image_path" not in cols:
         conn.execute("ALTER TABLE notes ADD COLUMN image_path TEXT")
         conn.commit()
 
 
 def update_note(
-    conn: sqlite3.Connection,
+    conn: _Conn,
     user_id: int,
     note_id: int,
     *,

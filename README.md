@@ -10,19 +10,33 @@
 
 启用 Pages 后的典型地址：<https://cherrylin000.github.io/shengshi-yufeng/>
 
-### 账号 / 笔记（本地 Web DB）
+### 账号 / 笔记（公开站 + 本地）
 
-交互功能（注册、已读、浏览记录、高亮笔记）需要启动 Flask + SQLite：
+公开站（Vercel）与文稿同域：<https://shengshi-yufeng.vercel.app/register>
+
+Vercel 项目 `shengshi-yufeng` 需配置环境变量（Settings → Environment Variables，Production + Preview）：
+
+| 变量 | 必需 | 说明 |
+|------|------|------|
+| `DATABASE_URL` | 是 | Neon 免费 Postgres 连接串（含 `sslmode=require`） |
+| `SECRET_KEY` | 是 | 随机长字符串，用于登录 Cookie |
+| `BLOB_READ_WRITE_TOKEN` | 否 | 配置后脑图走 Vercel Blob；否则线上仅接受 ≤500KB 图 |
+
+本地开发（SQLite，不连 Neon）：
 
 ```bash
 python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -r requirements-web.txt
 .venv/bin/python webapp/app.py
 ```
 
 - 注册：<http://127.0.0.1:8765/register>
 - 我的笔记：<http://127.0.0.1:8765/notes>
-- 文稿阅读（含已读勾选 / 划线笔记）：<http://127.0.0.1:8765/content/article.html?index=392>
+- 文稿：<http://127.0.0.1:8765/content/article.html?index=392>
+
+本机旧库可删：`rm -rf webapp/data/app.db`（不向线上迁移）。
+
+周更 / ASR 仍使用：`.venv/bin/pip install -r requirements.txt`。
 
 ## 目录结构
 
@@ -33,7 +47,7 @@ python3 -m venv .venv
 ├── content/polished/                     # 润色后文字稿 + 章节目录
 ├── content/diagrams/                     # SmartArt 流程图 / 脑图 SVG
 ├── content/                              # 专辑文稿与 investment_system.md
-├── webapp/                               # 注册登录 / SQLite 笔记后端
+├── webapp/                               # 注册登录笔记后端（SQLite 本地 / Postgres 线上）
 └── scripts/
     ├── site/                             # 构建 data-index.js、体系链接
     └── transcripts/                      # 同步、本地 ASR、润色、SmartArt

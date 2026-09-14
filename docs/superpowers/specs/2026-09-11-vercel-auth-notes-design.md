@@ -2,7 +2,7 @@
 
 provenance: self  
 日期：2026-09-11  
-状态：已确认；实现计划见 docs/superpowers/plans/2026-09-14-vercel-auth-notes.md
+状态：实现计划已写：docs/superpowers/plans/2026-09-14-vercel-auth-notes.md
 
 ## 背景与目标
 

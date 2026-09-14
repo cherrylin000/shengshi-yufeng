@@ -9,11 +9,11 @@ def client(tmp_path, monkeypatch):
     monkeypatch.delenv("VERCEL", raising=False)
     monkeypatch.delenv("BLOB_READ_WRITE_TOKEN", raising=False)
     monkeypatch.setenv("SECRET_KEY", "unit-test-secret")
-    import webapp.db as store
-    import webapp.storage as storage
+    import db as store  # noqa: E402 — same module webapp.app uses
+    import storage as media  # noqa: E402
 
     monkeypatch.setattr(store, "DB_PATH", tmp_path / "app.db")
-    monkeypatch.setattr(storage, "UPLOAD_DIR", tmp_path / "uploads")
+    monkeypatch.setattr(media, "UPLOAD_DIR", tmp_path / "uploads")
     from webapp.app import app
 
     app.config["TESTING"] = True

@@ -3,7 +3,21 @@
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
+  "installCommand": "pip install -r requirements-web.txt",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 10,
+      "excludeFiles": "{content,scripts,.github,docs,tests}/**"
+    }
+  },
   "rewrites": [
-    { "source": "/content/article", "destination": "/content/article.html" }
+    { "source": "/content/article", "destination": "/content/article.html" },
+    { "source": "/static/:path*", "destination": "/webapp/static/:path*" },
+    { "source": "/register", "destination": "/api/index" },
+    { "source": "/login", "destination": "/api/index" },
+    { "source": "/logout", "destination": "/api/index" },
+    { "source": "/notes", "destination": "/api/index" },
+    { "source": "/uploads/:path*", "destination": "/api/index" },
+    { "source": "/api/:path*", "destination": "/api/index" }
   ]
 }

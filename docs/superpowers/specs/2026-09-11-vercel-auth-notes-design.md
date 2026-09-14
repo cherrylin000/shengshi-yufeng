@@ -2,7 +2,7 @@
 
 provenance: self  
 日期：2026-09-11  
-状态：已获用户口头确认各节；待用户审阅本文档后进入实现计划
+状态：已确认；实现计划见 docs/superpowers/plans/2026-09-14-vercel-auth-notes.md
 
 ## 背景与目标
 

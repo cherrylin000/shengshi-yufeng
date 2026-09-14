@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import sys
 from pathlib import Path
@@ -30,31 +31,40 @@ from werkzeug.security import check_password_hash, generate_password_hash
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import db as store  # noqa: E402
+import storage as media  # noqa: E402
+from vercel_wsgi import wrap_wsgi  # noqa: E402
 
 app = Flask(
     __name__,
     template_folder=str(Path(__file__).resolve().parent / "templates"),
     static_folder=str(Path(__file__).resolve().parent / "static"),
 )
-app.secret_key = (
-    Path(__file__).resolve().parent.joinpath("data", "secret.key").read_text().strip()
-    if Path(__file__).resolve().parent.joinpath("data", "secret.key").is_file()
-    else None
-)
-if not app.secret_key:
+def _resolve_secret_key() -> str:
+    env = (os.environ.get("SECRET_KEY") or "").strip()
+    if env:
+        return env
     key_path = Path(__file__).resolve().parent / "data" / "secret.key"
+    if key_path.is_file():
+        return key_path.read_text(encoding="utf-8").strip()
+    if os.environ.get("VERCEL"):
+        raise RuntimeError("SECRET_KEY is required on Vercel")
     key_path.parent.mkdir(parents=True, exist_ok=True)
-    app.secret_key = secrets.token_hex(24)
-    key_path.write_text(app.secret_key, encoding="utf-8")
+    generated = secrets.token_hex(24)
+    key_path.write_text(generated, encoding="utf-8")
+    return generated
+
+
+app.secret_key = _resolve_secret_key()
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-
-store.init_db()
+app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("VERCEL"))
+app.wsgi_app = wrap_wsgi(app.wsgi_app)
 
 
 def get_db():
     if "db" not in g:
         g.db = store.connect()
+        store.init_db(g.db)
     return g.db
 
 
@@ -77,6 +87,15 @@ def require_user_api():
     if not user:
         return None, (jsonify({"ok": False, "error": "请先登录"}), 401)
     return user, None
+
+
+def note_image_url(row) -> str | None:
+    path = row["image_path"] if row and "image_path" in row.keys() else None
+    if not path:
+        return None
+    if path.startswith(("http://", "https://", "data:")):
+        return path
+    return url_for("uploaded_file", filename=path)
 
 
 @app.route("/")
@@ -251,11 +270,7 @@ def api_notes():
                         "articleTitle": r["article_title"],
                         "selectedText": r["selected_text"],
                         "thought": r["thought"],
-                        "imageUrl": (
-                            url_for("uploaded_file", filename=r["image_path"])
-                            if ("image_path" in r.keys() and r["image_path"])
-                            else None
-                        ),
+                        "imageUrl": note_image_url(r),
                         "createdAt": r["created_at"],
                         "updatedAt": r["updated_at"],
                     }
@@ -308,8 +323,6 @@ def api_note_image(note_id: int):
     if err:
         return err
     conn = get_db()
-    upload_dir = Path(__file__).resolve().parent / "data" / "uploads"
-    upload_dir.mkdir(parents=True, exist_ok=True)
     if request.method == "DELETE":
         ok = store.update_note(conn, int(user["id"]), note_id, clear_image=True)
         return jsonify({"ok": ok})
@@ -317,23 +330,25 @@ def api_note_image(note_id: int):
     file = request.files.get("image")
     if not file or not file.filename:
         return jsonify({"ok": False, "error": "请选择图片"}), 400
-    ext = Path(file.filename).suffix.lower()
-    if ext not in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
-        return jsonify({"ok": False, "error": "仅支持 png/jpg/webp/gif"}), 400
-    # ownership check
     rows = [r for r in store.list_notes(conn, int(user["id"])) if int(r["id"]) == note_id]
     if not rows:
         return jsonify({"ok": False, "error": "笔记不存在"}), 404
-    filename = f"u{user['id']}_n{note_id}{ext}"
-    dest = upload_dir / filename
-    file.save(dest)
-    ok = store.update_note(conn, int(user["id"]), note_id, image_path=filename)
-    return jsonify(
-        {
-            "ok": ok,
-            "imageUrl": url_for("uploaded_file", filename=filename),
-        }
-    )
+    try:
+        saved = media.save_note_image(
+            user_id=int(user["id"]),
+            note_id=note_id,
+            filename=file.filename,
+            data=file.read(),
+            content_type=file.content_type or "application/octet-stream",
+        )
+    except media.StorageError as err:
+        return jsonify({"ok": False, "error": err.message}), 400
+    ok = store.update_note(conn, int(user["id"]), note_id, image_path=saved)
+    if saved.startswith(("http://", "https://", "data:")):
+        image_url = saved
+    else:
+        image_url = url_for("uploaded_file", filename=saved)
+    return jsonify({"ok": ok, "imageUrl": image_url})
 
 
 @app.route("/uploads/<path:filename>")
@@ -341,8 +356,7 @@ def uploaded_file(filename: str):
     user = current_user()
     if not user:
         return redirect(url_for("login"))
-    upload_dir = Path(__file__).resolve().parent / "data" / "uploads"
-    return send_from_directory(upload_dir, filename)
+    return send_from_directory(media.local_upload_dir(), filename)
 
 
 def main():

@@ -56,9 +56,43 @@ def _resolve_secret_key() -> str:
 
 app.secret_key = _resolve_secret_key()
 app.config["SESSION_COOKIE_HTTPONLY"] = True
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("VERCEL"))
+# GitHub Pages 文稿页会跨域调用 Vercel API，需 SameSite=None 才能带上登录 Cookie
+app.config["SESSION_COOKIE_SAMESITE"] = "None" if os.environ.get("VERCEL") else "Lax"
 app.wsgi_app = wrap_wsgi(app.wsgi_app)
+
+PAGES_ORIGINS = frozenset(
+    {
+        "https://cherrylin000.github.io",
+    }
+)
+
+
+def _cors_origin() -> str | None:
+    origin = (request.headers.get("Origin") or "").rstrip("/")
+    if origin in PAGES_ORIGINS:
+        return origin
+    return None
+
+
+@app.before_request
+def _cors_preflight():
+    if request.method != "OPTIONS":
+        return None
+    resp = app.make_response(("", 204))
+    return resp
+
+
+@app.after_request
+def _add_cors(resp):
+    origin = _cors_origin()
+    if origin:
+        resp.headers["Access-Control-Allow-Origin"] = origin
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, DELETE, OPTIONS"
+        resp.headers["Vary"] = "Origin"
+    return resp
 
 
 def get_db():

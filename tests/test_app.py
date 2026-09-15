@@ -60,6 +60,21 @@ def test_history_cap_via_api(client):
     assert len(items) == 50
 
 
+def test_cors_for_github_pages(client):
+    origin = "https://cherrylin000.github.io"
+    pre = client.options(
+        "/api/me",
+        headers={"Origin": origin, "Access-Control-Request-Method": "GET"},
+    )
+    assert pre.status_code == 204
+    assert pre.headers.get("Access-Control-Allow-Origin") == origin
+    assert pre.headers.get("Access-Control-Allow-Credentials") == "true"
+
+    rv = client.get("/api/me", headers={"Origin": origin})
+    assert rv.status_code == 200
+    assert rv.headers.get("Access-Control-Allow-Origin") == origin
+
+
 def test_upload_local_image(client):
     client.post(
         "/register",

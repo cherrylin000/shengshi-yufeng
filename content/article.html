@@ -730,13 +730,25 @@
     const noteEditActions = document.getElementById('noteEditActions');
     const accountLinks = document.getElementById('accountLinks');
 
+    const AUTH_ORIGIN = /\.github\.io$/i.test(location.hostname)
+      ? 'https://shengshi-yufeng.vercel.app'
+      : '';
+
     function apiUrl(path) {
-      return path;
+      return AUTH_ORIGIN + path;
+    }
+
+    function authHref(path) {
+      return AUTH_ORIGIN + path;
+    }
+
+    function fetchCreds() {
+      return AUTH_ORIGIN ? 'include' : 'same-origin';
     }
 
     async function refreshAuth() {
       try {
-        const res = await fetch(apiUrl('/api/me'), { credentials: 'same-origin' });
+        const res = await fetch(apiUrl('/api/me'), { credentials: fetchCreds() });
         if (!res.ok) throw new Error('no api');
         const dataMe = await res.json();
         authUser = dataMe.loggedIn ? dataMe : null;
@@ -745,22 +757,22 @@
       }
       if (!accountLinks) return;
       if (authUser && authUser.loggedIn) {
-        accountLinks.innerHTML = `<span>${escapeHtml(authUser.username)}</span><a href="/notes">我的笔记</a><a href="/logout">退出</a>`;
+        accountLinks.innerHTML = `<span>${escapeHtml(authUser.username)}</span><a href="${authHref('/notes')}">我的笔记</a><a href="${authHref('/logout')}">退出</a>`;
       } else {
-        accountLinks.innerHTML = `<a href="/register">注册</a><a href="/login">登录</a>`;
+        accountLinks.innerHTML = `<a href="${authHref('/register')}">注册</a><a href="${authHref('/login')}">登录</a>`;
       }
     }
 
     async function postJson(path, body) {
       const res = await fetch(apiUrl(path), {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: fetchCreds(),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       if (res.status === 401) {
         if (confirm('需要登录后才能使用该功能，前往注册/登录？')) {
-          location.href = '/register';
+          location.href = authHref('/register');
         }
         return null;
       }
@@ -770,13 +782,13 @@
     async function patchJson(path, body) {
       const res = await fetch(apiUrl(path), {
         method: 'PATCH',
-        credentials: 'same-origin',
+        credentials: fetchCreds(),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
       if (res.status === 401) {
         if (confirm('需要登录后才能使用该功能，前往注册/登录？')) {
-          location.href = '/register';
+          location.href = authHref('/register');
         }
         return null;
       }
@@ -895,10 +907,10 @@
         if (noteId) {
           const res = await fetch(apiUrl('/api/notes/' + noteId), {
             method: 'DELETE',
-            credentials: 'same-origin'
+            credentials: fetchCreds()
           });
           if (res.status === 401) {
-            location.href = '/register';
+            location.href = authHref('/register');
             return;
           }
         }
@@ -977,7 +989,7 @@
       const root = document.getElementById('transcript');
       if (!root || !authUser || !authUser.loggedIn) return;
       try {
-        const res = await fetch(apiUrl(`/api/notes?articleIndex=${track.index}`), { credentials: 'same-origin' });
+        const res = await fetch(apiUrl(`/api/notes?articleIndex=${track.index}`), { credentials: fetchCreds() });
         const dataNotes = await res.json();
         const items = dataNotes.items || [];
         // Best-effort restore: wrap first exact text match for each note
@@ -1020,11 +1032,11 @@
           fd.append('image', fileInput.files[0]);
           const res = await fetch(apiUrl('/api/notes/' + id + '/image'), {
             method: 'POST',
-            credentials: 'same-origin',
+            credentials: fetchCreds(),
             body: fd
           });
           if (res.status === 401) {
-            location.href = '/register';
+            location.href = authHref('/register');
             return;
           }
           const dataUp = await res.json();
@@ -1037,10 +1049,10 @@
           const id = btn.getAttribute('data-clear-img');
           const res = await fetch(apiUrl('/api/notes/' + id + '/image'), {
             method: 'DELETE',
-            credentials: 'same-origin'
+            credentials: fetchCreds()
           });
           if (res.status === 401) {
-            location.href = '/register';
+            location.href = authHref('/register');
             return;
           }
           const dataDel = await res.json();
@@ -1054,11 +1066,11 @@
       const box = document.getElementById('articleNotes');
       if (!box) return;
       if (!authUser || !authUser.loggedIn) {
-        box.innerHTML = `<h3>我的笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">登录后可在此查看高亮想法，并上传脑图。<a href="/register">注册</a></p>`;
+        box.innerHTML = `<h3>我的笔记</h3><p style="margin:0;color:var(--ink-muted-48);font-size:14px;">登录后可在此查看高亮想法，并上传脑图。<a href="${authHref('/register')}">注册</a></p>`;
         return;
       }
       try {
-        const res = await fetch(apiUrl(`/api/notes?articleIndex=${track.index}`), { credentials: 'same-origin' });
+        const res = await fetch(apiUrl(`/api/notes?articleIndex=${track.index}`), { credentials: fetchCreds() });
         const dataNotes = await res.json();
         const items = (dataNotes.items || []);
         if (!items.length) {
@@ -1093,7 +1105,7 @@
         title: track.title
       });
       try {
-        const res = await fetch(apiUrl('/api/read-state'), { credentials: 'same-origin' });
+        const res = await fetch(apiUrl('/api/read-state'), { credentials: fetchCreds() });
         const dataState = await res.json();
         const checked = !!(dataState.states && dataState.states[track.index]);
         const input = document.getElementById('readToggle');
@@ -1315,7 +1327,7 @@
             <div class="account-bar">
               <label class="read-toggle"><input type="checkbox" id="readToggle" /> 标记为已读</label>
               <span>选中文字可添加高亮笔记</span>
-              <a href="/notes">我的笔记</a>
+              <a href="${authHref('/notes')}">我的笔记</a>
             </div>
             <span class="badge">${track.content ? '已生成文稿' : '预览 / 无全文'}</span>${sourceBadge(track)}
             <h1>${escapeHtml(track.title)}</h1>

@@ -14,6 +14,8 @@
 
 公开站（Vercel）与文稿同域：<https://shengshi-yufeng.vercel.app/register>
 
+GitHub Pages 文稿库是静态站，没有账号后端。首页与阅读页上的「注册 / 登录」会跳转到上述 Vercel 地址；勾画笔记接口也会请求 Vercel（需已登录该站）。
+
 Vercel 项目 `shengshi-yufeng` 需配置环境变量（Settings → Environment Variables，Production + Preview）：
 
 | 变量 | 必需 | 说明 |

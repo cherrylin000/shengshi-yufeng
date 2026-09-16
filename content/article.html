@@ -342,6 +342,57 @@
       color: var(--ink-muted-48);
       margin-bottom: 2px;
     }
+    .toc a.toc-entry {
+      display: block;
+      padding: 10px 14px;
+      font-size: 14px;
+      line-height: 1.43;
+      letter-spacing: -0.224px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .toc a.toc-entry:hover { background: var(--canvas-parchment); text-decoration: none; }
+    .toc a.toc-entry.active { background: var(--canvas-parchment); color: var(--primary); }
+    .toc a.toc-jump time { color: var(--primary); }
+
+    .structure-draft {
+      font-size: 17px;
+      line-height: 1.47;
+      letter-spacing: -0.374px;
+      color: var(--ink);
+      padding-top: 8px;
+    }
+    .structure-draft .notice {
+      font-size: 14px;
+      color: var(--ink-muted-80);
+      border-left: 3px solid var(--primary);
+      padding: 8px 0 8px 14px;
+      margin: 0 0 20px;
+    }
+    .structure-draft h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 28px 0 12px;
+    }
+    .structure-draft p { margin: 0 0 1em; }
+    .structure-draft ol, .structure-draft ul {
+      margin: 0 0 1em;
+      padding-left: 1.4em;
+    }
+    .structure-draft li { margin: 0 0 0.4em; }
+    .structure-draft table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      margin: 0 0 1.2em;
+    }
+    .structure-draft th, .structure-draft td {
+      border-bottom: 1px solid var(--hairline);
+      text-align: left;
+      padding: 8px 10px 8px 0;
+      vertical-align: top;
+    }
+    .structure-draft th { color: var(--ink-muted-48); font-weight: 600; font-size: 12px; }
 
     .transcript {
       font-size: 17px;
@@ -1194,6 +1245,83 @@
       `;
     }
 
+    function chapterAnchor(time) {
+      return 'ch-' + String(time || '').replace(/:/g, '-');
+    }
+
+    function renderMarkdownLite(md) {
+      const lines = String(md || '').split('\n');
+      const html = [];
+      let i = 0;
+      let skippedH1 = false;
+      while (i < lines.length) {
+        const raw = lines[i];
+        const t = raw.trim();
+        if (!skippedH1 && t.startsWith('# ')) { skippedH1 = true; i += 1; continue; }
+        if (!t) { i += 1; continue; }
+        if (t.startsWith('> ')) {
+          const bits = [];
+          while (i < lines.length && lines[i].trim().startsWith('>')) {
+            bits.push(lines[i].trim().replace(/^>\s?/, ''));
+            i += 1;
+          }
+          html.push(`<p class="notice">${escapeHtml(bits.join(' '))}</p>`);
+          continue;
+        }
+        if (t.startsWith('|')) {
+          const rows = [];
+          while (i < lines.length && lines[i].trim().startsWith('|')) {
+            const cells = lines[i].trim().slice(1, -1).split('|').map(c => c.trim());
+            rows.push(cells);
+            i += 1;
+          }
+          const body = rows.filter(r => !r.every(c => /^:?-+:?$/.test(c)));
+          if (body.length) {
+            const head = body[0];
+            const rest = body.slice(1);
+            html.push('<table><thead><tr>' + head.map(c => `<th>${escapeHtml(c)}</th>`).join('') + '</tr></thead><tbody>' +
+              rest.map(r => '<tr>' + r.map(c => `<td>${escapeHtml(c)}</td>`).join('') + '</tr>').join('') +
+              '</tbody></table>');
+          }
+          continue;
+        }
+        if (/^##\s+/.test(t)) {
+          html.push(`<h3>${escapeHtml(t.replace(/^##\s+/, ''))}</h3>`);
+          i += 1;
+          continue;
+        }
+        if (/^\d+\.\s+/.test(t)) {
+          const items = [];
+          while (i < lines.length && /^\d+\.\s+/.test(lines[i].trim())) {
+            items.push(lines[i].trim().replace(/^\d+\.\s+/, ''));
+            i += 1;
+          }
+          html.push('<ol>' + items.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ol>');
+          continue;
+        }
+        if (/^[-*]\s+/.test(t)) {
+          const items = [];
+          while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
+            items.push(lines[i].trim().replace(/^[-*]\s+/, ''));
+            i += 1;
+          }
+          html.push('<ul>' + items.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>');
+          continue;
+        }
+        html.push(`<p>${escapeHtml(t)}</p>`);
+        i += 1;
+      }
+      return html.join('');
+    }
+
+    function renderStructured(track) {
+      if (!track.structured) return '';
+      return `<section class="section" id="structure-draft">
+        <h2 class="section-title">结构稿</h2>
+        <div class="structure-draft">${renderMarkdownLite(track.structured)}</div>
+      </section>`;
+    }
+
     function renderTranscript(track) {
       if (!track.content) {
         const hint = (track.outline || []).length
@@ -1210,7 +1338,7 @@
         const hm = text.match(/^###\s+(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)$/);
         if (hm) {
           blocks.push(
-            `<h3 class="section-heading"><span class="ts">${escapeHtml(hm[1])}</span>${escapeHtml(hm[2])}</h3>`
+            `<h3 class="section-heading" id="${escapeHtml(chapterAnchor(hm[1]))}"><span class="ts">${escapeHtml(hm[1])}</span>${escapeHtml(hm[2])}</h3>`
           );
           continue;
         }
@@ -1236,10 +1364,14 @@
 
     function renderOutline(track) {
       const items = track.outline || [];
-      if (!items.length) return '';
-      return items.map(c => `
-        <li><span class="toc-entry"><time>${escapeHtml(c.time)}</time>${escapeHtml(c.title)}</span></li>
+      const chapterItems = items.map(c => `
+        <li><a class="toc-entry" href="#${chapterAnchor(c.time)}"><time>${escapeHtml(c.time)}</time>${escapeHtml(c.title)}</a></li>
       `).join('');
+      const jump = track.structured
+        ? `<li><a class="toc-entry toc-jump" href="#structure-draft"><time>结构稿</time>论题、判断与按时间提要</a></li>`
+        : '';
+      if (!chapterItems && !jump) return '';
+      return chapterItems + jump;
     }
 
     function renderPager(track) {
@@ -1259,13 +1391,22 @@
 
     function bindToc() {
       if (tocObserver) tocObserver.disconnect();
-      const link = document.querySelector('.toc a[href="#transcript"]');
-      const target = document.getElementById('transcript');
-      if (!link || !target) return;
+      const links = [...document.querySelectorAll('.toc a[href^="#"]')];
+      if (!links.length) return;
+      const map = new Map();
+      links.forEach(a => {
+        const id = decodeURIComponent((a.getAttribute('href') || '').slice(1));
+        const el = document.getElementById(id);
+        if (el) map.set(el, a);
+      });
+      if (!map.size) return;
       tocObserver = new IntersectionObserver(entries => {
-        link.classList.toggle('active', entries.some(e => e.isIntersecting));
+        entries.forEach(e => {
+          const a = map.get(e.target);
+          if (a) a.classList.toggle('active', e.isIntersecting);
+        });
       }, { rootMargin: '-20% 0px -55% 0px', threshold: 0 });
-      tocObserver.observe(target);
+      map.forEach((_, el) => tocObserver.observe(el));
     }
 
     function bindProgress() {
@@ -1343,6 +1484,8 @@
               <h2 class="section-title">全文文字稿</h2>
               ${renderTranscript(track)}
             </section>
+
+            ${renderStructured(track)}
 
             <section class="article-notes" id="articleNotes" aria-label="我的笔记"></section>
 

@@ -24,6 +24,7 @@ INDEX_PATH = CONTENT / "index.csv"
 TRACKS_PATH = CONTENT / "tracks.json"
 TRANSCRIPTS_DIR = CONTENT / "transcripts"
 POLISHED_DIR = CONTENT / "polished"
+STRUCTURED_DIR = CONTENT / "structured"
 DIAGRAMS_DIR = CONTENT / "diagrams"
 
 CHAPTER_LINE = re.compile(r"^- (\d{1,2}:\d{2}(?::\d{2})?)\s+(.+?)\s*$")
@@ -135,6 +136,19 @@ def resolve_polished_path(track: dict) -> Path | None:
         return None
     path = POLISHED_DIR / f"{int(index):03d}_{int(track_id)}.md"
     return path if path.is_file() else None
+
+
+def resolve_structured_path(track: dict) -> Path | None:
+    index = track.get("index")
+    track_id = track.get("trackId")
+    if index is None:
+        return None
+    if track_id:
+        path = STRUCTURED_DIR / f"{int(index):03d}_{int(track_id)}.md"
+        if path.is_file():
+            return path
+    cands = sorted(STRUCTURED_DIR.glob(f"{int(index):03d}_*.md"))
+    return cands[0] if cands else None
 
 
 def discover_diagrams(track: dict, polished_text: str | None = None) -> list[dict[str, str]]:
@@ -307,6 +321,12 @@ def apply_parsed(
     else:
         track.pop("diagrams", None)
 
+    structured_path = resolve_structured_path(track)
+    if structured_path:
+        track["structured"] = structured_path.read_text(encoding="utf-8")
+    else:
+        track.pop("structured", None)
+
     published = parsed.get("publishedAt")
     if not published and tj:
         published = tj.get("publishedAt")
@@ -381,6 +401,7 @@ def main() -> None:
     updated_intro = 0
     updated_outline = 0
     polished_count = 0
+    structured_count = 0
 
     for track in data.get("tracks", []):
         tid = int(track["trackId"])
@@ -403,6 +424,8 @@ def main() -> None:
             updated_outline += 1
         if track.get("contentSource") == "polished":
             polished_count += 1
+        if track.get("structured"):
+            structured_count += 1
 
     stats = recompute_meta(data)
     save_data(data)
@@ -414,7 +437,7 @@ def main() -> None:
         f"tracks: {stats['trackCount']} (+{added} new), ok: {stats['okCount']}, "
         f"missing: {stats['missingCount']}, chars: {stats['charTotal']}, "
         f"intro: {updated_intro}, outline: {updated_outline}, content updated: {updated_content}, "
-        f"polished: {polished_count}, diagrams: {with_diagrams}, "
+        f"polished: {polished_count}, structured: {structured_count}, diagrams: {with_diagrams}, "
         f"publishedAt: {with_pub}, playCount: {with_play}"
     )
 

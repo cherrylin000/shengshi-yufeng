@@ -13,8 +13,9 @@
 - `errors.json`：未生成文稿的音频及错误原因。
 - `investment_system.md`：基于可用文稿整理出的盛世裕丰投资体系。
 - `transcripts/`：逐条音频 Markdown 文稿。
-- `polished/`：润色稿（去口水话/重复、术语修正、按章节切开）。阅读页正文用这一层。
-- `structured/`：理解层结构稿（论题、框架、例证、限定条件）。**不是逐字稿。** 目前仅第 392 集样例。
+- `polished/`：润色稿（去口水话/重复、术语修正、按章节切开）。阅读页「全文文字稿」用这一层。
+- `structured/`：理解层结构稿，附在全文之后，不覆盖润色稿。
+- `scripts/transcripts/no_shownotes.json`：无官方 Show Notes 的 166 集名单；仅这些集会重写合成章节标题。
 - `asr_raw/`：本地 Whisper ASR 原始结果。
 - `../index.html`：可对外分享的静态网页（仓库根），含投资体系与文稿检索。
 - `article.html`：单篇文稿阅读页（`../data-index.js` + `articles/{序号}.json`）。

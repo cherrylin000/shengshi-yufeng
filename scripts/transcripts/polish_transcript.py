@@ -29,6 +29,8 @@ from normalize_transcripts import (  # noqa: E402
 
 CHAPTER_LINE = re.compile(r"^- (\d{1,2}:\d{2}(?::\d{2})?)\s+(.+?)\s*$")
 META_LINE = re.compile(r"^- (.+?)：(.+)$")
+# Hand-rewritten reading copies. Automatic polish must not overwrite them.
+HAND_POLISHED_INDEXES = {392}
 
 
 def split_md_sections(md: str) -> dict[str, str]:
@@ -141,12 +143,6 @@ def normalize_punctuation(text: str) -> str:
     text = re.sub(r"。，", "。", text)
     # Drop dangling commas before newlines
     text = re.sub(r"，\s*\n", "。\n", text)
-    # Ensure sentences often end with period when next clause starts with connective
-    text = re.sub(
-        r"([^\n。！？])\s*(但是|可是|所以|因此|另外|其实|那么|然后|总之)",
-        r"\1。\2",
-        text,
-    )
     # If a long chunk has no period, insert periods around ~60-90 chars at commas
     chunks = []
     for para in re.split(r"\n{2,}", text):
@@ -311,14 +307,35 @@ def build_polished_markdown(
     return "\n".join(lines).rstrip() + "\n", chapters
 
 
-def polish_file(src: Path, *, write: bool = True) -> dict:
+def index_from_stem(stem: str) -> int | None:
+    m = re.match(r"^(\d{3})_", stem)
+    return int(m.group(1)) if m else None
+
+
+def polish_file(src: Path, *, write: bool = True, force: bool = False) -> dict:
     raw = src.read_text(encoding="utf-8")
     title_m = re.match(r"^#\s+(.+)$", raw.strip().splitlines()[0] if raw.strip() else "")
     title = title_m.group(1).strip() if title_m else src.stem
-    polished, chapters = build_polished_markdown(raw)
-
     stem = src.stem
     polished_path = POLISHED_DIR / f"{stem}.md"
+    idx = index_from_stem(stem)
+    if (
+        not force
+        and idx in HAND_POLISHED_INDEXES
+        and polished_path.is_file()
+    ):
+        existing = polished_path.read_text(encoding="utf-8")
+        return {
+            "source": str(src),
+            "polished": str(polished_path),
+            "title": title,
+            "chapters": existing.count("### "),
+            "chars": len(re.sub(r"\s+", "", existing)),
+            "skipped_hand_polished": True,
+        }
+
+    polished, chapters = build_polished_markdown(raw)
+
     flow_path = DIAGRAMS_DIR / f"{stem}_flowchart.svg"
     mind_path = DIAGRAMS_DIR / f"{stem}_mindmap.svg"
 
@@ -343,12 +360,28 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Polish transcripts into structured markdown")
     ap.add_argument("--file", type=str, required=True, help="Transcript md path")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite hand-maintained polished copies (e.g. 392)",
+    )
     args = ap.parse_args()
-    src = Path(args.file)
-    if not src.is_absolute():
-        cand = CONTENT / args.file
-        src = cand if cand.is_file() else TRANSCRIPTS_DIR / args.file
-    info = polish_file(src, write=not args.dry_run)
+    requested = Path(args.file)
+    name = requested.name
+    src = None
+    for cand in (
+        requested,
+        Path.cwd() / requested,
+        REPO / requested,
+        TRANSCRIPTS_DIR / name,
+        POLISHED_DIR / name,
+    ):
+        if cand.is_file():
+            src = cand.resolve()
+            break
+    if src is None:
+        raise FileNotFoundError(args.file)
+    info = polish_file(src, write=not args.dry_run, force=args.force)
     print(info)
 
 

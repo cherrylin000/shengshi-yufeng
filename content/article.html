@@ -1168,6 +1168,12 @@
       return String(value || '').replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
     }
 
+    function formatInline(value) {
+      return escapeHtml(value)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
     function duration(seconds) {
       const s = Number(seconds || 0);
       return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -1265,7 +1271,7 @@
             bits.push(lines[i].trim().replace(/^>\s?/, ''));
             i += 1;
           }
-          html.push(`<p class="notice">${escapeHtml(bits.join(' '))}</p>`);
+          html.push(`<p class="notice">${formatInline(bits.join(' '))}</p>`);
           continue;
         }
         if (t.startsWith('|')) {
@@ -1279,14 +1285,14 @@
           if (body.length) {
             const head = body[0];
             const rest = body.slice(1);
-            html.push('<table><thead><tr>' + head.map(c => `<th>${escapeHtml(c)}</th>`).join('') + '</tr></thead><tbody>' +
-              rest.map(r => '<tr>' + r.map(c => `<td>${escapeHtml(c)}</td>`).join('') + '</tr>').join('') +
+            html.push('<table><thead><tr>' + head.map(c => `<th>${formatInline(c)}</th>`).join('') + '</tr></thead><tbody>' +
+              rest.map(r => '<tr>' + r.map(c => `<td>${formatInline(c)}</td>`).join('') + '</tr>').join('') +
               '</tbody></table>');
           }
           continue;
         }
         if (/^##\s+/.test(t)) {
-          html.push(`<h3>${escapeHtml(t.replace(/^##\s+/, ''))}</h3>`);
+          html.push(`<h3>${formatInline(t.replace(/^##\s+/, ''))}</h3>`);
           i += 1;
           continue;
         }
@@ -1296,7 +1302,7 @@
             items.push(lines[i].trim().replace(/^\d+\.\s+/, ''));
             i += 1;
           }
-          html.push('<ol>' + items.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ol>');
+          html.push('<ol>' + items.map(x => `<li>${formatInline(x)}</li>`).join('') + '</ol>');
           continue;
         }
         if (/^[-*]\s+/.test(t)) {
@@ -1305,10 +1311,10 @@
             items.push(lines[i].trim().replace(/^[-*]\s+/, ''));
             i += 1;
           }
-          html.push('<ul>' + items.map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>');
+          html.push('<ul>' + items.map(x => `<li>${formatInline(x)}</li>`).join('') + '</ul>');
           continue;
         }
-        html.push(`<p>${escapeHtml(t)}</p>`);
+        html.push(`<p>${formatInline(t)}</p>`);
         i += 1;
       }
       return html.join('');
@@ -1338,20 +1344,20 @@
         const hm = text.match(/^###\s+(\d{1,2}:\d{2}(?::\d{2})?)\s+(.+)$/);
         if (hm) {
           blocks.push(
-            `<h3 class="section-heading" id="${escapeHtml(chapterAnchor(hm[1]))}"><span class="ts">${escapeHtml(hm[1])}</span>${escapeHtml(hm[2])}</h3>`
+            `<h3 class="section-heading" id="${escapeHtml(chapterAnchor(hm[1]))}"><span class="ts">${escapeHtml(hm[1])}</span>${formatInline(hm[2])}</h3>`
           );
           continue;
         }
         const hm2 = text.match(/^###\s+(.+)$/);
         if (hm2) {
-          blocks.push(`<h3 class="section-heading">${escapeHtml(hm2[1])}</h3>`);
+          blocks.push(`<h3 class="section-heading">${formatInline(hm2[1])}</h3>`);
           continue;
         }
-        blocks.push(`<p>${escapeHtml(text)}</p>`);
+        blocks.push(`<p>${formatInline(text)}</p>`);
       }
       if (!blocks.length) {
         const paras = splitParagraphs(track.content);
-        return `<div class="transcript" id="transcript">${paras.map(p => `<p>${escapeHtml(p)}</p>`).join('')}</div>`;
+        return `<div class="transcript" id="transcript">${paras.map(p => `<p>${formatInline(p)}</p>`).join('')}</div>`;
       }
       return `<div class="transcript" id="transcript">${blocks.join('')}</div>`;
     }
